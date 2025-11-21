@@ -16,7 +16,8 @@
     "twig/twig": "^3.20",
     "ext-couchbase": "*",
     "ext-intl": "*",
-    "phpoffice/phpspreadsheet": "^5.2"
+    "phpoffice/phpspreadsheet": "^5.2",
+    "robmorgan/phinx": "^0.16.10"
   },
   "config": {
     "secure-http": false
