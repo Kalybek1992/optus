@@ -1,0 +1,38 @@
+{% block content %}
+    <!-- Open the modal using ID.showModal() method -->
+
+    <div class="mt-6 ml-16">
+        <nav aria-label="breadcrumb" class="text-sm text-gray-700">
+            <ul class="flex flex-wrap items-center gap-1">
+
+                <!-- Главное -->
+                <li class="flex items-center gap-1">
+                    <a href="/" class="flex items-center gap-1 text-blue-600 hover:underline">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                             stroke="currentColor" class="size-6">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                  d="m2.25 12 8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25"/>
+                        </svg>
+                        Главное
+                    </a>
+                </li>
+
+                <!-- Разделитель -->
+                <li aria-hidden="true">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                         stroke="currentColor" class="size-6">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5"/>
+                    </svg>
+                </li>
+
+                <!-- Список компаний -->
+                <li class="flex items-center gap-1 text-gray-900" aria-current="page">
+                    <svg fill="#000000" width="24px" height="24px" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"><path d="M11,3a1,1,0,0,0-1-1H3A1,1,0,0,0,2,3V22h9ZM9,18H4V16H9Zm0-4H4V12H9Zm0-4H4V8H9ZM9,6H4V4H9ZM21,8H14a1,1,0,0,0-1,1V22h9V9A1,1,0,0,0,21,8ZM17,20H15V18h2Zm0-4H15V14h2Zm0-4H15V10h2Zm3,8H18V18h2Zm0-4H18V14h2Zm0-4H18V10h2Z"></path></g></svg>
+                    Список компаний
+                </li>
+            </ul>
+        </nav>
+    </div>
+
+
+{% endblock %}

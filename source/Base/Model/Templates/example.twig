@@ -1,0 +1,18 @@
+{% extends 'base.twig' %}
+
+{% block title %}Регистрация{% endblock %}
+
+{% block content %}
+    <h2>Привет, {{ name }}!</h2>
+    <p>Добро пожаловать на страницу регистрации.</p>
+
+    <button onclick="showMessage()">Нажми меня</button>
+
+
+
+    <script>
+        function showMessage() {
+            alert("Скрипт работает! Добро пожаловать, {{ name }}!");
+        }
+    </script>
+{% endblock %}

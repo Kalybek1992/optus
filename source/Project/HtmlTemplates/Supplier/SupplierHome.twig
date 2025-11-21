@@ -1,0 +1,1158 @@
+{% extends './Navbar/Navbar.twig' %}
+
+{% block content %}
+
+    <div class="max-w-7xl mx-auto p-8 space-y-10">
+        <!-- Заголовок -->
+        <div class="text-center">
+            <h1 class="text-3xl font-bold text-gray-800 mb-2">Кабинет поставщика</h1>
+            <p class="text-gray-500 text-sm mb-2">Управляйте своими финансами, компаниями и операциями</p>
+
+            <!-- Имя поставщика -->
+            <div class="text-lg font-semibold text-gray-700">
+                {{ supplier.name }}
+            </div>
+        </div>
+
+        <!-- === Блок: Отчёты менеджеров === -->
+        <div class="bg-white shadow-sm rounded-2xl p-6 border border-gray-100 mt-8">
+            <h2 class="text-2xl font-semibold text-gray-800 mb-6 flex items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg"
+                     viewBox="0 0 24 24"
+                     fill="none"
+                     stroke="currentColor"
+                     stroke-width="2.25"
+                     stroke-linecap="round"
+                     stroke-linejoin="round"
+                     class="w-6 h-6 text-emerald-600"
+                     aria-hidden="true">
+                    <path d="M18 18.72a9.094 9.094 0 0 0 3.741-.479 3 3 0 0 0-4.682-2.72m.94 3.198.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0 1 12 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 0 1 6 18.719m12 0a5.971 5.971 0 0 0-.941-3.197m0 0A5.995 5.995 0 0 0 12 12.75a5.995 5.995 0 0 0-5.058 2.772m0 0a3 3 0 0 0-4.681 2.72 8.986 8.986 0 0 0 3.74.477m.94-3.197a5.971 5.971 0 0 0-.94 3.197M15 6.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm6 3a2.25 2.25 0 1 1-4.5 0 2.25 2.25 0 0 1 4.5 0Zm-13.5 0a2.25 2.25 0 1 1-4.5 0 2.25 2.25 0 0 1 4.5 0Z" />
+                </svg>
+                Отчёты менеджеров
+            </h2>
+
+            <!-- Панель отчетов -->
+            <div class="flex flex-wrap justify-center gap-6" x-data="reportPanel()">
+                <!-- Клиент услуги -->
+                <div class="flex flex-col items-center w-52">
+                    <a href="#"
+                       @click.prevent="submitReport('/supplier/clientServicesManager', selectedManager1)"
+                       class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2 px-6 rounded-lg transition-colors duration-200 w-full text-center shadow-sm">
+                        Клиент услуги
+                    </a>
+                    <select x-model="selectedManager1" class="select select-sm w-full border border-gray-300 mt-2 pl-1">
+                        <option value="" selected>Не выбран</option>
+                        {% for manager in supplier_users %}
+                            {% if manager.role == 'manager' %}
+                                <option value="{{ manager.role_id }}">{{ manager.username }}</option>
+                            {% endif %}
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Отгрузка товара -->
+                <div class="flex flex-col items-center w-52">
+                    <a href="#"
+                       @click.prevent="submitReport('/supplier/deliveredGoods', selectedManager2)"
+                       class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2 px-6 rounded-lg transition-colors duration-200 w-full text-center shadow-sm">
+                        Отгрузка товара
+                    </a>
+                    <select x-model="selectedManager2" class="select select-sm w-full border border-gray-300 mt-2 pl-1">
+                        <option value="" selected>Не выбран</option>
+                        {% for manager in supplier_users %}
+                            {% if manager.role == 'manager' %}
+                                <option value="{{ manager.role_id }}">{{ manager.username }}</option>
+                            {% endif %}
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Возврат отгрузки -->
+                <div class="flex flex-col items-center w-52">
+                    <a href="#"
+                       @click.prevent="submitReport('/supplier/returnGoods', selectedManager3)"
+                       class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2 px-6 rounded-lg transition-colors duration-200 w-full text-center shadow-sm">
+                        Возврат отгрузки
+                    </a>
+                    <select x-model="selectedManager3" class="select select-sm w-full border border-gray-300 mt-2 pl-1">
+                        <option value="" selected>Не выбран</option>
+                        {% for manager in supplier_users %}
+                            {% if manager.role == 'manager' %}
+                                <option value="{{ manager.role_id }}">{{ manager.username }}</option>
+                            {% endif %}
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Отчет по дням -->
+                <div class="flex flex-col items-center w-52">
+                    <a href="#"
+                       @click.prevent="submitReport('/supplier/managerDailyReports', selectedManager6)"
+                       class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2 px-6 rounded-lg transition-colors duration-200 w-full text-center shadow-sm">
+                        Взаиморасчет
+                    </a>
+                    <select x-model="selectedManager6" class="select select-sm w-full border border-gray-300 mt-2 pl-1">
+                        <option value="" selected>Не выбран</option>
+                        {% for manager in supplier_users %}
+                            {% if manager.role == 'manager' %}
+                                <option value="{{ manager.role_id }}">{{ manager.username }}</option>
+                            {% endif %}
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Перенести кэш -->
+                <div class="flex flex-col items-center w-52">
+                    <a href="#"
+                       id="openMovedCashModal"
+                       class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2 px-6 rounded-lg transition-colors duration-200 w-full text-center shadow-sm">
+                        Поступление кеш
+                    </a>
+
+                    <select id="movedCashManager" class="select select-sm w-full border border-gray-300 mt-2 pl-1">
+                        <option value="" selected>Не выбран</option>
+                        {% for manager in supplier_users %}
+                            {% if manager.role == 'manager' %}
+                                <option value="{{ manager.role_id }}">{{ manager.username }}</option>
+                            {% endif %}
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Перенес кэш -->
+                <div class="flex flex-col items-center w-52">
+                    <a href="#"
+                       @click.prevent="submitReport('/supplier/getMovedCash', selectedManager7)"
+                       class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2 px-6 rounded-lg transition-colors duration-200 w-full text-center shadow-sm">
+                        Перенес кэш
+                    </a>
+                    <select x-model="selectedManager7" class="select select-sm w-full border border-gray-300 mt-2 pl-1">
+                        <option value="" selected>Не выбран</option>
+                        {% for manager in supplier_users %}
+                            {% if manager.role == 'manager' %}
+                                <option value="{{ manager.role_id }}">{{ manager.username }}</option>
+                            {% endif %}
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="flex flex-col items-center w-52">
+                    <a href="#"
+                       @click.prevent="submitReport('/supplier/clientReceiptsDate', selectedManager5, selectedManager5)"
+                       class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2 px-6 rounded-lg transition-colors duration-200 w-full text-center shadow-sm">
+                        Клиенты
+                    </a>
+                    <select x-model="selectedManager5" class="select select-sm w-full border border-gray-300 mt-2 pl-1">
+                        <option value="" selected>Не выбран</option>
+                        {% for manager in supplier_users %}
+                            {% if manager.role == 'client' %}
+                                <option value="{{ manager.role_id }}">{{ manager.username }}</option>
+                            {% endif %}
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Восьмой блок: Выбор роли -->
+                <div class="flex flex-col items-center w-52">
+                    <a href="#"
+                       @click.prevent="submitReport('/supplier/getUsersByRole', selectedManager8, selectedManager8, selectedManager8)"
+                       class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2 px-6 rounded-lg transition-colors duration-200 w-full text-center shadow-sm">
+                        Пользователи
+                    </a>
+                    <select x-model="selectedManager8" class="select select-sm w-full border border-gray-300 mt-2 pl-1">
+                        <option value="" selected>Выберите роль</option>
+                        <option value="manager">Менеджер</option>
+                        <option value="client">Клиент</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- === Новый блок: Управление поставщиком === -->
+        <div class="bg-white shadow-sm rounded-2xl p-6 border border-gray-100 mt-8">
+            <h2 class="text-2xl font-semibold text-gray-800 mb-6 flex items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg"
+                     viewBox="0 0 24 24"
+                     fill="none"
+                     stroke="currentColor"
+                     stroke-width="2.25"
+                     stroke-linecap="round"
+                     stroke-linejoin="round"
+                     class="w-6 h-6 text-emerald-600"
+                     aria-hidden="true">
+                    <path d="M8.25 18.75a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 0 1-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m3 0h1.125c.621 0 1.129-.504 1.09-1.124a17.902 17.902 0 0 0-3.213-9.193 2.056 2.056 0 0 0-1.58-.86H14.25M16.5 18.75h-2.25m0-11.177v-.958c0-.568-.422-1.048-.987-1.106a48.554 48.554 0 0 0-10.026 0 1.106 1.106 0 0 0-.987 1.106v7.635m12-6.677v6.677m0 4.5v-4.5m0 0h-12" />
+                </svg>
+                Управление поставщиком
+            </h2>
+
+            <!-- Суммы долгов -->
+            <div class="flex flex-wrap justify-center gap-4 mb-6">
+                <a href="/supplier/stockBalanceCommodity" class="flex flex-col items-center  p-4 bg-emerald-50 border border-emerald-200 rounded-xl shadow-sm">
+                    <div class="text-sm text-gray-500">Товарный баланс</div>
+                    <div class="text-lg font-bold text-emerald-600">{{ stock_balance|number_format(0, ',', ' ') }} ₽</div>
+                </a>
+                <div class="flex flex-col items-center p-4 bg-emerald-50 border border-emerald-200 rounded-xl shadow-sm">
+                    <div class="text-sm text-gray-500">Долг транзитный</div>
+                    <div class="text-lg font-bold text-emerald-600">{{ debts.client_services|number_format(0, ',', ' ') }} ₽</div>
+                </div>
+                <div class="flex flex-col items-center p-4 bg-emerald-50 border border-emerald-200 rounded-xl shadow-sm">
+                    <div class="text-sm text-gray-500">Долг перед компанией</div>
+                    <div class="text-lg font-bold text-emerald-600">{{ debts.supplier_goods|number_format(0, ',', ' ') }} ₽</div>
+                </div>
+                <div class="flex flex-col items-center  p-4 bg-emerald-50 border border-emerald-200 rounded-xl shadow-sm">
+                    <div class="text-sm text-gray-500">Долг клиентам</div>
+                    <div class="text-lg font-bold text-emerald-600">{{ debts.client_debt_supplier|number_format(0, ',', ' ') }} ₽</div>
+                </div>
+            </div>
+
+            <!-- Кнопки управления -->
+            <div class="flex flex-wrap justify-center gap-6">
+                <!-- Категории расходов -->
+                <div class="flex flex-col items-center w-52">
+                    <a href="/categories/supplierCategories"
+                       class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2 px-6 rounded-lg transition-colors duration-200 w-full text-center shadow-sm">
+                        Категории расходов
+                    </a>
+                    <div class="text-xs text-gray-500 mt-2 text-center">Просмотр и редактирование</div>
+                </div>
+
+                <!-- Расходы товарных денег отчет -->
+                <div class="flex flex-col items-center w-52">
+                    <a href="/supplier/getExpenses"
+                       class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2 px-6 rounded-lg transition-colors duration-200 w-full text-center shadow-sm">
+                        Расходы
+                    </a>
+                    <div class="text-xs text-gray-500 mt-2 text-center">Расходы товарных денег</div>
+                </div>
+
+                <!-- Все транзакции  -->
+                <div class="flex flex-col items-center w-52">
+                    <a href="/supplier/getTransactionDate"
+                       class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2 px-6 rounded-lg transition-colors duration-200 w-full text-center shadow-sm">
+                        Транзакции
+                    </a>
+                    <div class="text-xs text-gray-500 mt-2 text-center">Все транзакции связанные с поставщиком</div>
+                </div>
+
+                <!-- Расходы на долги -->
+                <div class="flex flex-col items-center w-52">
+                    <a href="/supplier/debtExpenses"
+                       class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2 px-6 rounded-lg transition-colors duration-200 w-full text-center shadow-sm">
+                        Расходы на долги
+                    </a>
+                    <div class="text-xs text-gray-500 mt-2 text-center">Оплата долгов товарными деньгами</div>
+                </div>
+
+                <!-- Создать пользователя -->
+                <div class="flex flex-col items-center w-52">
+                    <a href="/supplier/addUserPage"
+                       class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2 px-6 rounded-lg transition-colors duration-200 w-full text-center shadow-sm">
+                        Создать
+                    </a>
+                    <div class="text-xs text-gray-500 mt-2 text-center">Добавление нового сотрудника</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Раздел: Транзит (Клиентские услуги) -->
+        {% if no_managers is not empty %}
+            <div class="bg-white shadow-sm rounded-2xl p-4 sm:p-6 border border-gray-100 mt-8">
+                <h2 class="text-xl sm:text-2xl font-semibold text-gray-800 mb-4 sm:mb-6">
+                    Транзит <span class="text-gray-500 text-base sm:text-lg">(клиентские услуги)</span>
+                </h2>
+
+                <div class="overflow-x-auto">
+                    <table class="min-w-full text-xs sm:text-sm text-left border-t border-gray-200 table-auto">
+                        <thead class="bg-gray-50 text-gray-700">
+                        <tr class="border-b">
+                            <th class="py-2 px-2 sm:px-4 font-medium">Дата</th>
+                            <th class="py-2 px-2 sm:px-4 font-medium">Компания</th>
+                            <th class="py-2 px-2 sm:px-4 font-medium w-72 sm:w-80 break-words">Назначение</th>
+                            <th class="py-2 px-2 sm:px-4 font-medium w-28 sm:w-36 text-right hidden sm:table-cell">Сумма (₽)</th>
+                            <th class="py-2 px-2 sm:px-4 font-medium w-40 sm:w-48 hidden sm:table-cell">Менеджер</th>
+                        </tr>
+                        </thead>
+
+                        <tbody class="text-gray-700">
+                        {% for item in no_managers %}
+                            <tr class="hover:bg-gray-50 transition align-top flex flex-col sm:table-row mb-2 sm:mb-0">
+                                <td class="py-2 px-2 sm:px-4">{{ item.date|date('d.m.Y') }}</td>
+                                <td class="py-2 px-2 sm:px-4">{{ item.company_name }}</td>
+                                <td class="py-2 px-2 sm:px-4 w-72 sm:w-80 break-words">{{ item.description }}</td>
+                                <td class="py-2 px-2 sm:px-4 font-semibold text-green-600 text-right sm:text-right">
+                                    {{ item.amount|number_format(0, ',', ' ') }} ₽
+                                </td>
+                                <td class="py-2 px-2 sm:px-4">
+                                    <select class="select select-sm w-full border border-gray-300 pl-1" data-legal-id="{{ item.id }}">
+                                        <option value="" selected>Не выбран</option>
+                                        {% for user in supplier_users %}
+                                            <option value="{{ user.role_id }}|{{ user.role }}">
+                                                {{ user.username }} ({{ user.role == 'manager' ? 'Менеджер' : 'Клиент' }})
+                                            </option>
+                                        {% endfor %}
+                                    </select>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        {% endif %}
+
+        <!-- Раздел: Деньги, отправленные на поставщика -->
+        {% if companies is not empty %}
+            <div class="bg-white shadow-sm rounded-2xl p-6 border border-gray-100 mt-8">
+                <h2 class="text-2xl font-semibold text-gray-800 mb-6">
+                    Деньги, отправленные на поставщика
+                </h2>
+
+                <!-- Сетка компаний: по две карточки -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                    {% for company in companies %}
+                        <div class="flex flex-col justify-between border rounded-2xl p-5 bg-gray-50 hover:bg-gray-100 transition shadow-sm w-full">
+                            <!-- Информация о компании -->
+                            <div class="space-y-2">
+                                <div>
+                                    <div class="text-sm text-gray-500">Компания</div>
+                                    <div class="text-lg font-semibold text-gray-800 break-words">
+                                        {{ company.company_name }}
+                                    </div>
+                                </div>
+                                <div>
+                                    <div class="text-sm text-gray-500">Банк</div>
+                                    <div class="text-base text-gray-700 break-words">
+                                        {{ company.bank_name }}
+                                    </div>
+                                </div>
+                                <div>
+                                    <div class="text-sm text-gray-500">INN</div>
+                                    <div class="text-base text-gray-700 break-words">
+                                        {{ company.inn }}
+                                    </div>
+                                </div>
+                                <div class="flex gap-8">
+                                    <!-- Основной баланс -->
+                                    <div>
+                                        <div class="text-sm text-gray-500">Баланс</div>
+                                        <div class="text-2xl font-bold {{ company.balance < 0 ? 'text-red-600' : 'text-green-600' }}">
+                                            {{ company.balance < 0 ? ('-' ~ (company.balance * -1)|number_format(0, ',', ' ')) : (company.balance|number_format(0, ',', ' ')) }} ₽
+                                        </div>
+                                    </div>
+
+                                    <!-- Возвращенный товарный баланс -->
+                                    <div>
+                                        <div class="text-sm text-gray-400">Возврат баланса колесо</div>
+                                        <div class="text-xl font-semibold text-gray-500">
+                                            {{ company.stock_balance|number_format(0, ',', ' ') }} ₽
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div>
+
+                            <!-- Кнопки -->
+                            <div class="mt-4 flex flex-col sm:flex-row gap-3">
+                                <button
+                                        class="btn btn-sm flex-1 bg-green-600 hover:bg-green-700 text-white border-none py-1.5 px-2.5 whitespace-nowrap"
+                                        data-distribute-id="{{ company.id }}"
+                                        data-company="{{ company.company_name }}"
+                                        data-bank="{{ company.bank_name }}"
+                                        data-inn="{{ company.inn }}"
+                                        data-balance="{{ company.balance }}"
+                                >
+                                    Создать отгрузку
+                                </button>
+                                <button
+                                        class="btn btn-sm flex-1 bg-green-100 hover:bg-green-200 text-green-700 border-none py-1.5 px-2.5 whitespace-nowrap"
+                                        data-return-id="{{ company.id }}"
+                                        data-company="{{ company.company_name }}"
+                                        data-bank="{{ company.bank_name }}"
+                                        data-inn="{{ company.inn }}"
+                                        data-balance="{{ company.balance }}"
+                                >
+                                    Создать возврат
+                                </button>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        {% else %}
+            <div class="bg-white shadow-sm rounded-2xl p-6 border border-gray-100 mt-8 text-center text-gray-500">
+                У поставщика нет компаний для отображения.
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Модальное окно подтверждения менеджера -->
+    <dialog id="confirm_manager_modal" class="modal">
+        <div class="modal-box relative rounded-2xl p-6 sm:p-8 w-full max-w-md bg-white shadow-xl">
+            <h3 class="text-xl sm:text-2xl font-semibold text-gray-800 mb-6 text-center">
+                Подтвердите привязку менеджера
+            </h3>
+
+            <div class="space-y-4">
+                <!-- Компания -->
+                <div class="p-3 bg-white rounded-lg border border-green-600">
+                    <p class="text-sm font-medium text-gray-500 mb-1">Компания</p>
+                    <p class="text-gray-800 font-semibold text-base break-words" id="modal_company"></p>
+                </div>
+
+                <!-- Назначение -->
+                <div class="p-3 bg-white rounded-lg border border-green-600">
+                    <p class="text-sm font-medium text-gray-500 mb-1">Назначение</p>
+                    <p class="text-gray-800 font-semibold text-base break-words" id="modal_description"></p>
+                </div>
+
+                <!-- Менеджер -->
+                <div class="p-3 bg-white rounded-lg border border-green-600">
+                    <p class="text-sm font-medium text-gray-500 mb-1">Имя</p>
+                    <p class="text-gray-800 font-semibold text-base break-words" id="modal_manager"></p>
+                </div>
+
+                <!-- Роль -->
+                <div class="p-3 bg-white rounded-lg border border-green-600">
+                    <p class="text-sm font-medium text-gray-500 mb-1">Роль</p>
+                    <p class="text-gray-800 font-semibold text-base break-words" id="modal_role"></p>
+                </div>
+            </div>
+
+            <div class="flex justify-end gap-3 mt-6">
+                <button id="modal_cancel" class="btn btn-ghost px-5 py-2 text-gray-700">Отмена</button>
+                <button id="modal_confirm"
+                        class="btn bg-green-600 hover:bg-green-700 text-white border-none px-6 py-2">
+                    Подтвердить
+                </button>
+            </div>
+        </div>
+
+        <!-- Фон-маска -->
+        <form method="dialog" class="modal-backdrop bg-black/40 backdrop-blur-sm">
+            <button>close</button>
+        </form>
+    </dialog>
+
+
+    <!-- Модалки ошибок и успеха -->
+    <dialog id="errorModal" class="modal">
+        <div class="modal-box">
+            <h3 class="text-lg font-bold">Ошибка!</h3>
+            <p id="errorText" class="py-4"></p>
+            <div class="modal-action">
+                <form method="dialog">
+                    <button class="btn">Закрыть</button>
+                </form>
+            </div>
+        </div>
+    </dialog>
+
+
+    <!-- Модальное окно распределения суммы -->
+    <dialog id="distribute_modal" class="modal">
+        <div class="modal-box relative rounded-2xl p-6 sm:p-8 w-full max-w-md bg-white shadow-xl">
+            <h3 class="text-xl sm:text-2xl font-semibold text-gray-800 mb-6 text-center">
+                Распределение суммы
+            </h3>
+
+            <div class="space-y-4">
+                <!-- Компания -->
+                <div>
+                    <p class="text-sm font-medium text-gray-500 mb-1">Компания</p>
+                    <p id="distribute_modal_company" class="text-gray-800 font-semibold text-base break-words"></p>
+                </div>
+
+                <!-- Баланс -->
+                <div>
+                    <p class="text-sm font-medium text-gray-500 mb-1">Баланс</p>
+                    <p id="distribute_modal_balance" class="text-green-700 font-bold text-lg"></p>
+                </div>
+
+                <!-- Дата "до" -->
+                <div class="flex items-center w-full md:w-auto gap-2">
+                    <span class="text-sm font-medium text-emerald-600">Дата-</span>
+                    <input type="text"
+                           class="datepicker_to w-full md:w-[12rem] h-[44px] px-3 bg-white border border-emerald-600 rounded-lg shadow-sm text-sm font-medium text-gray-700 uppercase focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:border-emerald-600 transition"
+                           placeholder="Дата"
+                           autocomplete="off">
+                </div>
+
+                <!-- Менеджер -->
+                <div>
+                    <p class="text-sm font-medium text-gray-500 mb-1">Менеджер</p>
+                    <select id="distribute_modal_manager"
+                            class="w-full rounded-lg border border-green-600 text-gray-800 px-3 py-2 text-sm sm:text-base outline-none focus:outline-none">
+                        <option value="" selected>Не выбран</option>
+                        {% for manager in supplier_users %}
+                            {% if manager.role == 'manager' %}
+                                <option value="{{ manager.role_id }}">{{ manager.username }}</option>
+                            {% endif %}
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Сумма -->
+                <div>
+                    <p class="text-sm font-medium text-gray-500 mb-1">Сумма</p>
+                    <input type="number" id="distribute_modal_amount"
+                           class="w-full rounded-lg border border-green-600 text-gray-800 px-3 py-2 text-sm sm:text-base outline-none focus:outline-none"
+                           min="0" step="0.01" placeholder="Введите сумму">
+                </div>
+
+                <!-- Комментарий -->
+                <div>
+                    <p class="text-sm font-medium text-gray-500 mb-1">Комментарий</p>
+                    <textarea id="distribute_modal_comment"
+                              class="w-full rounded-lg border border-green-600 text-gray-800 px-3 py-2 text-sm sm:text-base outline-none focus:outline-none"
+                              rows="3" placeholder="Комментарий..."></textarea>
+                </div>
+            </div>
+
+            <div class="flex justify-end gap-3 mt-6">
+                <button id="distribute_cancel" class="btn btn-ghost px-5 py-2 text-gray-700">Отмена</button>
+                <button id="distribute_confirm"
+                        class="btn bg-green-600 hover:bg-green-700 text-white border-none px-6 py-2">
+                    Сохранить
+                </button>
+            </div>
+        </div>
+
+        <!-- Фон-маска -->
+        <form method="dialog" class="modal-backdrop bg-black/40 backdrop-blur-sm">
+            <button>close</button>
+        </form>
+    </dialog>
+
+
+    <!-- Модальное окно создания возврата -->
+    <dialog id="return_modal" class="modal">
+        <div class="modal-box relative rounded-2xl p-6 sm:p-8 w-full max-w-md bg-white shadow-xl">
+            <h3 class="text-xl sm:text-2xl font-semibold text-gray-800 mb-6 text-center">
+                Создать возврат
+            </h3>
+
+            <div class="space-y-4">
+                <!-- Компания -->
+                <div>
+                    <p class="text-sm font-medium text-gray-500 mb-1">Компания</p>
+                    <p id="return_modal_company" class="text-gray-800 font-semibold text-base break-words"></p>
+                </div>
+
+                <!-- Баланс -->
+                <div>
+                    <p class="text-sm font-medium text-gray-500 mb-1">Баланс</p>
+                    <p id="return_modal_balance" class="text-green-700 font-bold text-lg"></p>
+                </div>
+
+                <!-- Дата "до" -->
+                <div class="flex items-center w-full md:w-auto gap-2">
+                    <span class="text-sm font-medium text-emerald-600">Дата-</span>
+                    <input type="text"
+                           class="datepicker_to w-full md:w-[12rem] h-[44px] px-3 bg-white border border-emerald-600 rounded-lg shadow-sm text-sm font-medium text-gray-700 uppercase focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:border-emerald-600 transition"
+                           placeholder="Дата"
+                           autocomplete="off">
+                </div>
+
+                <!-- Тип возврата -->
+                <div>
+                    <p class="text-sm font-medium text-gray-500 mb-1">Тип возврата</p>
+                    <div class="flex items-center gap-4">
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            <input type="checkbox" name="return_type" value="cash" class="return-checkbox accent-green-600" checked>
+                            Наличка
+                        </label>
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            <input type="checkbox" name="return_type" value="wheel" class="return-checkbox accent-green-600">
+                            Колесо
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Менеджер -->
+                <div>
+                    <p class="text-sm font-medium text-gray-500 mb-1">Менеджер</p>
+                    <select id="return_modal_manager"
+                            class="w-full rounded-lg border border-green-600 text-gray-800 px-3 py-2 text-sm sm:text-base outline-none focus:outline-none">
+                        <option value="" selected>Не выбран</option>
+                        {% for manager in supplier_users %}
+                            {% if manager.role == 'manager' %}
+                                <option value="{{ manager.role_id }}">{{ manager.username }}</option>
+                            {% endif %}
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Сумма -->
+                <div>
+                    <p class="text-sm font-medium text-gray-500 mb-1">Сумма</p>
+                    <input type="number" id="return_modal_amount"
+                           class="w-full rounded-lg border border-green-600 text-gray-800 px-3 py-2 text-sm sm:text-base outline-none focus:outline-none"
+                           min="0" step="0.01" placeholder="Введите сумму">
+                </div>
+
+                <!-- Комментарий -->
+                <div>
+                    <p class="text-sm font-medium text-gray-500 mb-1">Комментарий</p>
+                    <textarea id="return_modal_comment"
+                              class="w-full rounded-lg border border-green-600 text-gray-800 px-3 py-2 text-sm sm:text-base outline-none focus:outline-none"
+                              rows="3" placeholder="Комментарий..."></textarea>
+                </div>
+            </div>
+
+            <div class="flex justify-end gap-3 mt-6">
+                <button id="return_cancel" class="btn btn-ghost px-5 py-2 text-gray-700">Отмена</button>
+                <button id="return_confirm"
+                        class="btn bg-green-600 hover:bg-green-700 text-white border-none px-6 py-2">
+                    Создать
+                </button>
+            </div>
+        </div>
+
+        <!-- Фон-маска -->
+        <form method="dialog" class="modal-backdrop bg-black/40 backdrop-blur-sm">
+            <button>close</button>
+        </form>
+    </dialog>
+
+    <!-- Перенести кэш  -->
+    <dialog id="movedCash_modal" class="modal">
+        <div class="modal-box relative rounded-2xl p-6 sm:p-8 w-full max-w-md bg-white shadow-xl">
+            <h3 class="text-xl sm:text-2xl font-semibold text-gray-800 mb-6 text-center">
+                Поступление кеша
+            </h3>
+
+            <div class="space-y-4">
+                <!-- Менеджер -->
+                <div>
+                    <p class="text-sm font-medium text-gray-500 mb-1">Менеджер</p>
+                    <p id="movedCash_managerName" class="text-gray-800 font-semibold text-base break-words"></p>
+                </div>
+
+                <!-- Дата "до" -->
+                <div class="flex items-center w-full md:w-auto gap-2">
+                    <span class="text-sm font-medium text-emerald-600">Дата-</span>
+                    <!-- В обоих окнах -->
+                    <input type="text"
+                           class="datepicker_to datepicker w-full md:w-[12rem] h-[44px] px-3 bg-white border border-emerald-600 rounded-lg shadow-sm text-sm font-medium text-gray-700 uppercase focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:border-emerald-600 transition"
+                           placeholder="Дата"
+                           autocomplete="off">
+
+                </div>
+
+                <!-- Сумма -->
+                <div>
+                    <p class="text-sm font-medium text-gray-500 mb-1">Сумма</p>
+                    <input type="number" id="movedCash_amount"
+                           class="w-full rounded-lg border border-green-600 text-gray-800 px-3 py-2 text-sm sm:text-base outline-none focus:outline-none"
+                           min="0" step="0.01" placeholder="Введите сумму">
+                </div>
+
+                <!-- Комментарий -->
+                <div>
+                    <p class="text-sm font-medium text-gray-500 mb-1">Комментарий</p>
+                    <textarea id="movedCash_comment"
+                              class="w-full rounded-lg border border-green-600 text-gray-800 px-3 py-2 text-sm sm:text-base outline-none focus:outline-none"
+                              rows="3" placeholder="Комментарий..."></textarea>
+                </div>
+            </div>
+
+            <div class="flex justify-end gap-3 mt-6">
+                <button id="movedCash_cancel" class="btn btn-ghost px-5 py-2 text-gray-700">Отмена</button>
+                <button id="movedCash_confirm"
+                        class="btn bg-green-600 hover:bg-green-700 text-white border-none px-6 py-2">
+                    Сохранить
+                </button>
+            </div>
+        </div>
+
+        <!-- Фон-маска -->
+        <form method="dialog" class="modal-backdrop bg-black/40 backdrop-blur-sm">
+            <button>close</button>
+        </form>
+    </dialog>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pikaday/css/pikaday.css">
+    <script src="https://cdn.jsdelivr.net/npm/pikaday/pikaday.js"></script>
+    <script src="/assets/js/PostData.js?v=<?= time() ?>"></script>
+
+    <script>
+
+        document.addEventListener('DOMContentLoaded', function() {
+
+            document.querySelectorAll('.datepicker_to').forEach((input) => {
+                const modalBox = input.closest('.modal-box');
+                new Pikaday({
+                    field: input,
+                    format: 'DD.MM.YYYY',
+                    container: modalBox,
+                    reposition: false,
+                    maxDate: new Date(), // ✅ запретить будущие даты
+                    firstDay: 1,
+                    i18n: {
+                        previousMonth: 'Предыдущий',
+                        nextMonth: 'Следующий',
+                        months: ['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'],
+                        weekdays: ['Воскресенье','Понедельник','Вторник','Среда','Четверг','Пятница','Суббота'],
+                        weekdaysShort: ['Вс','Пн','Вт','Ср','Чт','Пт','Сб']
+                    },
+                    toString(date) {
+                        const d = String(date.getDate()).padStart(2, '0');
+                        const m = String(date.getMonth() + 1).padStart(2, '0');
+                        const y = date.getFullYear();
+                        return `${d}.${m}.${y}`;
+                    },
+                    parse(str) {
+                        const [d, m, y] = str.split('.').map(Number);
+                        return new Date(y, m - 1, d);
+                    }
+                });
+            });
+
+            document.querySelectorAll('.return-checkbox').forEach((checkbox) => {
+                checkbox.addEventListener('change', function() {
+                    if (this.checked) {
+                        // Снимаем галочку со всех остальных
+                        document.querySelectorAll('.return-checkbox').forEach((cb) => {
+                            if (cb !== this) cb.checked = false;
+                        });
+                    } else {
+                        // Если пользователь пытается снять галочку с последнего, вернуть её обратно
+                        if (!document.querySelector('.return-checkbox:checked')) {
+                            this.checked = true;
+                        }
+                    }
+                });
+            });
+
+
+            // -----------------------------------
+            // Универсальная функция для ошибок
+            // -----------------------------------
+            const openErrorModal = (message) => {
+                const errorModal = document.getElementById('errorModal');
+                const errorText = document.getElementById('errorText');
+                if (errorModal && errorText) {
+                    errorText.textContent = message;
+                    errorModal.showModal();
+                }
+            };
+
+            // -----------------------------------
+            // 1) Привязка менеджера к юрлицу
+            // -----------------------------------
+            const legalSelects = document.querySelectorAll('select[data-legal-id]');
+            const legalModal = document.getElementById('confirm_manager_modal');
+            const legalModalCompany = document.getElementById('modal_company');
+            const legalModalDescription = document.getElementById('modal_description');
+            const legalModalManager = document.getElementById('modal_manager');
+            const legalModalRole = document.getElementById('modal_role');
+
+            let legalSelectedData = {};
+
+            legalSelects.forEach(select => {
+                select.addEventListener('change', function () {
+                    const legalId = this.dataset.legalId;
+                    const value = this.value;
+
+                    if (!value) return;
+
+                    // Разделяем manager_id и role
+                    const [managerId, role] = value.split('|');
+                    const managerName = this.options[this.selectedIndex].text;
+
+                    const row = this.closest('tr');
+                    const company = row.querySelector('td:nth-child(2)').textContent.trim();
+                    const description = row.querySelector('td:nth-child(3)').textContent.trim();
+
+                    // сохраняем обе части
+                    legalSelectedData = { legalId, managerId, role };
+
+                    // Заполняем модалку
+                    legalModalCompany.textContent = company;
+                    legalModalDescription.textContent = description;
+                    legalModalManager.textContent = managerName.replace(/\(.*?\)/, '').trim();
+                    legalModalRole.textContent = role === 'manager' ? 'Менеджер' : 'Клиент';
+
+                    legalModal.showModal();
+                });
+            });
+
+            // Кнопки
+            document.getElementById('modal_cancel').addEventListener('click', function () {
+                legalModal.close();
+            });
+
+            document.getElementById('modal_confirm').addEventListener('click', async function () {
+                const { legalId, managerId, role } = legalSelectedData;
+
+                const postData = {
+                    legal_id: legalId,
+                    role_id: managerId,
+                    role: role
+                };
+
+                console.log(postData);
+
+                legalModal.close();
+
+                const result = await postDataRes('/supplier/linkUserLegal', postData);
+
+                if (result === 'error' || !result.success) {
+                    openErrorModal('Ошибка привязки менеджера!');
+                } else {
+                    location.reload();
+                }
+            });
+
+            // -----------------------------------
+            // 2) Распределение суммы по компании
+            // -----------------------------------
+
+            const distributeButtons = document.querySelectorAll('button[data-distribute-id]');
+            const distributeModal = document.getElementById('distribute_modal');
+            const distributeModalAmount = document.getElementById('distribute_modal_amount');
+            const distributeModalManager = document.getElementById('distribute_modal_manager');
+            const distributeModalComment = document.getElementById('distribute_modal_comment');
+
+            let distributeSelectedCompanyId = null;
+
+            distributeButtons.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    // ID компании и данные
+                    distributeSelectedCompanyId = this.dataset.distributeId;
+                    const companyName = this.dataset.company || '';
+                    const balance = parseFloat(this.dataset.balance) || 0;
+
+                    // находим именно нужную модалку
+                    const modal = document.getElementById('distribute_modal');
+                    if (!modal) return console.error('❌ Модалка не найдена');
+
+                    // Находим элементы внутри модалки
+                    const dateInput = modal.querySelector('.datepicker_to');
+                    const amountInput = modal.querySelector('#distribute_modal_amount');
+                    const commentInput = modal.querySelector('#distribute_modal_comment');
+                    const managerSelect = modal.querySelector('#distribute_modal_manager');
+                    const modalCompany = modal.querySelector('#distribute_modal_company');
+                    const modalBalance = modal.querySelector('#distribute_modal_balance');
+
+                    // Заполняем данные компании
+                    modalCompany.textContent = companyName;
+                    modalBalance.textContent = balance.toLocaleString('ru-RU') + ' ₽';
+
+                    // Сбрасываем все поля
+                    amountInput.value = '';
+                    commentInput.value = '';
+                    managerSelect.selectedIndex = 0;
+                    dateInput.value = '';
+
+                    modal.showModal();
+                });
+            });
+
+            document.getElementById('distribute_cancel').addEventListener('click', function() {
+                distributeModal.close();
+            });
+
+            document.getElementById('distribute_confirm').addEventListener('click', async function() {
+                const managerId = distributeModalManager.value;
+                const amount = parseFloat(distributeModalAmount.value);
+                const comment = distributeModalComment.value;
+                const modal = document.getElementById('distribute_modal');
+                const dateInput = modal.querySelector('.datepicker_to');
+
+                if (!managerId) {
+                    openErrorModal('Выберите менеджера!');
+                    return;
+                }
+                if (!amount) {
+                    openErrorModal('Укажите сумму!');
+                    return;
+                }
+
+                if (!comment) {
+                    openErrorModal('Укажите комментарий!');
+                    return;
+                }
+
+                if (!dateInput.value) {
+                    openErrorModal('Выберите дату!');
+                    return;
+                }
+
+                const postData = {
+                    legal_id: distributeSelectedCompanyId,
+                    manager_id: managerId,
+                    amount: amount,
+                    comment: comment,
+                    date: dateInput.value,
+                };
+
+                distributeModal.close();
+
+                const result = await postDataRes('/supplier/distributeAmount', postData);
+                if (result === 'error' || !result.success) {
+                    openErrorModal('Ошибка распределения суммы!');
+                } else {
+                    location.reload();
+                }
+            });
+
+            // -----------------------------------
+            // Основная логика модального окна movedCash
+            // -----------------------------------
+            const movedCashModal = document.getElementById('movedCash_modal');
+            const movedCashManager = document.getElementById('movedCashManager');
+            const managerNameEl = document.getElementById('movedCash_managerName');
+            const amountEl = document.getElementById('movedCash_amount');
+            const commentEl = document.getElementById('movedCash_comment');
+            const confirmBtn = document.getElementById('movedCash_confirm');
+            const cancelBtn = document.getElementById('movedCash_cancel');
+            const openBtn = document.getElementById('openMovedCashModal');
+            const dateInput = movedCashModal.querySelector('.datepicker_to'); // дата по классу
+
+            let selectedManagerId = null;
+
+            openBtn.addEventListener('click', () => {
+                const selectedOption = movedCashManager.options[movedCashManager.selectedIndex];
+
+                if (!selectedOption.value) {
+                    openErrorModal('Выберите менеджера!');
+                    return;
+                }
+
+                selectedManagerId = selectedOption.value;
+                managerNameEl.textContent = selectedOption.text;
+
+                // Сбрасываем все поля при открытии
+                amountEl.value = '';
+                commentEl.value = '';
+                if (dateInput) dateInput.value = '';
+
+                movedCashModal.showModal();
+            });
+
+            cancelBtn.addEventListener('click', () => {
+                movedCashModal.close();
+                amountEl.value = '';
+                commentEl.value = '';
+                if (dateInput) dateInput.value = '';
+            });
+
+            confirmBtn.addEventListener('click', async () => {
+                const amount = parseFloat(amountEl.value);
+                const comment = commentEl.value.trim();
+                const date = dateInput ? dateInput.value : null; // получаем дату
+
+                if (!amount) {
+                    openErrorModal('Укажите сумму!');
+                    return;
+                }
+                if (!comment) {
+                    openErrorModal('Укажите комментарий!');
+                    return;
+                }
+                if (!date) {
+                    openErrorModal('Выберите дату!');
+                    return;
+                }
+
+                const postData = {
+                    manager_id: selectedManagerId,
+                    amount: amount,
+                    comment: comment,
+                    date: date // добавляем дату точно так же, как в distribute_modal
+                };
+
+                // Сбрасываем поля и закрываем модалку
+                amountEl.value = '';
+                commentEl.value = '';
+                if (dateInput) dateInput.value = '';
+                movedCashModal.close();
+
+                const result = await postDataRes('/supplier/movedCash', postData);
+                if (result === 'error' || !result.success) {
+                    openErrorModal('Ошибка при переносе кэша!');
+                } else {
+                    location.reload();
+                }
+            });
+
+
+            // -----------------------------------
+            // 3) Оформить возврат
+            // -----------------------------------
+
+            const returnModal = document.getElementById('return_modal');
+            const returnCompany = document.getElementById('return_modal_company');
+            const returnBalance = document.getElementById('return_modal_balance');
+            const returnAmount = document.getElementById('return_modal_amount');
+            const returnManager = document.getElementById('return_modal_manager');
+            const returnComment = document.getElementById('return_modal_comment');
+
+            let returnSelectedCompanyId = null;
+
+            // Клик по кнопке "Создать возврат"
+            const returnButtons = document.querySelectorAll('button[data-return-id]');
+            returnButtons.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    returnSelectedCompanyId = this.dataset.returnId;
+
+                    // Берем данные напрямую из data- атрибутов кнопки
+                    const companyName = this.dataset.company || '';
+                    const balance = parseFloat(this.dataset.balance) || 0;
+                    const dateInput = returnModal.querySelector('.datepicker_to');
+
+                    returnCompany.textContent = companyName;
+                    returnBalance.textContent = balance.toLocaleString('ru-RU') + ' ₽';
+
+                    // Сброс значений формы
+                    returnAmount.value = '';
+                    returnComment.value = '';
+                    returnManager.selectedIndex = 0;
+                    if (dateInput) dateInput.value = '';
+
+                    returnModal.showModal();
+                });
+            });
+
+            // Закрытие модалки
+            document.getElementById('return_cancel').addEventListener('click', function() {
+                returnModal.close();
+            });
+
+            // Подтверждение возврата
+            document.getElementById('return_confirm').addEventListener('click', async function() {
+                const modal = document.getElementById('return_modal');
+                const managerSelect = modal.querySelector('#return_modal_manager');
+                const amountInput = modal.querySelector('#return_modal_amount');
+                const commentInput = modal.querySelector('#return_modal_comment');
+                const dateInput = modal.querySelector('.datepicker_to');
+                const typeCheckbox = modal.querySelector('.return-checkbox:checked'); // выбранный тип возврата
+
+                const managerId = managerSelect.value;
+                const amount = parseFloat(amountInput.value);
+                const comment = commentInput.value.trim();
+                const returnType = typeCheckbox ? typeCheckbox.value : null; // 'cash' или 'wheel'
+
+                if (!managerId) {
+                    openErrorModal('Выберите менеджера!');
+                    return;
+                }
+                if (!amount) {
+                    openErrorModal('Укажите сумму!');
+                    return;
+                }
+                if (!dateInput.value) {
+                    openErrorModal('Выберите дату!');
+                    return;
+                }
+                if (!returnType) {
+                    openErrorModal('Выберите тип возврата!');
+                    return;
+                }
+
+                console.log(returnType);
+
+                const postData = {
+                    legal_id: returnSelectedCompanyId,
+                    manager_id: managerId,
+                    amount: amount,
+                    comment: comment,
+                    date: dateInput.value,
+                    return_type: returnType // отправляем тип возврата
+                };
+
+                modal.close();
+
+                const result = await postDataRes('/supplier/createReturnManager', postData);
+                if (result === 'error' || !result.success) {
+                    openErrorModal('Ошибка создания возврата!');
+                } else {
+                    location.reload();
+                }
+            });
+
+
+            // -----------------------------------
+            // Универсальный способ сброса с эффектов
+            // -----------------------------------
+
+            const selects = document.querySelectorAll('select');
+
+            selects.forEach(select => {
+                select.selectedIndex = 0;
+                select.value = '';
+            });
+
+        });
+        // -----------------------------------
+        // Универсальная функция для ошибок
+        // -----------------------------------
+        const openErrorModal = (message) => {
+            const errorModal = document.getElementById('errorModal');
+            const errorText = document.getElementById('errorText');
+            if (errorModal && errorText) {
+                errorText.textContent = message;
+                errorModal.showModal();
+            }
+        };
+
+        function reportPanel() {
+            return {
+                selectedManager1: '',
+                selectedManager2: '',
+                selectedManager3: '',
+                selectedManager4: '',
+                selectedManager5: '',
+                selectedManager6: '',
+                selectedManager7: '',
+                selectedManager8: '',
+                submitReport(url, managerId, clientId, role) {
+                    if (!managerId) {
+                        openErrorModal('Выберите менеджера!');
+                        return;
+                    }
+
+                    if (managerId && clientId && role) {
+                        window.location.href = `${url}?role=${managerId}`;
+                        return;
+                    }
+
+                    if (clientId) {
+                        window.location.href = `${url}?client_id=${managerId}`;
+                    }else {
+                        window.location.href = `${url}?manager_id=${managerId}`;
+                    }
+                }
+            }
+        }
+
+    </script>
+
+    <style>
+        /* Центрирование модального окна */
+        #confirm_manager_modal::backdrop {
+            background-color: rgba(0,0,0,0.4);
+        }
+
+        .pika-single {
+            position: fixed !important;
+            top: 60% !important;
+            transform: translateY(-50%) !important;
+            z-index: 10050 !important;
+        }
+
+
+        #confirm_manager_modal {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+    </style>
+
+
+
+{% endblock %}

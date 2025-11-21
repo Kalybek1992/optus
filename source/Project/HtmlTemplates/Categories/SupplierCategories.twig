@@ -1,0 +1,314 @@
+{% extends './Navbar/Navbar.twig' %}
+
+{% block content %}
+
+    {% include './Breadcrumb/Categories.twig' %}
+
+    <div class="flex justify-center mt-10">
+        <div class="w-[700px] space-y-4">
+            <!-- Категории расходов -->
+            <div id="categoryApp" x-data="{ open: true, level: 0, path: [] }" class="relative w-full">
+
+                <!-- Отображение выбранной категории -->
+                <div class="w-full text-left bg-white border border-gray-300 px-5 py-3 rounded-xl shadow-sm text-base font-medium">
+                    <template x-if="path.length === 0">
+                        <span class="text-gray-400">Категорий расхода</span>
+                    </template>
+                    <template x-if="path.length > 0">
+                        <span id="category" x-text="path.join(' > ')"></span>
+                    </template>
+                </div>
+
+                <!-- Выпадающее меню -->
+                <div class="mt-2 w-full z-50 bg-white border border-gray-200 rounded-xl shadow-xl p-4 space-y-3 transition-all duration-300">
+
+                    <!-- Назад -->
+                    <div x-show="level > 0" class="mb-2">
+                        <button @click="level--; path.pop()" class="text-sm text-emerald-600 hover:underline flex items-center gap-1">
+                            ← Назад
+                        </button>
+                    </div>
+
+                    <!-- Категории -->
+                    {% if categories_html is empty %}
+                        <div class="flex justify-center">
+                            <button
+                                    class="py-2 px-4 rounded-md text-white bg-emerald-600 hover:bg-emerald-700 transition shadow-sm"
+                                    onclick="addCategoriesAtLevel({0:0})">
+                                Добавить категорию
+                            </button>
+                        </div>
+                    {% else %}
+                        {{ categories_html|raw }}
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно добавления категории -->
+    <input type="checkbox" id="add_categories" class="modal-toggle"/>
+    <div class="modal" role="dialog">
+        <div class="modal-box rounded-lg p-6"> <!-- убрали рамку у модалки -->
+            <h1 id="changePasswordTitle" class="text-lg font-bold mb-4">Новая категория</h1>
+            <div id="category_parent" class="text-blue-500 font-bold pl-[10px] py-2"></div>
+            <label class="flex items-center gap-2 p-2">
+                <input type="text" id="new_categories" name="categories"
+                       placeholder="Укажите название категории"
+                       required
+                       class="w-full outline-none rounded-lg border border-blue-500 px-4 py-2 focus:ring-1 focus:ring-blue-500 transition-all duration-200"/>
+            </label>
+            <div class="modal-action mt-4 flex gap-2">
+                <button id="confirm_category"
+                        class="btn bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-lg">
+                    Сохранить
+                </button>
+                <label for="add_categories"
+                       class="btn border border-gray-300 hover:bg-gray-100 px-6 py-2 rounded-lg">
+                    Закрыть
+                </label>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно удаления категории -->
+    <input type="checkbox" id="delete_category" class="modal-toggle"/>
+    <div class="modal" role="dialog">
+        <div class="modal-box rounded-lg p-6 border-0"> <!-- убрали рамку -->
+            <h1 class="text-lg font-bold mb-2">Вы действительно хотите удалить категорию?</h1>
+            <!-- Элемент с данными -->
+            <div class="p-2 border border-blue-500 rounded-[6px]">
+                <span id="modal_category" class="font-bold text-blue-500"></span>
+            </div>
+
+
+            <!-- Информационное сообщение -->
+            <div class="alert alert-info rounded-xl mt-3 text-white">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 shrink-0 stroke-current text-white" fill="none" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M13 16h-1v-4h-1m1-4h.01M12 20a8 8 0 100-16 8 8 0 000 16z" />
+                </svg>
+                <span class="text-white">Если к этой категории привязаны расходы, после её удаления будет невозможно найти эти расходы по данной категории.</span>
+            </div>
+            <div class="modal-action flex gap-2 mt-4">
+                <button id="confirm_delete_category"
+                        class="btn bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-lg">
+                    Подтвердить
+                </button>
+                <label for="delete_category"
+                       class="btn border border-gray-300 hover:bg-gray-100 px-6 py-2 rounded-lg">
+                    Отменить
+                </label>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно ошибки -->
+    <dialog id="errorModal" class="modal">
+        <div class="modal-box rounded-lg">
+            <h3 class="text-lg font-bold">Ошибка!</h3>
+            <p id="errorText" class="py-4">Неправильный формат Почты</p>
+            <div class="modal-action">
+                <form method="dialog">
+                    <button class="btn bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-lg">
+                        Закрыть
+                    </button>
+                </form>
+            </div>
+        </div>
+    </dialog>
+
+    <script src="/assets/js/PostData.js?v=<?= time() ?>"></script>
+
+
+    <script>
+
+        let categoriesParent = 'not_parent';
+        let updateCategoryApp = null;
+
+
+        document.addEventListener('alpine:init', () => {
+            updateCategoryApp = (path) => {
+                const el = document.querySelector('#categoryApp');
+                if (!el) return console.error('categoryApp not found');
+
+                const data = Alpine.$data ? Alpine.$data(el) : Alpine.raw(el);
+                if (!data) return console.error('Alpine data not found');
+
+                data.open = true;
+                data.level = Array.isArray(path) ? path.length : 0;
+                data.path = Array.isArray(path) ? path : [];
+            };
+        });
+
+        window.addEventListener('load', () => {
+            if (sessionStorage.getItem('runUpdateAfterReload') === 'true') {
+                const target = sessionStorage.getItem('updateCategoryAppTarget');
+                const parsed = target ? JSON.parse(target) : null;
+
+                if (typeof updateCategoryApp === 'function') {
+                    updateCategoryApp(parsed);
+                }
+
+                sessionStorage.removeItem('runUpdateAfterReload');
+                sessionStorage.removeItem('updateCategoryAppTarget');
+            }
+        });
+
+        const openErrorModal = (message) => {
+            errorText.innerHTML = message;
+            document.getElementById('errorModal').showModal();
+        }
+
+        function delCategories(text) {
+            let displayText = document.getElementById("category");
+            categoriesParent = text;
+
+            if (displayText) {
+                let categoryTxt = displayText.innerHTML.trim();
+
+                if (!categoryTxt.endsWith(categoriesParent)) {
+                    categoryTxt += " > " + categoriesParent;
+                }
+
+                document.getElementById('modal_category').innerHTML = categoryTxt;
+            } else {
+                document.getElementById('modal_category').innerHTML = categoriesParent;
+            }
+
+            document.getElementById('delete_category').checked = true;
+        }
+
+        function addCategoriesAtLevel(text) {
+
+            let displayText = document.getElementById("category");
+            let pathArray;
+
+            if (typeof text === 'string' && text.startsWith('[')) {
+                pathArray = JSON.parse(text);
+            } else {
+                pathArray = Array.isArray(text) ? text : [text]; // даже если просто строка, обернём в массив
+            }
+
+            categoriesParent = Array.isArray(pathArray) && pathArray.length > 0 ?
+                pathArray[pathArray.length - 1] : 'not_parent';
+
+            if (displayText) {
+
+                let categoryTxt = displayText.innerHTML.trim();
+
+                if (!categoryTxt.endsWith(categoriesParent)) {
+                    categoryTxt += " > " + categoriesParent;
+                }
+
+                document.getElementById("category_parent").innerHTML = categoryTxt;
+            } else {
+                document.getElementById("category_parent").innerHTML = '';
+            }
+
+
+            document.getElementById('add_categories').checked = true;
+        }
+
+        document.getElementById('confirm_category').addEventListener('click', async () => {
+
+            const newCategories = document.getElementById("new_categories").value;
+
+            const input = document.getElementById('category_parent').innerHTML;
+            const decoded = input.replace(/&gt;/g, '>');
+            const parts = decoded.split('>').map(part => part.trim());
+
+
+            if (!newCategories) {
+                document.getElementById('add_categories').checked = false;
+                openErrorModal('Укажите название категории!');
+                return;
+            }
+
+            // --- Проверяем categoriesParent ---
+            if (Array.isArray(categoriesParent)) {
+                categoriesParent = 'not_parent';
+            } else if (
+                typeof categoriesParent === 'object' &&
+                categoriesParent !== null &&
+                Object.keys(categoriesParent).length === 1 &&
+                categoriesParent[0] === 0
+            ) {
+                categoriesParent = 'not_parent';
+            }
+
+            const result = await postData('/categories/addSupplierCategory', {
+                parent_category: categoriesParent,
+                new_category: newCategories,
+            });
+
+            if (result === 'error') {
+                openErrorModal('Ошибка отправка данных!');
+                return;
+            }
+
+            if (result.success) {
+                const isEmpty = parts.length === 0 || parts.every(item => item.trim() === '');
+
+                if (!isEmpty) {
+                    sessionStorage.setItem('runUpdateAfterReload', 'true');
+                    sessionStorage.setItem('updateCategoryAppTarget', JSON.stringify(parts));
+                }
+                location.reload();
+            } else {
+                openErrorModal('Не удалось сохранить категории!');
+            }
+
+            document.getElementById('add_categories').checked = false;
+        });
+
+
+        document.getElementById('confirm_delete_category').addEventListener('click', async () => {
+
+            const input = document.getElementById('modal_category').innerHTML;
+            const decoded = input.replace(/&gt;/g, '>');
+            const parts = decoded.split('>').map(part => part.trim());
+            parts.pop();
+
+            if (parts.length >= 1){
+                parts.pop();
+            }
+
+            const result = await postData('/categories/delSupplierCategory', {
+                category: categoriesParent,
+            });
+
+            if (!result.success) {
+                openErrorModal('Не удалось удалить категории!')
+            } else {
+                sessionStorage.setItem('runUpdateAfterReload', 'true');
+                sessionStorage.setItem('updateCategoryAppTarget', JSON.stringify(parts));
+                location.reload();
+            }
+
+            document.getElementById('delete_category').checked = false;
+        });
+
+        const addCategoryCheckbox = document.getElementById('add_categories');
+        const newCategoryInput = document.getElementById('new_categories');
+        const categoryParent = document.getElementById('category_parent');
+
+        // Сброс инпута и category_parent при закрытии модального окна
+        addCategoryCheckbox.addEventListener('change', () => {
+            if (!addCategoryCheckbox.checked) {
+                newCategoryInput.value = '';
+                categoryParent.innerHTML = '';
+            }
+        });
+
+        // Сброс при перезагрузке страницы
+        window.addEventListener('load', () => {
+            newCategoryInput.value = '';
+            categoryParent.innerHTML = '';
+            addCategoryCheckbox.checked = false;
+        });
+    </script>
+
+
+
+{% endblock %}

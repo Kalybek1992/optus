@@ -1,0 +1,42 @@
+{% extends './Navbar/Navbar.twig' %}
+
+
+{% block content %}
+    <div class="text-center py-24">
+        <h1 class="text-6xl font-bold text-gray-800 mb-4">404</h1>
+        <p class="text-xl text-gray-600 mb-8">
+            Сайт временно заблокирован для сбора отчетов для закрытия дня.
+        </p>
+        <p class="text-gray-500 mb-10">
+            Закрытие дня с {{ time_from }} до {{ time_to }}.
+        </p>
+
+        <div class="flex flex-wrap justify-center gap-3 mb-6">
+            <a href="/" class="btn bg-emerald-600 hover:bg-emerald-700 text-white border-none">
+                На главную
+            </a>
+            <button onclick="location.reload()" class="btn btn-outline">
+                Обновить страницу
+            </button>
+        </div>
+
+        <div class="text-gray-700">
+            Текущее московское время: <span id="moscow-time" class="font-mono"></span>
+        </div>
+    </div>
+
+    <script>
+        function updateMoscowTime() {
+            const now = new Date();
+
+            // Переводим время в московский часовой пояс
+            const moscowTime = now.toLocaleString('ru-RU', { timeZone: 'Europe/Moscow', hour12: false });
+
+            document.getElementById('moscow-time').textContent = moscowTime;
+        }
+
+        // Обновляем сразу и каждую секунду
+        updateMoscowTime();
+        setInterval(updateMoscowTime, 1000);
+    </script>
+{% endblock %}

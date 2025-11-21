@@ -1,0 +1,429 @@
+{% extends './Navbar/Navbar.twig' %}
+
+{% block content %}
+
+    {% include 'BurgerMenu.twig' %}
+    {% include 'UploadModal.twig' %}
+    {% include 'AddCardModal.twig' %}
+    {% include 'CompanyFinances.twig' %}
+    {% include 'Confirmation.twig' %}
+    {% include 'OurAccounts.twig' %}
+    {% include 'TaskPlanner.twig' %}
+    {% include 'TaskPlanner.twig' %}
+    {% include 'ModalAdmin.twig' %}
+
+    
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pikaday/css/pikaday.css">
+    <script src="https://cdn.jsdelivr.net/npm/pikaday/pikaday.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const openErrorModal = (message) => {
+                document.getElementById('errorText').innerHTML = message;
+                document.getElementById('errorModal').showModal();
+            };
+
+            let currentExpense = null;
+            let roleUser = null;
+
+            window.openConfirmModal = (button, role) => {
+                const tr = button.closest('tr');
+                const actionType = button.dataset.action;
+                roleUser = role;
+
+                console.log(roleUser);
+
+                currentExpense = {
+                    id: button.dataset.id,
+                    action_type: actionType,
+                    courier: tr.children[0].textContent.trim(),
+                    comment: tr.children[1].textContent.trim(),
+                    category: tr.children[2].textContent.trim(),
+                    amount: tr.children[3].textContent.trim(),
+                    date: tr.children[4].textContent.trim()
+                };
+
+                const isReturn = actionType === 'debt';
+
+                document.getElementById('modal-title').textContent = isReturn
+                    ? 'Подтвердить возврат долга курьера'
+                    : 'Подтвердить расход курьера';
+
+                document.getElementById('modal-label-category').textContent = isReturn ? 'Клиент' : 'Категория';
+
+                document.getElementById('modal-courier').textContent = currentExpense.courier;
+                document.getElementById('modal-category').textContent = currentExpense.category;
+                document.getElementById('modal-comment').textContent = currentExpense.comment;
+                document.getElementById('modal-amount').textContent = currentExpense.amount;
+                document.getElementById('modal-date').textContent = currentExpense.date;
+
+                document.getElementById('confirm_expense_modal').checked = true;
+            };
+
+            document.getElementById('confirmCourierBtn').addEventListener('click', async () => {
+                if (!currentExpense) return openErrorModal('Ошибка: данные не найдены.');
+
+                const result = await postData('/' +roleUser + '/expenseAdmin', {
+                    finances_id: currentExpense.id,
+                    action_type: currentExpense.action_type,
+                    status: 'confirm'
+                });
+
+                document.getElementById('confirm_expense_modal').checked = false;
+
+                if (!result.success) return openErrorModal('Не удалось подтвердить действие.');
+
+                location.reload();
+            });
+
+            window.cancelCourierExpense = async (button, role) => {
+                roleUser = role;
+
+                const result = await postData('/' +roleUser + '/expenseAdmin', {
+                    finances_id: button.dataset.id,
+                    action_type: button.dataset.action,
+                    status: 'cancel'
+                });
+
+                if (!result.success) return openErrorModal('Ошибка при отмене!');
+
+                location.reload();
+            };
+
+            let legal_id;
+            document.querySelectorAll('label[for="unlink_account"]').forEach(button => {
+                button.addEventListener('click', () => {
+                    const description = button.dataset.description;
+                    const companyName = button.dataset.companyName;
+                    const bankName = button.dataset.bankName;
+                    legal_id = button.dataset.accountId;
+
+                    document.getElementById('companyName').innerText = companyName;
+                    document.getElementById('bankName').innerText = bankName;
+                    document.getElementById('description').innerText = description;
+                });
+            });
+
+            document.getElementById('confirmUnlink').addEventListener('click', async () => {
+                const result = await postData('/entities/unlinkAccount', {
+                    legal_id: legal_id,
+                });
+
+                if (result.success) {
+                    location.reload();
+                } else {
+                    openErrorModal('Не получилось вернуть счет!');
+                }
+            });
+        });
+
+    </script>
+
+
+    <script>
+        const i18n = {
+            previousMonth: 'Предыдущий',
+            nextMonth: 'Следующий',
+            months: ['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'],
+            weekdays: ['Воскресенье','Понедельник','Вторник','Среда','Четверг','Пятница','Суббота'],
+            weekdaysShort: ['Вс','Пн','Вт','Ср','Чт','Пт','Сб']
+        };
+
+        // Создаём Pikaday для поля редактирования
+        const pickerEdit = new Pikaday({
+            field: document.getElementById('datepicker_from_edit'),
+            format: 'DD.MM',
+            firstDay: 1,
+            i18n: i18n,
+            toString(date) {
+                if (!date) return '';
+                const day = String(date.getDate()).padStart(2,'0');
+                const month = String(date.getMonth() + 1).padStart(2,'0');
+                const weekday = i18n.weekdays[date.getDay()];
+                return `${weekday} ${day}.${month}`;
+            },
+            parse(str) {
+                if (!str) return null;
+                const parts = str.split(' ');
+                if (parts.length < 2) return null;
+                const [d, m] = parts[1].split('.');
+                if (!d || !m) return null;
+                const year = new Date().getFullYear();
+                return new Date(year, parseInt(m, 10) - 1, parseInt(d, 10));
+            },
+            firstDay: 1,
+            onDraw: function() {
+                if (!this.el) return;
+                const label = this.el.querySelector('.pika-label');
+                if (label) {
+                    label.textContent = label.textContent.replace(/\d{4}/, '').trim();
+                }
+            }
+        });
+
+        document.addEventListener('DOMContentLoaded', () => {
+
+            // -----------------------------------
+            // Универсальная функция для ошибок
+            // -----------------------------------
+            const openErrorModal = (message) => {
+                const errorModal = document.getElementById('errorModal');
+                const errorText = document.getElementById('errorText');
+                if (errorModal && errorText) {
+                    errorText.textContent = message;
+                    errorModal.showModal();
+                }
+            };
+
+
+            document.querySelectorAll('.delete-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const data = {
+                        id: btn.dataset.id,
+                        plan_name: btn.dataset.planName,
+                        amount: btn.dataset.amount,
+                        repeat_type: btn.dataset.repeatType,
+                        company_name: btn.dataset.companyName,
+                        date: btn.dataset.date,
+                        comment: btn.dataset.comment
+                    };
+                    openConfirmDeleteModal(data);
+                });
+            });
+
+            function openConfirmDeleteModal(data) {
+                // Открываем модальное окно
+                document.getElementById('confirm_modal_delete').checked = true;
+
+                // Заполняем инпуты
+                document.getElementById('modalDateInput').value = data.date;
+                document.getElementById('modalCompanyInput').value = data.company_name;
+                document.getElementById('modalPlanNameInput').value = data.plan_name;
+                document.getElementById('modalAmountInput').value = data.amount + ' ₽';
+                document.getElementById('modalCommentInput').value = data.comment;
+
+                // Устанавливаем чекбоксы
+                document.querySelectorAll('input[name=repeatType]').forEach(el => {
+                    el.checked = (el.value === data.repeat_type);
+                    el.disabled = true; // нельзя переключать
+                });
+
+                // Прошиваем id в кнопку подтверждения
+                const confirmBtn = document.getElementById('confirmSaveDelete');
+                confirmBtn.dataset.taskId = data.id;
+            }
+
+            document.addEventListener('click', async (e) => {
+                const confirmBtn = e.target.closest('#confirmSaveDelete'); // <-- исправлено
+                if (!confirmBtn) return;
+
+                const taskId = confirmBtn.dataset.taskId; // убедитесь, что data-task-id есть на кнопке
+                if (!taskId) return;
+
+                const payload = {task_id: taskId};
+                const result = await postData('/scheduler/deleteTask', payload);
+
+                if (result.status === 'error' || result === 'error') {
+                    document.getElementById('confirm_modal_delete').checked = false;
+                    openErrorModal('Ошибка при удалении!');
+                    return;
+                }
+
+                location.reload();
+            });
+
+            document.querySelectorAll('.paid-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    // Проверяем, не оплачено ли уже
+                    const isPaid = btn.dataset.paidAt === '1';
+
+                    if (isPaid) {
+                        openErrorModal('Ошибка при оплате! Эта запись уже оплачена.');
+                        return; // выходим, не открываем модалку
+                    }
+
+                    const data = {
+                        id: btn.dataset.id,
+                        plan_name: btn.dataset.planName,
+                        amount: parseFloat(btn.dataset.amount),
+                        paid: parseFloat(btn.dataset.paid || 0),
+                        repeat_type: btn.dataset.repeatType,
+                        company_name: btn.dataset.companyName,
+                        date: btn.dataset.date,
+                        comment: btn.dataset.comment
+                    };
+
+                    openConfirmPaidModal(data);
+                });
+            });
+
+
+            function openConfirmPaidModal(data) {
+                document.getElementById('confirm_modal_paid').checked = true;
+
+                const remaining = data.amount - data.paid; // вычисляем остаток к оплате
+
+                document.getElementById('modalDateInputPaid').value = data.date;
+                document.getElementById('modalPlanNameInputPaid').value = data.plan_name;
+                document.getElementById('modalAmountInputPaid').value = remaining + ' ₽'; // показываем остаток
+                document.getElementById('modalPaidInput').value = remaining; // по умолчанию остаток
+                document.getElementById('modalPaidInput').max = remaining; // ограничение
+                document.getElementById('modalCommentInputPaid').value = data.comment;
+
+                // Прошиваем id в кнопку подтверждения
+                const confirmBtn = document.getElementById('confirmSavePaid');
+                confirmBtn.dataset.taskId = data.id;
+            }
+
+            // Ограничение ввода суммы
+            document.getElementById('modalPaidInput').addEventListener('input', function () {
+                const max = parseFloat(this.max);
+                if (parseFloat(this.value) > max) {
+                    this.value = max;
+                }
+            });
+
+            // Подтверждение оплаты
+            document.addEventListener('click', async (e) => {
+                const confirmBtn = e.target.closest('#confirmSavePaid');
+                if (!confirmBtn) return;
+
+                const taskId = confirmBtn.dataset.taskId;
+                const paidAmount = parseFloat(document.getElementById('modalPaidInput').value);
+
+                if (!taskId || !paidAmount) return;
+
+                const payload = {task_id: taskId, amount: paidAmount};
+
+                console.log(payload);
+                const result = await postData('/scheduler/payTask', payload);
+
+                if (result.status === 'error' || result === 'error') {
+                    document.getElementById('confirm_modal_paid').checked = false;
+                    openErrorModal('Ошибка при оплате!');
+                    return;
+                }
+
+                location.reload();
+            });
+
+            document.querySelectorAll('.edit-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const data = {
+                        id: btn.dataset.id,
+                        plan_name: btn.dataset.planName,
+                        amount: btn.dataset.amount,
+                        repeat_type: btn.dataset.repeatType,
+                        company_name: btn.dataset.companyName,
+                        date: btn.dataset.date,
+                        comment: btn.dataset.comment
+                    };
+                    openEditModal(data);
+                });
+            });
+
+            function openEditModal(data) {
+                document.getElementById('confirm_modal_edit').checked = true;
+
+                // Устанавливаем дату
+                const dateInput = document.getElementById('datepicker_from_edit');
+                if (dateInput && data.date) {
+                    // data.date приходит как "12.11 Среда"
+                    const parts = data.date.split(' ');
+                    if (parts.length >= 2) {
+                        const [day, month] = parts[0].split('.');
+                        const now = new Date();
+                        const dateObj = new Date(now.getFullYear(), parseInt(month, 10) - 1, parseInt(day, 10));
+
+                        pickerEdit.setDate(dateObj, true); // ✅ Устанавливаем в сам Pikaday
+                    }
+                }
+
+                // Остальные поля
+                document.getElementById('modalPlanNameInputEdit').value = data.plan_name;
+                document.getElementById('modalAmountInputEdit').value = data.amount;
+                document.getElementById('modalCommentInputEdit').value = data.comment;
+
+                // Чекбоксы
+                document.querySelectorAll('input[name=repeatTypeEdit]').forEach(el => {
+                    el.checked = (el.value === data.repeat_type);
+                });
+
+                // Старая компания
+                const oldCompanyInput = document.getElementById('modalOldCompanyEdit');
+                if (oldCompanyInput) {
+                    oldCompanyInput.value = data.company_name || '';
+                }
+
+                // id задачи
+                const confirmBtn = document.getElementById('confirmSaveEdit');
+                confirmBtn.dataset.taskId = data.id;
+            }
+
+            // Дальше можно повесить обработчик сохранения
+            document.addEventListener('click', async (e) => {
+                const confirmBtn = e.target.closest('#confirmSaveEdit');
+                if (!confirmBtn) return;
+
+                const taskId = confirmBtn.dataset.taskId;
+                if (!taskId) return;
+
+                // Берём дату из поля
+                let date = document.getElementById('datepicker_from_edit').value.trim();
+                const plan_name = document.getElementById('modalPlanNameInputEdit').value.trim();
+                const amount = parseFloat(document.getElementById('modalAmountInputEdit').value);
+                const comment = document.getElementById('modalCommentInputEdit').value.trim();
+                const companyId = document.getElementById('company_id').value.trim();
+                const checkedRepeat = document.querySelector('input[name="repeatTypeEdit"]:checked');
+                const repeatType = checkedRepeat ? checkedRepeat.value : 'none';
+
+                // --- Извлечение дня недели ---
+                const weekdayMatch = date.match(/^[а-яА-ЯёЁ]+/);
+                const weekdayName = weekdayMatch ? weekdayMatch[0].toLowerCase() : null;
+
+                const weekdays = {
+                    'понедельник': 1,
+                    'вторник': 2,
+                    'среда': 3,
+                    'четверг': 4,
+                    'пятница': 5,
+                    'суббота': 6,
+                    'воскресенье': 7
+                };
+
+                const weekdayNumber = weekdayName ? weekdays[weekdayName] || null : null;
+
+                // Убираем день недели из даты ("Понедельник 11.11" → "11.11")
+                date = date.replace(/^[а-яА-ЯёЁ]+[,\s]+/i, '');
+
+                // Собираем данные
+                const payload = {
+                    task_id: taskId,
+                    date,
+                    weekday: weekdayNumber,
+                    plan_name,
+                    amount,
+                    comment,
+                    legal_id: companyId || '',
+                    repeat_type: repeatType
+                };
+
+                console.log(payload);
+
+                const result = await postData('/scheduler/editTask', payload);
+
+                console.log(result);
+
+
+
+                if (result.status === 'error' || result === 'error') {
+                    document.getElementById('confirm_modal_paid').checked = false;
+                    openErrorModal('Ошибка редактирование!');
+                    return;
+                }
+
+                location.reload();
+            });
+        });
+    </script>
+
+{% endblock %}

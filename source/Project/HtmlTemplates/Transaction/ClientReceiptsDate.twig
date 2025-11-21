@@ -1,0 +1,398 @@
+{% extends './Navbar/Navbar.twig' %}
+
+{% block content %}
+
+    {% include './Breadcrumb/ClientReceiptsDate.twig' %}
+
+    <div class="max-w-8xl mx-auto bg-white rounded-2xl shadow-lg p-6 space-y-4 relative mt-4">
+
+        <div class="space-y-4 pl-4 mb-8">
+            <!-- Имя -->
+            <div class="flex items-center justify-between">
+                <div class="text-base font-semibold text-gray-800">Клиент: {{ client.username }}</div>
+            </div>
+
+            <!-- Фактический долг -->
+            <div class="flex items-center gap-2 text-gray-700">
+                <span class="text-sm font-semibold text-gray-800">Фактический долг:</span>
+                <p class="text-sm font-semibold text-gray-600">{{ client.debit_amount ?? 0 }}</p>
+            </div>
+
+            <!-- Процент -->
+            <div class="flex items-center gap-2 text-gray-700">
+                <span class="text-sm font-semibold text-gray-800">Процент:</span>
+                <p class="text-sm font-semibold text-gray-600">{{ client.percentage ?? 0 }}%</p>
+            </div>
+        </div>
+
+        <!-- Таблица расходов -->
+        {% if transactions is empty %}
+            <div role="alert" class="alert alert-warning mt-4">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 shrink-0 stroke-current" fill="none"
+                     viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                </svg>
+                <span>Ничего не найдено</span>
+            </div>
+        {% else %}
+
+            <!-- Заголовок темы таблицы -->
+            <div class="text-center text-sm font-semibold text-gray-700">
+                Все поступления от клиента с {{ date_from }} по {{ date_to ?? '--.--.----' }}
+                <div class="mx-auto w-1/2 border-t border-gray-300 mt-7 mb-7"></div>
+            </div>
+
+            <!-- Таблица -->
+            <div class="overflow-x-auto w-full border border-gray-200 rounded-lg shadow-sm">
+                <table class="table w-full text-sm text-left divide-x divide-gray-200">
+                    <thead class="bg-gray-100 text-xs text-gray-500 uppercase">
+                    <tr class="divide-x divide-gray-200">
+                        <th class="px-3 py-2 w-28">Дата</th>
+                        <th class="px-3 py-2">Плательщик названия</th>
+                        <th class="px-3 py-2">Плательщик банк</th>
+                        <th class="px-3 py-2">Получатель название</th>
+                        <th class="px-3 py-2">Получатель банк</th>
+                        <th class="px-3 py-2">Комиссия</th>
+                        <th class="px-3 py-2">Сумма</th>
+                        <th class="px-3 py-2">Комиссия деньгах</th>
+                        <th class="px-3 py-2">Долг клиенту</th>
+                        <th class="px-3 py-2">Выдача</th>
+                        <th class="px-3 py-2">Кто выдал</th>
+                        <th class="px-3 py-2">Дата выдачи</th>
+                        <th class="px-3 py-2">Комментарии</th>
+                    </tr>
+                    </thead>
+                    <tbody class="text-sm divide-y divide-gray-100">
+                    {% for transaction in transactions %}
+                        <tr class="hover:bg-gray-50 divide-x divide-gray-200">
+                            <td class="px-3 py-2">{{ transaction.date }}</td>
+                            <td class="px-3 py-2 text-xs text-gray-700">{{ transaction.sender_company_name }}</td>
+                            <td class="px-3 py-2 text-xs text-gray-700">{{ transaction.sender_bank_name }}</td>
+                            <td class="px-3 py-2 text-xs text-gray-700">{{ transaction.recipient_company_name }}</td>
+                            <td class="px-3 py-2 text-xs text-gray-700">{{ transaction.recipient_bank_name }}</td>
+
+                            <td class="px-3 py-2">
+                                {% if transaction.percent == 0 %}
+                                    {{ transaction.percent }}%
+                                {% elseif transaction.who_issued_it %}
+                                    {# если уже выдано — редактирование запрещено #}
+                                    <span class="text-gray-500">{{ transaction.percent }}%</span>
+                                {% else %}
+                                    {# если не выдано — можно кликать для редактирования #}
+                                    <span
+                                            data-transaction-id="{{ transaction.transaction_id }}"
+                                            data-legal-id="{{ transaction.legal_id }}"
+                                            data-transaction-date="{{ transaction.date }}"
+                                            data-transaction-percent="{{ transaction.percent }}"
+                                            data-transaction-amount="{{ transaction.transaction_amount }}"
+                                            data-transaction-interest_income="{{ transaction.interest_income }}"
+                                            data-transaction-total_amount="{{ transaction.debit_amount }}"
+                                            class="change-percentage cursor-pointer font-semibold text-blue-600 hover:underline font-medium"
+                                    >
+                                        {{ transaction.percent }}%
+                                    </span>
+                                {% endif %}
+                            </td>
+
+                            <td class="px-3 py-2 bg-yellow-100">{{ transaction.transaction_amount }}</td>
+                            <td class="px-3 py-2 bg-purple-100">{{ transaction.interest_income }}</td>
+                            <td class="px-3 py-2 bg-green-100">{{ transaction.debit_amount }}</td>
+                            <td class="px-3 py-2 bg-blue-100">{{ transaction.issuance }}</td>
+                            <td class="px-3 py-2">{{ transaction.who_issued_it }}</td>
+                            <td class="px-3 py-2">{{ transaction.date_of_issue }}</td>
+                            <td class="px-3 py-2">{{ transaction.comments }}</td>
+                        </tr>
+                    {% endfor %}
+
+                    <tr class="hover:bg-gray-50 divide-x divide-gray-200">
+                        <td class="px-3 py-2">Сумма</td>
+                        <td class="px-3 py-2"></td>
+                        <td class="px-3 py-2"></td>
+                        <td class="px-3 py-2"></td>
+                        <td class="px-3 py-2"></td>
+                        <td class="px-3 py-2"></td>
+                        <td class="px-3 py-2 bg-yellow-100">{{ transactions_sum.sum_amount }}</td>
+                        <td class="px-3 py-2 bg-purple-100">{{ transactions_sum.sum_interest_income }}</td>
+                        <td class="px-3 py-2 bg-green-100">{{ transactions_sum.debts_amount }}</td>
+                        <td class="px-3 py-2 bg-blue-100"></td>
+                        <td class="px-3 py-2"></td>
+                        <td class="px-3 py-2"></td>
+                        <td class="px-3 py-2"></td>
+                    </tr>
+                    </tbody>
+                    <tfoot class="bg-gray-100 text-xs text-gray-500 uppercase">
+                    <tr class="divide-x divide-gray-200">
+                        <th class="px-3 py-2 w-28">Дата</th>
+                        <th class="px-3 py-2">Плательщик названия</th>
+                        <th class="px-3 py-2">Плательщик банк</th>
+                        <th class="px-3 py-2">Получатель название</th>
+                        <th class="px-3 py-2">Получатель банк</th>
+                        <th class="px-3 py-2">Комиссия</th>
+                        <th class="px-3 py-2">Сумма</th>
+                        <th class="px-3 py-2">Комиссия деньгах</th>
+                        <th class="px-3 py-2">Долг клиенту</th>
+                        <th class="px-3 py-2">Выдача</th>
+                        <th class="px-3 py-2">Кто выдал</th>
+                        <th class="px-3 py-2">Дата выдачи</th>
+                        <th class="px-3 py-2">Комментарии</th>
+                    </tr>
+                    </tfoot>
+                </table>
+            </div>
+        {% endif %}
+    </div>
+
+
+    <dialog id="percentModal" class="modal">
+        <div class="modal-box">
+            <form id="upload_form" class="flex flex-col">
+                <h3 id="modal-title" class="text-lg font-semibold text-center mb-4">Установить новый процент</h3>
+
+                <label id="percentage-label"
+                       class="input w-full mb-4 flex items-center gap-2 border rounded-md p-3">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                         stroke="currentColor" class="size-6">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                              d="m8.99 14.993 6-6m6 3.001c0 1.268-.63 2.39-1.593 3.069a3.746 3.746 0 0 1-1.043 3.296 3.745 3.745 0 0 1-3.296 1.043 3.745 3.745 0 0 1-3.068 1.593c-1.268 0-2.39-.63-3.068-1.593a3.745 3.745 0 0 1-3.296-1.043 3.746 3.746 0 0 1-1.043-3.297 3.746 3.746 0 0 1-1.593-3.068c0-1.268.63-2.39 1.593-3.068a3.746 3.746 0 0 1 1.043-3.297 3.745 3.745 0 0 1 3.296-1.042 3.745 3.745 0 0 1 3.068-1.594c1.268 0 2.39.63 3.068 1.593a3.745 3.745 0 0 1 3.296 1.043 3.746 3.746 0 0 1 1.043 3.297 3.746 3.746 0 0 1 1.593 3.068ZM9.74 9.743h.008v.007H9.74v-.007Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm4.125 4.5h.008v.008h-.008v-.008Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z"/>
+                    </svg>
+                    <input id="new_percentage" name="percentage"
+                           placeholder="Например: 10"
+                           required class="w-full outline-none"/>
+                </label>
+
+                <div class="text-sm text-gray-500 mb-2" id="passwordHint">
+                    Введите процент без знака «%». Только число.
+                </div>
+
+                <div id="txtModal" class="text-sm text-gray-700 space-y-3">
+                    <div class="grid grid-cols-2 gap-x-4 gap-y-4">
+
+                        <div class="text-gray-500 font-semibold">Дата транзакции:</div>
+                        <div class="font-serif text-gray-800" id="modal-date">—</div>
+
+                        <div class="text-gray-500 font-semibold">Сумма:</div>
+                        <div class="font-serif text-gray-800" id="modal-balance">—</div>
+
+                        <div class="text-gray-500 font-semibold">Старый процент:</div>
+                        <div class="font-serif text-gray-800" id="modal-percent">—</div>
+
+                        <div class="text-gray-500 font-semibold">Старый доход:</div>
+                        <div class="font-serif text-gray-800" id="modal-income">—</div>
+
+                        <div class="text-gray-500 font-semibold">Старый итоговый сумма:</div>
+                        <div class="font-serif text-gray-800" id="modal-final-amount">—</div>
+                    </div>
+                </div>
+
+                <div class="flex justify-end gap-3 mt-6">
+                    <button type="button" id="confirmChanges" class="btn btn-primary">Сохранить</button>
+                    <button type="button" onclick="closeModal()" class="btn btn-secondary">Отмена</button>
+                </div>
+            </form>
+        </div>
+    </dialog>
+
+    <!-- Триггер через checkbox -->
+    <input type="checkbox" id="notifications" class="hidden peer"/>
+    <div class="fixed bottom-4 right-4 z-50 max-w-sm w-full
+            hidden peer-checked:flex flex-col bg-white border border-gray-300 rounded-xl shadow-xl
+            animate-fade-in transition-opacity duration-300 ease-out
+            px-5 py-4 space-y-2">
+
+        <div class="flex items-start justify-between">
+            <div class="flex items-start space-x-2">
+                <svg class="w-6 h-6 text-blue-500 mt-1 shrink-0" fill="none" stroke="currentColor" stroke-width="1.5"
+                     viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                          d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022 23.85 23.85 0 0 0 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0 3 3 0 1 0 5.714 0ZM3.124 7.5A8.969 8.969 0 0 1 5.292 3m13.416 0a8.969 8.969 0 0 1 2.168 4.5"/>
+                </svg>
+
+                <div>
+                    <h3 class="text-base font-semibold text-gray-900">Уведомление</h3>
+                    <p id="notifications-txt" class="text-sm text-gray-600 leading-snug mt-1">...</p>
+                </div>
+            </div>
+
+            <label for="notifications" class="text-gray-400 hover:text-gray-600 transition cursor-pointer">
+                ✕
+            </label>
+        </div>
+    </div>
+
+
+
+    <div class="flex items-center justify-center py-6">
+        {% include './Pagination/Pagination.twig' %}
+    </div>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pikaday/css/pikaday.css">
+    <script src="https://cdn.jsdelivr.net/npm/pikaday/pikaday.js"></script>
+    <script src="/assets/js/PostData.js?v=<?= time() ?>"></script>
+
+    <!-- Инициализация -->
+    <script>
+
+        const input = document.getElementById('new_percentage');
+        const error = document.getElementById('percentError');
+        const saveBtn = document.getElementById('confirmChanges');
+
+        const isValid = value => {
+            value = String(value).trim();
+            if (value.endsWith('.')) {
+                value += '0';  // чтобы "15." считалось "15.0"
+            }
+            if (!/^\d+(\.\d{0,2})?$/.test(value)) return false;
+
+            const num = Number(value);
+            return num >= 0 && num <= 100;
+        };
+
+
+        const updateUI = () => {
+            const ok = isValid(input.value);
+            saveBtn.disabled = !ok;
+            saveBtn.classList.toggle('opacity-40', !ok);
+            saveBtn.classList.toggle('cursor-not-allowed', !ok);
+        };
+
+        input.addEventListener('input', () => {
+            let val = input.value;
+            val = val.replace(/[^0-9.]/g, '');
+
+            const parts = val.split('.');
+            if (parts.length > 2) {
+                val = parts[0] + '.' + parts.slice(1).join('');
+            }
+
+
+            if (!val.startsWith('0.') && val.length > 1) {
+                val = val.replace(/^0+/, '');
+                if (val === '') val = '0';
+            }
+
+            if (Number(val) > 100) val = '100';
+
+            input.value = val;
+            updateUI();
+        });
+
+        function showCornerModal(message) {
+            const checkbox = document.getElementById('notifications');
+            const txtModal = document.getElementById('notifications-txt');
+            checkbox.checked = true;
+            txtModal.innerHTML = message;
+
+
+            setTimeout(() => {
+                checkbox.checked = false;
+            }, 5000);
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('percentModal');
+            if (modal) modal.close();
+
+            // Очистка процента, если надо
+            const percentageInput = document.getElementById('new_percentage');
+            if (percentageInput) percentageInput.value = '';
+        }
+
+        function openPercentModal(transactionId, legalId, date, balance, percent, income, amount) {
+            const modal = document.getElementById('percentModal');
+            const confirmBtn = document.getElementById('confirmChanges');
+
+            if (modal && confirmBtn) {
+                confirmBtn.dataset.transactionId = transactionId;
+                confirmBtn.dataset.legalId = legalId;
+                modal.showModal();
+            }
+
+            updateUI();
+            document.getElementById('modal-date').textContent = date || '—';
+            document.getElementById('modal-balance').textContent = balance || '—';
+            document.getElementById('modal-percent').textContent = percent || '—';
+            document.getElementById('modal-income').textContent = income || '—';
+            document.getElementById('modal-final-amount').textContent = amount || '—';
+        }
+
+        function closePercentModal() {
+            const modal = document.getElementById('percentModal');
+            if (modal) {
+                modal.close();
+            }
+        }
+
+        document.getElementById('confirmChanges').addEventListener('click', async () => {
+            const input = document.getElementById('new_percentage');
+            const confirmBtn = document.getElementById('confirmChanges');
+            const modal = document.getElementById('percentModal');
+
+            const percentage = input.value.trim();
+            const transactionId = confirmBtn.dataset.transactionId;
+            const legalId = confirmBtn.dataset.legalId;
+
+            if (!percentage || percentage < 0 || percentage > 100) {
+                input.value = '';
+                modal.close();
+                showCornerModal('Ошибка процента укажите правильное число')
+                return;
+            }
+
+
+            const result = await postData('/transaction/changePercentage', {
+                transaction_id: transactionId,
+                legal_id: legalId,
+                percent: percentage,
+            });
+
+            if (result === 'error' || result.status === 'error') {
+                input.value = '';
+                showCornerModal('Не удалось установить процент!')
+                return;
+            }
+
+            localStorage.setItem(
+                'showCornerModal',
+                'Удачно установили новый процентный'
+            );
+
+            input.value = '';
+            location.reload();
+            modal.close();
+        });
+
+        window.addEventListener('load', () => {
+            const message = localStorage.getItem('showCornerModal');
+
+            if (message) {
+                showCornerModal(message);
+                localStorage.removeItem('showCornerModal');
+            }
+        });
+
+
+        document.querySelectorAll('.change-percentage').forEach(element => {
+            element.addEventListener('click', () => {
+                const transactionId = element.getAttribute('data-transaction-id');
+                const legalId = element.getAttribute('data-legal-id');
+
+
+                const date = element.getAttribute('data-transaction-date');
+                const percent = element.getAttribute('data-transaction-percent');
+                const amount = element.getAttribute('data-transaction-amount');
+                const interest_income = element.getAttribute('data-transaction-interest_income');
+                const total_amount = element.getAttribute('data-transaction-total_amount');
+
+
+                openPercentModal(transactionId, legalId, date, amount, percent, interest_income, total_amount)
+            });
+        });
+
+
+    </script>
+
+
+
+
+{% endblock %}

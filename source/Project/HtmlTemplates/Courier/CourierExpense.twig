@@ -1,0 +1,258 @@
+{% extends './Navbar/Navbar.twig' %}
+
+{% block content %}
+
+    <div class="w-full max-w-5xl mx-auto px-4 pb-32 my-8">
+        <h2 class="text-2xl font-bold mb-6 text-center sm:text-left">Создать расход!</h2>
+
+        <ul class="list bg-base-100 rounded-lg shadow-md space-y-4">
+            <li class="relative p-4 bg-base-200 transition rounded-lg border border-gray-300">
+
+                <div class="space-y-4">
+
+                    <!-- Баланс -->
+                    <div x-data="{
+                    total: {{ courier.balance_sum|default(0) }},
+                    entered: '',
+                    get status() {
+                        if (!this.entered || isNaN(this.entered) || Number(this.entered) <= 0) return 'invalid';
+                        if (Number(this.entered) > this.total) return 'exceed';
+                        return 'ok';
+                    }
+                }" class="flex flex-col sm:flex-row sm:items-center gap-3">
+
+                        <!-- Доступный баланс -->
+                        <div class="flex items-center text-sm text-gray-700 font-semibold bg-gray-100 rounded-md px-3 py-2 sm:h-12">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                 stroke-width="1.5" stroke="currentColor" class="w-5 h-5 mr-2 text-gray-500">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                      d="M2.25 18.75a60.07 60.07 0 0 1 15.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 0 1 3 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 0 0-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 0 1-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 0 0 3 15h-.75M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm3 0h.008v.008H18V10.5Zm-12 0h.008v.008H6V10.5Z"/>
+                            </svg>
+                            Сумма: <span id="stock-balances" class="ml-2 font-mono" x-text="total"></span>
+                        </div>
+
+                        <!-- Input -->
+                        <input id="balance" type="text" x-model="entered"
+                               :class="{
+                           'border border-blue-500': status === 'ok',
+                           'border border-red-500': status === 'exceed' || status === 'invalid'
+                       }"
+                               class="h-12 w-full sm:w-32 px-3 rounded-md focus:outline-none"
+                               placeholder="Введите сумму!">
+
+                        <!-- Подсказка -->
+                        <div class="text-sm text-red-500 mt-1" x-text="status === 'exceed' ? 'Сумма превышает доступную!' : (status === 'invalid' ? 'Введите число!' : '')"></div>
+                    </div>
+
+                    <!-- Категории и комментарий -->
+                    <div class="space-y-4">
+
+                        <!-- Категории расходов -->
+                        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between w-full gap-2">
+                            <div x-data="{ open: false, level: 0, path: [] }" class="relative w-full">
+                                <button @click="open = !open"
+                                        class="w-full text-left bg-white border border-gray-300 px-4 py-3 rounded-md shadow-sm hover:shadow-md transition font-medium text-sm sm:text-base">
+                                    <template x-if="path.length === 0">
+                                        <span>Выберите категорию расхода</span>
+                                    </template>
+                                    <template x-if="path.length > 0">
+                                        <span id="category" x-text="path.join(' > ')"></span>
+                                    </template>
+                                </button>
+
+                                <div x-show="open"
+                                     @click.outside="open = false"
+                                     class="absolute mt-2 w-full z-50 bg-white border border-gray-200 rounded-md shadow-lg p-4 space-y-3 transition-all duration-300">
+                                    <div x-show="level > 0" class="mb-2">
+                                        <button @click="level--; path.pop()" class="text-sm text-blue-600 hover:underline">← Назад</button>
+                                    </div>
+
+                                    {{ categories_html|raw }}
+                                </div>
+                            </div>
+
+                            <a href="/categories/pageCategories?return_page=/entities/linkExpenses?legal_id={{ entitie.id }}" class="text-sm font-semibold text-blue-600 hover:underline whitespace-nowrap">
+                                + Создать категорию
+                            </a>
+                        </div>
+
+                        <!-- Комментарий -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Комментарий</label>
+                            <textarea id="comments"
+                                      class="textarea textarea-bordered w-full"
+                                      rows="3" maxlength="256"
+                                      placeholder="Введите комментарий..."></textarea>
+                        </div>
+
+                        <!-- Кнопка Сохранить -->
+                        <div class="text-right">
+                            <label id="save_expense"
+                                   class="btn btn-primary btn-sm w-full sm:w-auto">Сохранить</label>
+                        </div>
+                    </div>
+
+                </div>
+            </li>
+        </ul>
+    </div>
+
+    <input type="checkbox" id="save_expense_modal" class="modal-toggle"/>
+    <div class="modal">
+        <div class="modal-box w-full max-w-md mx-2 sm:mx-auto p-4 sm:p-6 space-y-4 rounded-xl">
+
+            <h1 class="text-lg sm:text-xl font-bold text-gray-800 text-center sm:text-left">
+                Распоряжение товарными деньгами
+            </h1>
+
+            <!-- Назначение -->
+            <div>
+                <div id="modal-purpose" class="text-xs uppercase font-semibold text-gray-500 mb-1 tracking-wide"></div>
+                <div id="modal-appointment" class="bg-gray-100 px-3 py-2 rounded-md text-sm text-gray-800"></div>
+            </div>
+
+            <!-- Сумма -->
+            <div>
+                <div class="text-xs uppercase font-semibold text-gray-500 mb-1 tracking-wide">Сумма</div>
+                <div id="modal-balance" class="bg-green-100 px-3 py-2 rounded-md text-sm text-green-700 font-medium"></div>
+            </div>
+
+            <!-- Остаток -->
+            <div>
+                <div class="text-xs uppercase font-semibold text-gray-500 mb-1 tracking-wide">Остаток</div>
+                <div id="modal-remainder" class="bg-green-100 px-3 py-2 rounded-md text-sm text-green-700 font-medium"></div>
+            </div>
+
+            <!-- Комментарий -->
+            <div>
+                <div class="text-xs uppercase font-semibold text-gray-500 mb-1 tracking-wide">Комментарий</div>
+                <textarea readonly id="modal-comments"
+                          class="w-full textarea textarea-bordered bg-gray-100 text-sm text-gray-800 rounded-md"></textarea>
+            </div>
+
+            <!-- Кнопки -->
+            <div class="modal-action flex flex-col sm:flex-row gap-2 pt-2">
+                <button id="confirmExpense" class="btn btn-primary w-full sm:w-auto">Подтвердить</button>
+                <label for="save_expense_modal" class="btn w-full sm:w-auto">Отменить</label>
+            </div>
+        </div>
+    </div>
+
+    <!-- Ошибка -->
+    <dialog id="errorModal" class="modal">
+        <div class="modal-box w-full max-w-md mx-2 p-4 sm:p-6 rounded-xl">
+            <h3 class="text-lg font-bold">Ошибка!</h3>
+            <p id="errorText" class="py-4"></p>
+            <div class="modal-action w-full">
+                <form method="dialog" class="w-full">
+                    <button class="btn btn-primary w-full sm:w-auto">Закрыть</button>
+                </form>
+            </div>
+        </div>
+    </dialog>
+
+    <!-- Успех -->
+    <dialog id="success_modal" class="modal">
+        <div class="modal-box w-full max-w-md mx-2 p-4 sm:p-6 rounded-xl">
+            <h3 class="text-lg font-bold">Успех!</h3>
+            <p id="successText" class="py-4">Успешно сохранили расход.</p>
+            <div class="modal-action w-full">
+                <form method="dialog" class="w-full">
+                    <a href="/courier/expenseform"
+                       class="btn w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white">
+                        Готово
+                    </a>
+                </form>
+            </div>
+        </div>
+    </dialog>
+
+    <script src="/assets/js/PostData.js?v=<?= time() ?>"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const openErrorModal = (message) => {
+                document.getElementById('errorText').innerHTML = message;
+                document.getElementById('errorModal').showModal();
+            };
+
+
+            const commentsModal = document.getElementById('modal-comments');
+            const modalBalance = document.getElementById('modal-balance');
+            const modalPurpose = document.getElementById('modal-purpose');
+            const modalAppointment = document.getElementById('modal-appointment');
+            const modalRemainder = document.getElementById('modal-remainder');
+            let post = null;
+
+            document.getElementById('save_expense').addEventListener('click', () => {
+                const balanceInput = document.getElementById('balance');
+                const enteredValue = balanceInput ? balanceInput.value.trim() : '';
+                const amount = Number(enteredValue);
+
+                if (!enteredValue || isNaN(amount) || amount <= 0) {
+                    openErrorModal('Укажите корректную сумму!');
+                    return;
+                }
+
+                const categoryElement = document.getElementById('category');
+                const categoryPath = categoryElement ? categoryElement.textContent.trim() : '';
+                if (!categoryPath) {
+                    openErrorModal('Выберите категорию назначения!');
+                    return;
+                }
+
+                const commentsTextarea = document.getElementById('comments');
+                const commentValue = commentsTextarea ? commentsTextarea.value.trim() : '';
+                if (!commentValue) {
+                    openErrorModal('Введите комментарий!');
+                    return;
+                }
+
+                const stockBalances = document.getElementById('stock-balances');
+                const summ = Number(stockBalances.innerHTML) || 0;
+
+                post = {
+                    category_path: categoryPath,
+                    amount: amount,
+                    comments: commentValue,
+                };
+
+                modalPurpose.textContent = 'Расход';
+                modalAppointment.textContent = categoryPath;
+                modalBalance.textContent = amount;
+                commentsModal.textContent = commentValue;
+                modalRemainder.textContent = summ - amount;
+
+                document.getElementById('save_expense_modal').checked = true;
+            });
+
+            document.getElementById('confirmExpense').addEventListener('click', async () => {
+                if (!post) {
+                    openErrorModal('Ошибка сбора данных!');
+                    return;
+                }
+
+                const result = await postData('/courier/storeExpense', post);
+
+                document.getElementById('save_expense_modal').checked = false;
+
+                if (result === 'error') {
+                    openErrorModal('Ошибка при отправке данных!');
+                    return;
+                }
+
+                if (result.success) {
+                    document.getElementById('success_modal').showModal();
+                } else {
+                    openErrorModal('Не удалось сохранить расход!');
+                }
+            });
+
+            document.getElementById('save_expense_modal').checked = false;
+        });
+    </script>
+
+
+
+
+{% endblock %}

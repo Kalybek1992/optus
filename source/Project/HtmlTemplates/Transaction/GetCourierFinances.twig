@@ -1,0 +1,399 @@
+{% extends './Navbar/Navbar.twig' %}
+
+{% block content %}
+
+    {% include './Breadcrumb/GetCourierFinances.twig' %}
+
+    <div class="max-w-8xl mx-auto bg-white rounded-2xl shadow-lg p-6 space-y-4 relative mt-4">
+        <div class="flex flex-col p-4 bg-white rounded-xl shadow-sm border border-gray-200">
+
+            <!-- Имя и действия -->
+            <div class="flex items-center justify-between">
+                <div class="text-xl font-semibold text-gray-800">{{ courier.name }}</div>
+            </div>
+
+            <!-- Общий баланс или Долг -->
+            <div class="flex items-center space-x-[10px]">
+                <div class="font-semibold text-gray-500">
+                    {% if courier.balance_sum >= 0 %}
+                        Общий баланс:
+                    {% else %}
+                        Долг:
+                    {% endif %}
+                </div>
+                <div class="font-semibold text-gray-600 text-base">
+                    {{ courier.balance_sum }}
+                </div>
+            </div>
+
+            <!-- Непринятый баланс -->
+            <div class="flex items-center space-x-[10px]">
+                <div class="font-semibold text-gray-500">
+                    Непринятый баланс:
+                </div>
+                <div class="font-semibold text-gray-600 text-base">
+                    {{ courier.balance_unaccepted }}
+                </div>
+            </div>
+
+            <!-- Категории дата искать  -->
+            <div class="w-full max-w-8xl mx-auto space-y-4">
+                <div class="flex flex-col md:flex-row md:items-center gap-4 p-4 bg-white rounded-xl shadow-sm">
+                    <!-- Категория расхода -->
+                    <div x-data="{ open: false, level: 0, path: [] }" class="relative w-full md:w-[28rem]">
+                        <button @click="open = !open"
+                                class="w-full h-[56px] text-left bg-white border border-gray-300 px-5 py-3 rounded-xl shadow-sm hover:shadow-md transition text-base font-medium flex items-center">
+                            <template x-if="path.length === 0">
+                                <span>Выберите категорию расхода</span>
+                            </template>
+                            <template x-if="path.length > 0">
+                                <span id="category" x-text="path.join(' > ')"></span>
+                            </template>
+                        </button>
+                        <!-- Выпадающее меню -->
+                        <div x-show="open"
+                             @click.outside="open = false"
+                             class="absolute mt-2 w-full z-50 bg-white border border-gray-200 rounded-xl shadow-xl p-4 space-y-3 transition-all duration-300"
+                             x-transition>
+                            <div x-show="level > 0" class="mb-2">
+                                <button @click="level--; path.pop()" class="text-sm text-blue-600 hover:underline">← Назад
+                                </button>
+                            </div>
+                            {{ categories_html|raw }}
+                        </div>
+                    </div>
+                    <!-- Дата "от" -->
+                    <div class="flex items-center w-full md:w-auto gap-2">
+                        <span class="text-sm font-medium text-gray-600">ОТ-</span>
+                        <input type="text"
+                               id="datepicker_from"
+                               placeholder="Дата начала"
+                               autocomplete="off"
+                               class="w-full md:w-[12rem] h-[56px] p-4 bg-white rounded-xl shadow-sm text-base font-semibold text-gray-700 uppercase border border-gray-200"/>
+                    </div>
+                    <!-- Дата "до" -->
+                    <div class="flex items-center w-full md:w-auto gap-2">
+                        <span class="text-sm font-medium text-gray-600">ДО-</span>
+                        <input type="text"
+                               id="datepicker_to"
+                               placeholder="Дата окончания"
+                               autocomplete="off"
+                               class="w-full md:w-[12rem] h-[56px] p-4 bg-white rounded-xl shadow-sm text-base font-semibold text-gray-700 uppercase border border-gray-200"/>
+                    </div>
+                    <!-- Кнопка "Искать" -->
+                    <div class="w-full md:w-auto">
+                        <button id="searchFilters" type="submit"
+                                class="w-full md:w-auto h-[56px] px-6 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-xl shadow-sm transition">
+                            Поиск с фильтрам
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- Таблица расходов -->
+        {% if get_courier_finances is empty %}
+            <div role="alert" class="alert alert-warning mt-4">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 shrink-0 stroke-current" fill="none"
+                     viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                </svg>
+                <span>Ничего не найдено</span>
+            </div>
+        {% else %}
+            <!-- Таблица -->
+            <div class="overflow-x-auto w-full border border-gray-200 rounded-lg shadow-sm">
+                <table class="table w-full text-sm text-left divide-x divide-gray-200">
+                    <thead class="bg-gray-100 text-xs text-gray-500 uppercase">
+                    <tr class="divide-x divide-gray-200">
+                        <th class="px-3 py-2 w-28">Дата</th>
+                        <th class="px-3 py-2">День</th>
+                        <th class="px-3 py-2 w-20">Сумма</th>
+                        <th class="px-3 py-2">Проект</th>
+                        <th class="px-3 py-2">Категории</th>
+                        <th class="px-3 py-2">Комментарии</th>
+                        <th class="px-3 py-2">Возврат</th>
+                        <th class="px-3 py-2">Статус</th>
+                    </tr>
+                    </thead>
+                    <tbody class="text-sm divide-y divide-gray-100">
+                    {% for finances in get_courier_finances %}
+                        <tr class="hover:bg-gray-50 divide-x divide-gray-200">
+                            <td class="px-3 py-2">{{ finances.date }}</td>
+                            <td class="px-3 py-2">{{ finances.dey }}</td>
+                            <td class="px-3 py-2">{{ finances.amount }}</td>
+                            <td class="px-3 py-2">{{ finances.category }}</td>
+                            <td class="px-3 py-2">{{ finances.category }}</td>
+                            <td class="px-3 py-2">{{ finances.comments }}</td>
+                            <td class="px-3 py-2 text-center">
+                                {% if finances.return_account == 1 %}
+                                    <label for="unlink_account"
+                                           class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium px-3 py-1 rounded-lg transition cursor-pointer"
+                                           data-order-id="{{ finances.bank_order_id }}"
+                                           data-company-name="{{ finances.company_name }}"
+                                           data-description="{{ finances.description }}"
+                                           data-bank-name="{{ finances.bank_name }}">
+                                        Возврат
+                                    </label>
+                                {% else %}
+                                    —
+                                {% endif %}
+                            </td>
+                            <td class="px-3 py-2">
+                                {% if finances.status == 'confirm_courier' %}
+                                    Не принят
+                                {% elseif finances.status == 'pending' %}
+                                    Не обработан
+                                {% elseif finances.status == 'processed' %}
+                                    Принят
+                                {% else %}
+                                    Неизвестно
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                    <tfoot class="bg-gray-100 text-xs text-gray-500 uppercase">
+                    <tr class="divide-x divide-gray-200">
+                        <th class="px-3 py-2 w-28">Дата</th>
+                        <th class="px-3 py-2">День</th>
+                        <th class="px-3 py-2 w-20">Сумма</th>
+                        <th class="px-3 py-2">Проект</th>
+                        <th class="px-3 py-2">Категории</th>
+                        <th class="px-3 py-2">Комментарии</th>
+                        <th class="px-3 py-2">Возврат</th>
+                        <th class="px-3 py-2">Статус</th>
+                    </tr>
+                    </tfoot>
+                </table>
+            </div>
+        {% endif %}
+    </div>
+
+    <input type="checkbox" id="cornerModal" class="hidden peer" />
+    <div class="fixed bottom-4 right-4 bg-white border shadow-lg rounded-lg p-4 w-80 z-50 hidden peer-checked:flex peer-checked:flex-col">
+        <div class="flex items-start justify-between">
+            <div>
+                <h3 class="text-lg font-semibold">Уведомление</h3>
+                <p id="txtModal" class="text-sm text-gray-600">Пользователь успешно добавлен.</p>
+            </div>
+            <label for="cornerModal" class="ml-4 text-gray-400 hover:text-gray-600 cursor-pointer">✕</label>
+        </div>
+    </div>
+
+
+    <div class="flex items-center justify-center py-6">
+        {% include './Pagination/Pagination.twig' %}
+    </div>
+
+    <input type="checkbox" id="cornerModal" class="hidden peer" />
+    <div class="fixed bottom-4 right-4 bg-white border shadow-lg rounded-lg p-4 w-80 z-50 hidden peer-checked:flex peer-checked:flex-col">
+        <div class="flex items-start justify-between">
+            <div>
+                <h3 class="text-lg font-semibold">Уведомление</h3>
+                <p id="txtModal" class="text-sm text-gray-600">Пользователь успешно добавлен.</p>
+            </div>
+            <label for="cornerModal" class="ml-4 text-gray-400 hover:text-gray-600 cursor-pointer">✕</label>
+        </div>
+    </div>
+    <!-- type="unlink_account" -->
+    <input type="checkbox" id="unlink_account" class="modal-toggle" />
+    <div class="modal" role="dialog">
+        <div class="modal-box max-w-md">
+            <h1 class="text-lg font-bold text-gray-800 mb-4">Вы действительно хотите отменить расход?</h1>
+
+            <div class="space-y-3">
+                <div class="p-3 border border-gray-200 rounded-xl bg-gray-50 flex flex-col">
+                    <span class="font-semibold text-gray-700">Описание:</span>
+                    <span id="description" class="text-gray-800 mt-1 break-all"></span>
+                </div>
+
+                <div class="p-3 border border-gray-200 rounded-xl bg-gray-50 flex flex-col">
+                    <span class="font-semibold text-gray-700">Название банка:</span>
+                    <span id="bankName" class="text-gray-800 mt-1 break-all"></span>
+                </div>
+
+                <div class="p-3 border border-gray-200 rounded-xl bg-gray-50 flex flex-col">
+                    <span class="font-semibold text-gray-700">Название компании:</span>
+                    <span id="companyName" class="text-gray-800 mt-1 break-all"></span>
+                </div>
+
+                <div class="alert alert-info rounded-xl mt-3 text-white">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 shrink-0 stroke-current text-white" fill="none" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M13 16h-1v-4h-1m1-4h.01M12 20a8 8 0 100-16 8 8 0 000 16z" />
+                    </svg>
+                    <span class="text-white">Если отправка подтверждена курьером, соответствующая сумма будет вычтена с его товарного баланса!</span>
+                </div>
+            </div>
+
+            <div class="modal-action mt-6">
+                <button id="confirmUnlink" class="btn bg-blue-600 hover:bg-blue-700 text-white border-none rounded-lg px-6">
+                    Подтвердить
+                </button>
+                <label for="unlink_account" class="btn btn-outline rounded-lg">Отменить</label>
+            </div>
+        </div>
+    </div>
+
+    <dialog id="errorModal" class="modal">
+        <div class="modal-box">
+            <h3 class="text-lg font-bold">Ошибка!</h3>
+            <p id="errorText" class="py-4"></p>
+            <div class="modal-action">
+                <form method="dialog">
+                    <button class="btn">Закрыть</button>
+                </form>
+            </div>
+        </div>
+    </dialog>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pikaday/css/pikaday.css">
+    <script src="https://cdn.jsdelivr.net/npm/pikaday/pikaday.js"></script>
+    <script src="/assets/js/PostData.js?v=<?= time() ?>"></script>
+
+    <!-- Инициализация -->
+    <script>
+        function showCornerModal(message) {
+            const checkbox = document.getElementById('cornerModal');
+            const txtModal = document.getElementById('txtModal');
+            checkbox.checked = true;
+            txtModal.innerHTML= message;
+
+
+            setTimeout(() => {
+                checkbox.checked = false;
+            }, 5000);
+        }
+
+        const pickerFrom = new Pikaday({
+            field: document.getElementById('datepicker_from'),
+            format: 'DD.MM.YYYY', // Русский формат даты
+            firstDay: 1,
+            i18n: {
+                previousMonth: 'Предыдущий',
+                nextMonth: 'Следующий',
+                months: ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'],
+                weekdays: ['Воскресенье', 'Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота'],
+                weekdaysShort: ['Вс', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб']
+            },
+            toString(date, format) {
+                // форматирует в dd.mm.yyyy
+                const day = String(date.getDate()).padStart(2, '0');
+                const month = String(date.getMonth() + 1).padStart(2, '0');
+                const year = date.getFullYear();
+                return `${day}.${month}.${year}`;
+            },
+            parse(dateString, format) {
+                const parts = dateString.split('.');
+                const day = parseInt(parts[0], 10);
+                const month = parseInt(parts[1], 10) - 1;
+                const year = parseInt(parts[2], 10);
+                return new Date(year, month, day);
+            }
+        });
+
+        const pickerTo = new Pikaday({
+            field: document.getElementById('datepicker_to'),
+            format: 'DD.MM.YYYY',
+            firstDay: 1,
+            i18n: {
+                previousMonth: 'Предыдущий',
+                nextMonth: 'Следующий',
+                months: ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'],
+                weekdays: ['Воскресенье', 'Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота'],
+                weekdaysShort: ['Вс', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб']
+            },
+            toString(date, format) {
+                const day = String(date.getDate()).padStart(2, '0');
+                const month = String(date.getMonth() + 1).padStart(2, '0');
+                const year = date.getFullYear();
+                return `${day}.${month}.${year}`;
+            },
+            parse(dateString, format) {
+                const parts = dateString.split('.');
+                const day = parseInt(parts[0], 10);
+                const month = parseInt(parts[1], 10) - 1;
+                const year = parseInt(parts[2], 10);
+                return new Date(year, month, day);
+            }
+        });
+
+        document.getElementById('searchFilters').addEventListener('click', () => {
+            const category = document.getElementById('category')?.textContent.trim();
+            const dateFrom = document.getElementById('datepicker_from');
+            const datepickerTo = document.getElementById('datepicker_to');
+
+            if (!category && !dateFrom.value && !datepickerTo.value) {
+                showCornerModal('Выберите фильтр');
+                return;
+            }
+
+            if (!dateFrom.value && datepickerTo.value) {
+                showCornerModal('Выберите начало даты!');
+                return;
+            }
+
+
+            const currentUrl = new URL(window.location.href);
+            const params = currentUrl.searchParams;
+
+            params.delete('page');
+
+            if (category) params.set('category', category);
+            if (dateFrom.value) params.set('date_from', dateFrom.value);
+            if (datepickerTo.value) params.set('date_to', datepickerTo.value);
+
+            params.set('page', '0');
+
+
+            const newUrl = `${currentUrl.pathname}?${params.toString()}`;
+            window.location.href = newUrl;
+        });
+
+        let orderId;
+        const unlinkAccount = document.getElementById('unlink_account');
+
+        const closeModal = (checkbox) => {
+            checkbox.checked = false;
+        };
+
+        const openErrorModal = (message) => {
+            errorText.innerHTML = message;
+            document.getElementById('errorModal').showModal();
+        };
+
+        document.querySelectorAll('label[for="unlink_account"]').forEach(button => {
+            button.addEventListener('click', () => {
+                const description = button.dataset.description;
+                const companyName = button.dataset.companyName;
+                const bankName = button.dataset.bankName;
+                orderId = button.dataset.orderId;
+
+                document.getElementById('companyName').innerText = companyName;
+                document.getElementById('bankName').innerText = bankName;
+                document.getElementById('description').innerText = description;
+            });
+        });
+
+        document.getElementById('confirmUnlink').addEventListener('click', async () => {
+            const result = await postData('/entities/returnAccount', {
+                order_id: orderId,
+                stock_balances: 'courier'
+            });
+
+            if (result.success) {
+                location.reload();
+            } else {
+                openErrorModal('Не получилось вернуть счет!');
+            }
+        });
+
+    </script>
+
+
+
+
+{% endblock %}

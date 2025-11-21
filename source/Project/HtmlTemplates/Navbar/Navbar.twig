@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>optus</title>
+</head>
+<body>
+<script src="/assets/js/LogOut.js?v=<?= time() ?>"></script>
+<!-- Подключение Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com"></script>
+<!-- Подключение DaisyUI -->
+<link href="https://cdn.jsdelivr.net/npm/daisyui@5" rel="stylesheet" type="text/css"/>
+<!-- Подключение дополнительных тем DaisyUI -->
+<link href="https://cdn.jsdelivr.net/npm/daisyui@5/themes.css" rel="stylesheet" type="text/css"/>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+
+
+<div class="navbar bg-base-100 shadow-sm px-[30px]">
+    {% if role == 'admin' %}
+        <div class="flex-none">
+            <label for="my-drawer" class="btn btn-square btn-ghost">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="inline-block h-5 w-5 stroke-current">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                </svg>
+            </label>
+        </div>
+    {% endif %}
+
+    <div class="flex-1">
+        <a href="/" class="btn btn-ghost text-xl">OPTUS</a>
+    </div>
+
+    <div class="navbar-end">
+        <!-- logout всегда показываем -->
+        <button id="logoutBtn" class="btn btn-ghost btn-circle">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15m3 0 3-3m0 0-3-3m3 3H9" />
+            </svg>
+        </button>
+    </div>
+</div>
+
+
+<div>
+    {% block content %}{% endblock %}
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const drawerBtn = document.querySelector('.flex-none');
+        if (!drawerBtn) return;
+        if (window.location.pathname === "/") {
+            drawerBtn.style.display = "block"; // показываем
+        } else {
+            drawerBtn.style.display = "none";  // скрываем
+        }
+    });
+</script>
+
+
+
+</body>
+</html>
+

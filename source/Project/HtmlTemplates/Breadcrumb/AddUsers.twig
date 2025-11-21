@@ -1,0 +1,101 @@
+{% block content %}
+    <!-- Open the modal using ID.showModal() method -->
+
+    {% if return_page is empty %}
+        <div class="mt-6 ml-16">
+            <nav aria-label="breadcrumb" class="text-sm text-gray-700">
+                <ul class="flex flex-wrap items-center gap-1">
+
+                    <!-- Главное -->
+                    <li class="flex items-center gap-1">
+                        <a href="/" class="flex items-center gap-1 text-blue-600 hover:underline">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                                 stroke="currentColor" class="size-6">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                      d="m2.25 12 8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25"/>
+                            </svg>
+                            Главное
+                        </a>
+                    </li>
+
+                    <!-- Разделитель -->
+                    <li aria-hidden="true">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                             stroke="currentColor" class="size-6">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5"/>
+                        </svg>
+                    </li>
+
+                    <!-- Неизвестные счета -->
+                    <li class="flex items-center gap-1 text-gray-900" aria-current="page">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                             stroke="currentColor" class="size-6">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                  d="M18 7.5v3m0 0v3m0-3h3m-3 0h-3m-2.25-4.125a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0ZM3 19.235v-.11a6.375 6.375 0 0 1 12.75 0v.109A12.318 12.318 0 0 1 9.374 21c-2.331 0-4.512-.645-6.374-1.766Z"/>
+                        </svg>
+                        Добавить пользователя
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    {% else %}
+        <div class="mt-6 ml-16">
+            <nav aria-label="breadcrumb" class="text-sm text-gray-700">
+                <ul class="flex flex-wrap items-center gap-1">
+
+                    <!-- Главное -->
+                    <li class="flex items-center gap-1">
+                        <a href="/" class="flex items-center gap-1 text-blue-600 hover:underline">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                                 stroke="currentColor" class="size-6">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                      d="m2.25 12 8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25"/>
+                            </svg>
+                            Главное
+                        </a>
+                    </li>
+
+                    <!-- Разделитель -->
+                    <li aria-hidden="true">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                             stroke="currentColor" class="size-6">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5"/>
+                        </svg>
+                    </li>
+
+                    <!-- Вернуться назад -->
+                    <li class="flex items-center gap-1 text-gray-900" aria-current="page">
+                        <a href="{{ return_page }}" class="flex items-center gap-1 text-blue-600 hover:underline">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                                 stroke="currentColor" class="size-6">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                      d="M9 15 3 9m0 0 6-6M3 9h12a6 6 0 0 1 0 12h-3"/>
+                            </svg>
+                            Вернуться назад
+                        </a>
+                    </li>
+
+                    <!-- Разделитель -->
+                    <li aria-hidden="true">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                             stroke="currentColor" class="size-6">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5"/>
+                        </svg>
+                    </li>
+
+                    <!-- Добавить пользователя -->
+                    <li class="flex items-center gap-1 text-gray-900" aria-current="page">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                             stroke="currentColor" class="size-6">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                  d="M18 7.5v3m0 0v3m0-3h3m-3 0h-3m-2.25-4.125a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0ZM3 19.235v-.11a6.375 6.375 0 0 1 12.75 0v.109A12.318 12.318 0 0 1 9.374 21c-2.331 0-4.512-.645-6.374-1.766Z"/>
+                        </svg>
+                        Добавить пользователя
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    {% endif %}
+
+
+{% endblock %}

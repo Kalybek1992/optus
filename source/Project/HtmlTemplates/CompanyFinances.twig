@@ -1,0 +1,70 @@
+{% block content %}
+    <div class="w-full flex justify-center px-8 mt-6">
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6 w-full max-w-7xl">
+
+            <!-- Долг клиентам -->
+            <div class="border border-blue-400 rounded-lg p-4 text-center">
+                <div class="text-sm text-gray-600 mb-1">Долг клиентам</div>
+                <div class="text-base font-bold text-black">
+                    {{ client_goods_balance|number_format(0, ',', ' ') }} ₽
+                </div>
+                <div class="text-xs text-gray-500 mt-1">Мы должны товар</div>
+            </div>
+
+            <!-- Наш товар -->
+            <div class="border border-blue-400 rounded-lg p-4 text-center">
+                <div class="text-sm text-gray-600 mb-1">Наш товарный баланс</div>
+                <div class="text-base font-bold text-black">
+                    {{ stock_balances|number_format(0, ',', ' ') }} ₽
+                </div>
+                <div class="text-xs text-gray-500 mt-1">На складе</div>
+            </div>
+
+            <!-- Должники -->
+            <div class="border border-blue-400 rounded-lg p-4 text-center">
+                <div class="text-sm text-gray-600 mb-1">Должники (товар)</div>
+                <div class="text-base font-bold text-black">
+                    +{{ supplier_goods_balance|number_format(0, ',', ' ') }} ₽
+                </div>
+                <div class="text-xs text-gray-500 mt-1">Нам должны</div>
+            </div>
+
+            <!-- Долг (услуги) -->
+            <div
+                    class="relative border border-blue-400 rounded-lg p-4 text-center {% if client_services %}cursor-pointer{% endif %}"
+                    {% if client_services %}onclick="location.href='/debts/debtsClientServices'"{% endif %}
+            >
+                {% if client_services %}
+                    <div class="absolute top-2 right-2">
+                        <span class="inline-block w-4 h-4 bg-red-500 text-white text-[10px] font-bold rounded-full text-center leading-[14px]">!</span>
+                    </div>
+                {% endif %}
+                <div class="text-sm text-gray-600 mb-1">Долг (клиент услуги)</div>
+                <div class="text-base font-bold text-black">
+                    {{ client_services_balance|number_format(0, ',', ' ') }} ₽
+                </div>
+                <div class="text-xs text-gray-500 mt-1">Мы должны в БН</div>
+            </div>
+
+            <!-- Курьеры -->
+            <div class="border border-blue-400 rounded-lg p-4 text-center">
+                <div class="text-sm text-gray-600 mb-1">Курьеры</div>
+                <div class="text-base font-bold text-black">
+                    {{ couriers_balance < 0 ? '-' : '' }}{{ couriers_balance|abs|number_format(0, ',', ' ') }} ₽
+                </div>
+                <div class="text-xs text-gray-500 mt-1">Баланс курьеров</div>
+            </div>
+
+            <!-- Наш баланс (если понадобится снова включить) -->
+            {# <div class="border border-blue-400 rounded-lg p-4 text-center">
+                <div class="text-sm text-gray-600 mb-1">Наш баланс</div>
+                <div class="text-base font-bold text-black">
+                    {{ our_account_balance < 0 ? '-' : '' }}{{ our_account_balance|abs|number_format(0, '.', ' ') }} ₽
+                </div>
+                <div class="text-xs text-gray-500 mt-1">На наших счетах</div>
+            </div> #}
+        </div>
+    </div>
+
+
+{% endblock %}

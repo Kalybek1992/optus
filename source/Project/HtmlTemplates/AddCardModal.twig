@@ -1,0 +1,272 @@
+{% block content %}
+    <!-- Open the modal using ID.showModal() method -->
+
+    <dialog id="create_card_modal" class="modal">
+        <div class="modal-box rounded-xl shadow-xl p-6 bg-white" style="max-height: 90vh; overflow-y: auto;">
+
+        <h3 class="text-xl font-bold text-center mb-6">Создать карту</h3>
+
+            <form id="create_card_form" class="space-y-6">
+                <!-- Поле с иконкой -->
+                <div>
+                    <label for="card_number" class="block text-sm font-semibold text-gray-700 mb-2">
+                        Номер карты
+                    </label>
+                    <div class="relative">
+                        <!-- Иконка слева -->
+                        <div class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none"
+                                 viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                      d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 0 0 2.25-2.25V6.75A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25v10.5A2.25 2.25 0 0 0 4.5 19.5Z"/>
+                            </svg>
+                        </div>
+
+                        <!-- Сам input -->
+                        <input
+                                type="text"
+                                id="card_number"
+                                name="card_number"
+                                maxlength="19"
+                                placeholder="1234 5678 9012 3456"
+                                required
+                                autocomplete="off"
+                                autocorrect="off"
+                                autocapitalize="off"
+                                spellcheck="false"
+                                class="pl-10 pr-4 py-2 w-full border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition bg-white text-black"
+                        />
+                    </div>
+                </div>
+
+                <!-- Выбор компании -->
+                <div class="relative w-full">
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Компания</label>
+
+                    <!-- Скрытый input для формы -->
+                    <input  type="hidden" id="company" name="company" required>
+
+                    <!-- Кнопка открытия списка -->
+                    <button type="button" id="company_btn"
+                            class="w-full h-auto border border-gray-300 rounded-lg px-3 py-2 text-xs text-gray-900 text-left bg-white flex flex-col items-start">
+                        <span id="company_text" class="font-semibold text-gray-900 text-sm leading-5 break-words">
+                            Выберите компанию
+                        </span>
+                    </button>
+
+                    <!-- Список -->
+                    <ul id="company_list"
+                        class="hidden absolute left-0 w-full border border-gray-300 rounded-lg mt-1 bg-white overflow-auto text-xs z-10"
+                        style="max-height: 50vh; padding-bottom: 20px;">
+                    </ul>
+
+                </div>
+
+                <!-- Кнопки -->
+                <div class="flex justify-end gap-4 pt-4 border-t border-gray-200">
+                    <button type="submit" id="add-card" class="btn btn-primary">Создать</button>
+                    <button type="button" id="close-card-modal" class="btn btn-outline">Закрыть</button>
+                </div>
+            </form>
+        </div>
+    </dialog>
+
+
+    <!-- Триггер через checkbox -->
+    <input type="checkbox" id="notifications" class="hidden peer" />
+    <div class="fixed bottom-4 right-4 z-50 max-w-sm w-full
+            hidden peer-checked:flex flex-col bg-white border border-gray-300 rounded-xl shadow-xl
+            animate-fade-in transition-opacity duration-300 ease-out
+            px-5 py-4 space-y-2">
+
+        <div class="flex items-start justify-between">
+            <div class="flex items-start space-x-2">
+                <svg class="w-6 h-6 text-blue-500 mt-1 shrink-0" fill="none" stroke="currentColor" stroke-width="1.5"
+                     viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                          d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022 23.85 23.85 0 0 0 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0 3 3 0 1 0 5.714 0ZM3.124 7.5A8.969 8.969 0 0 1 5.292 3m13.416 0a8.969 8.969 0 0 1 2.168 4.5"/>
+                </svg>
+
+                <div>
+                    <h3 class="text-base font-semibold text-gray-900">Уведомление</h3>
+                    <p id="notifications-txt" class="text-sm text-gray-600 leading-snug mt-1">...</p>
+                </div>
+            </div>
+
+            <label for="notifications" class="text-gray-400 hover:text-gray-600 transition cursor-pointer">
+                ✕
+            </label>
+        </div>
+    </div>
+
+    <script src="/assets/js/PostData.js?v=<?= time() ?>"></script>
+
+    <script>
+        const createCardModal = document.getElementById('create_card_modal');
+        const select = document.getElementById('company');
+
+
+        const companyBtn = document.getElementById('company_btn');
+        const companyList = document.getElementById('company_list');
+        const hiddenInput = document.getElementById('company');
+        let autoSelect = false;
+
+        async function populateCompanies(preselectedId = null) {
+            companyList.innerHTML = '';
+
+            let get_companies = await postData('/cards/getOurCompany', { page: 0 });
+            const companies = get_companies.companies || [];
+
+            // пробуем найти выбранную компанию
+            const preselectedCompany = preselectedId
+                ? companies.find(c => String(c.id) === String(preselectedId))
+                : null;
+
+            if (preselectedCompany) {
+                // сразу ставим выбранную компанию
+                hiddenInput.value = preselectedCompany.id;
+                companyBtn.innerHTML = `
+                        <div class="flex flex-col">
+                            <span class="font-semibold text-gray-900 text-sm leading-4 mb-1">${preselectedCompany.company_name}</span>
+                            <span class="text-gray-500 text-[11px] leading-4">${preselectedCompany.bank_name}</span>
+                        </div>
+                    `;
+                companyList.classList.add('hidden'); // выбор скрываем
+                autoSelect = true;
+
+                return; // выходим, не рендерим список
+            }
+
+            // если нет предустановленной компании → даём выбрать
+            companies.forEach(c => {
+                const li = document.createElement('li');
+                li.className = 'px-3 py-2 hover:bg-blue-50 cursor-pointer flex flex-col';
+                li.innerHTML = `
+                        <span class="font-semibold text-gray-900 text-sm leading-4 mb-1">${c.company_name}</span>
+                        <span class="text-gray-500 text-[11px] leading-4">${c.bank_name}</span>
+                    `;
+                li.addEventListener('click', () => {
+                    hiddenInput.value = c.id;
+                    companyBtn.innerHTML = `
+                        <div class="flex flex-col">
+                            <span class="font-semibold text-gray-900 text-sm leading-4 mb-1">${c.company_name}</span>
+                            <span class="text-gray-500 text-[11px] leading-4">${c.bank_name}</span>
+                        </div>
+                    `;
+                    companyList.classList.add('hidden');
+                });
+                companyList.appendChild(li);
+            });
+        }
+
+        companyBtn.addEventListener('click', (e) => {
+            if (autoSelect) {
+                return;
+            }
+            companyList.classList.toggle('hidden');
+        });
+
+
+        document.addEventListener('click', (e) => {
+            if (!companyBtn.parentElement.contains(e.target)) {
+                companyList.classList.add('hidden');
+            }
+        });
+
+
+        document.getElementById('open-create-card-modal')
+            .addEventListener('click', (e) => {
+
+                console.log(e);
+
+                const companyId = e.currentTarget.dataset.company || null;
+
+                populateCompanies(companyId);
+                createCardModal.showModal();
+            });
+
+
+        const cardInput = document.getElementById('card_number');
+
+        function showCornerModal(message) {
+            const checkbox = document.getElementById('notifications');
+            const txtModal = document.getElementById('notifications-txt');
+            checkbox.checked = true;
+            txtModal.innerHTML = message;
+
+
+            setTimeout(() => {
+                checkbox.checked = false;
+            }, 5000);
+        }
+
+        cardInput.addEventListener('input', () => {
+            let value = cardInput.value.replace(/\D/g, ''); // Убираем всё кроме цифр
+            value = value.slice(0, 16); // Ограничение на 16 цифр
+
+            // Разбиваем на блоки по 4 цифры
+            const formatted = value.match(/.{1,4}/g)?.join(' ') || '';
+            cardInput.value = formatted;
+        });
+
+        document.getElementById('add-card').addEventListener('click', async (event) => {
+            event.preventDefault(); // Останавливаем стандартную отправку формы
+
+            const selectedCompanyId = select.value;
+            const value = cardInput.value.replace(/\D/g, ''); // Удаляем пробелы и всё, кроме цифр
+
+            document.getElementById('create_card_modal').close();
+            cardInput.value = '';
+            select.value = '';
+
+            // Проверка на 16 цифр
+            if (value.length !== 16) {
+                showCornerModal('Номер карты должен содержать ровно 16 цифр!')
+                return;
+            }
+
+            if (!selectedCompanyId) {
+                showCornerModal('Компания не выбрана!')
+                return;
+            }
+
+            const result = await postData('/cards/addCard', {
+                card_number: value,
+                legal_id: selectedCompanyId
+            });
+
+            if (result.status === 'error' && result.value === 'duplicate_card') {
+                showCornerModal('Эта карта уже существует!')
+                return;
+            }
+
+            if (result.status === 'error') {
+                showCornerModal('Ошибка создания новой карты!');
+                return;
+            }
+
+            localStorage.setItem(
+                'showCornerModal',
+                'Удачно создали новую карту.'
+            );
+
+            location.reload()
+        });
+
+        window.addEventListener('load', () => {
+            const message = localStorage.getItem('showCornerModal');
+
+            if (message) {
+                showCornerModal(message);
+                localStorage.removeItem('showCornerModal');
+            }
+        });
+
+        document.getElementById('close-card-modal').addEventListener('click', () => {
+            document.getElementById('create_card_modal').close();
+        });
+
+    </script>
+
+
+{% endblock %}

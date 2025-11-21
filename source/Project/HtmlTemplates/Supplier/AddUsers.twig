@@ -1,0 +1,205 @@
+{% extends './Navbar/Navbar.twig' %}
+
+{% block content %}
+    {% include './Breadcrumb/AddUsers.twig' %}
+
+    <!-- Модалки -->
+    <dialog id="statusModal" class="modal">
+        <div class="modal-box text-center">
+            <h3 id="statusTitle" class="text-lg font-bold"></h3>
+            <p id="statusText" class="py-4"></p>
+            <div class="modal-action">
+                <form method="dialog">
+                    <button class="btn btn-primary" id="closeModalBtn">ОК</button>
+                </form>
+            </div>
+        </div>
+    </dialog>
+
+    <!-- Контейнер формы -->
+    <div class="w-full max-w-md p-8 bg-white rounded-2xl shadow-lg mx-auto mt-[50px]">
+        <!-- Заголовок -->
+        <div class="flex items-center justify-center mb-6">
+            <svg class="w-10 h-10 text-emerald-600 mr-2" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a8 8 0 00-8 8h16a8 8 0 00-8-8z"/>
+            </svg>
+            <h2 class="text-3xl font-bold text-emerald-600">Добавить пользователя</h2>
+        </div>
+
+        <!-- Форма -->
+        <form id="addUserForm" class="space-y-6" onsubmit="return false;">
+            <!-- Имя -->
+            <div class="relative">
+                <span class="absolute inset-y-0 left-0 flex items-center pl-3">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none"
+                         viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
+                         class="w-5 h-5 text-gray-400">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                              d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z"/>
+                    </svg>
+                </span>
+                <input type="text" id="name" name="name" placeholder="Имя пользователя" required
+                       class="w-full pl-10 p-2 border rounded-md focus:ring-2 focus:ring-emerald-500 focus:outline-none"/>
+            </div>
+
+            <!-- Роль -->
+            <div class="relative">
+                <span class="absolute inset-y-0 left-0 flex items-center pl-3">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                       stroke="currentColor" class="w-5 h-5 text-gray-400">
+                      <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M15 19.128a9.38 9.38 0 0 0 2.625.372 9.337 9.337 0 0 0 4.121-.952 4.125 4.125 0 0 0-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 0 1 8.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0 1 11.964-3.07M12 6.375a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0Zm8.25 2.25a2.625 2.625 0 1 1-5.25 0 2.625 2.625 0 0 1 5.25 0Z"/>
+                  </svg>
+                </span>
+                <select id="role" name="role" required
+                        class="w-full pl-10 p-2 border rounded-md bg-white focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                    <option value="">Выберите роль</option>
+                    <option value="manager">Менеджер</option>
+                    <option value="client">Клиент</option>
+                </select>
+            </div>
+
+            <!-- Процент (показывается только для клиента) -->
+            <div id="percentageWrapper" class="relative hidden">
+                <span class="absolute inset-y-0 left-0 flex items-center pl-3">
+                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                      stroke="currentColor" class="w-5 h-5 text-gray-400">
+                      <path stroke-linecap="round" stroke-linejoin="round"
+                            d="m9 14.25 6-6m4.5-3.493V21.75l-3.75-1.5-3.75 1.5-3.75-1.5-3.75 1.5V4.757c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0 1 11.186 0c1.1.128 1.907 1.077 1.907 2.185ZM9.75 9h.008v.008H9.75V9Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm4.125 4.5h.008v.008h-.008V13.5Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z"/>
+                 </svg>
+
+                </span>
+                <input type="number" id="percentage" name="percent" placeholder="Процент (0 — 100)"
+                       step="0.01" min="0" max="100"
+                       class="w-full pl-10 p-2 border rounded-md focus:ring-2 focus:ring-emerald-500 focus:outline-none"/>
+            </div>
+
+            <!-- Кнопка -->
+            <button id="submitUserBtn"
+                    class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2 px-6 rounded-lg transition-colors duration-200 text-center flex items-center justify-center">
+                <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" stroke-width="2"
+                     viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                </svg>
+                Создать пользователя
+            </button>
+        </form>
+    </div>
+
+    <script>
+        const modal = document.getElementById('statusModal');
+        const modalTitle = document.getElementById('statusTitle');
+        const modalText = document.getElementById('statusText');
+        const closeModalBtn = document.getElementById('closeModalBtn');
+
+        const showModal = (title, text, success = false) => {
+            modalTitle.textContent = title;
+            modalText.textContent = text;
+            modalTitle.className = success
+                ? 'text-lg font-bold text-emerald-600'
+                : 'text-lg font-bold text-red-600';
+            try {
+                modal.showModal();
+            } catch (e) {
+                alert(title + "\n\n" + text);
+            }
+        };
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const form = document.getElementById('addUserForm');
+            const submitBtn = document.getElementById('submitUserBtn');
+            const roleSelect = document.getElementById('role');
+            const percentageWrapper = document.getElementById('percentageWrapper');
+            const percentageInput = document.getElementById('percentage');
+
+            // Показывать/скрывать поле процента
+            const updatePercentageVisibility = () => {
+                const role = roleSelect.value;
+                if (role === 'client') {
+                    percentageWrapper.classList.remove('hidden');
+                    percentageInput.setAttribute('aria-required', 'true');
+                } else {
+                    percentageWrapper.classList.add('hidden');
+                    percentageInput.removeAttribute('aria-required');
+                    percentageInput.value = '';
+                }
+            };
+
+            roleSelect.addEventListener('change', updatePercentageVisibility);
+
+            submitBtn.addEventListener('click', async () => {
+                const name = document.getElementById('name').value.trim();
+                const role = roleSelect.value;
+                const percentVal = document.getElementById('percentage').value.trim();
+
+                // Базовые проверки
+                if (!name || !role) {
+                    showModal('Ошибка!', 'Укажите имя и выберите роль!');
+                    return;
+                }
+
+                // Проверка поля percent
+                if (role === 'client') {
+                    if (percentVal === '') {
+                        showModal('Ошибка!', 'Для клиента обязательно укажите процент!');
+                        return;
+                    }
+                    const percentNum = Number(percentVal);
+                    if (Number.isNaN(percentNum) || percentNum < 0 || percentNum >= 100) {
+                        showModal('Ошибка!', 'Процент должен быть числом в диапазоне от 0 до 99.99.');
+                        return;
+                    }
+                } else {
+                    if (percentVal !== '') {
+                        showModal('Ошибка!', 'Поле "Процент" допускается только для роли "Клиент". Очистите поле или выберите роль "Клиент".');
+                        return;
+                    }
+                }
+
+                // Подготовка тела запроса
+                const body = { name, role };
+                if (role === 'client') {
+                    body.percent = Number(percentVal);
+                } else {
+                    body.percent = null;
+                }
+
+                try {
+                    const response = await fetch('/supplier/addUser', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(body)
+                    });
+
+                    const text = await response.text();
+                    let result;
+                    try {
+                        result = JSON.parse(text);
+                    } catch (e) {
+                        console.warn('Ответ сервера не JSON:', text);
+                        showModal('Ошибка!', 'Сервер вернул неожидимый ответ: ' + text);
+                        return;
+                    }
+
+                    if (result.success) {
+                        showModal('Успех!', 'Пользователь успешно добавлен!', true);
+                        form.reset();
+                        updatePercentageVisibility();
+                    } else {
+                        showModal('Ошибка!', result.message || 'Не удалось добавить пользователя!');
+                    }
+                } catch (error) {
+                    console.error('Ошибка запроса:', error);
+                    showModal('Ошибка!', 'Произошла ошибка при отправке запроса.');
+                }
+            });
+
+            closeModalBtn.addEventListener('click', () => {
+                try { modal.close(); } catch (e) {}
+            });
+
+            updatePercentageVisibility();
+        });
+    </script>
+
+{% endblock %}

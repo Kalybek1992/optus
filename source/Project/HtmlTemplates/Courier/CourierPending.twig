@@ -1,0 +1,135 @@
+{% extends './Navbar/Navbar.twig' %}
+
+{% block content %}
+    <div class="max-w-6xl mx-auto p-4 md:p-6">
+
+        <h1 class="text-2xl md:text-3xl font-bold mb-4 text-gray-800">
+            Неподтвержденные поступления
+        </h1>
+
+        <div class="mb-6 flex flex-col sm:flex-row sm:items-center sm:gap-2">
+            <span class="text-gray-600 text-sm md:text-base">Сумма неподтвержденного баланса:</span>
+            <span class="text-2xl font-semibold text-blue-600">{{ courier.balance_unaccepted ?? 0 }} ₽</span>
+        </div>
+
+        {% if pending is empty %}
+            <div class="alert bg-blue-50 border border-blue-200 text-blue-700 rounded-lg py-3 px-4">
+                Нет записей
+            </div>
+        {% else %}
+            <!-- Адаптивная таблица -->
+            <div class="overflow-x-auto rounded-xl shadow-md border border-gray-200">
+                <table class="table w-full">
+                    <thead class="bg-gray-100 text-gray-700 text-sm">
+                    <tr class="divide-x divide-gray-200">
+                        <th class="px-4 py-2 text-left whitespace-nowrap">Дата</th>
+                        <th class="px-4 py-2 text-left whitespace-nowrap">Сумма</th>
+                        <th class="px-4 py-2 text-left whitespace-nowrap hidden sm:table-cell">Категория</th>
+                        <th class="px-4 py-2 text-left hidden md:table-cell">Комментарий</th>
+                        <th class="px-4 py-2 text-left whitespace-nowrap hidden lg:table-cell">Номер карты</th>
+                        <th class="px-4 py-2"></th>
+                    </tr>
+                    </thead>
+
+                    <tbody class="divide-y divide-gray-200">
+                    {% for r in pending %}
+                        <tr class="divide-x divide-gray-200 {% if loop.index is odd %}bg-gray-50{% else %}bg-white{% endif %}">
+                            <td class="px-4 py-3 whitespace-nowrap text-sm">{{ r.date }}</td>
+                            <td class="px-4 py-3 font-semibold text-gray-700 whitespace-nowrap">{{ r.amount }} ₽</td>
+
+                            <!-- Категория: видно на sm+ -->
+                            <td class="px-4 py-3 hidden sm:table-cell">{{ r.category }}</td>
+
+                            <!-- Комментарий: видно на md+ -->
+                            <td class="px-4 py-3 hidden md:table-cell max-w-[200px] truncate" title="{{ r.comments }}">
+                                {{ r.comments }}
+                            </td>
+
+                            <!-- Номер карты: видно на lg+ -->
+                            <td class="px-4 py-3 hidden lg:table-cell">
+                                {{ r.card_number|slice(0, 4) }} {{ r.card_number|slice(4, 4) }} {{ r.card_number|slice(8, 4) }} {{ r.card_number|slice(12, 4) }}
+                            </td>
+
+                            <!-- Кнопка -->
+                            <td class="px-4 py-3 text-right">
+                                <button
+                                        data-pending-id="{{ r.id }}"
+                                        class="confirm btn bg-blue-600 hover:bg-blue-700 text-white rounded-lg shadow
+                                           text-xs px-2 py-1
+                                           sm:text-sm sm:px-3 sm:py-1.5">
+                                    Подтвердить
+                                </button>
+                            </td>
+                        </tr>
+
+                        <!-- Мобильная инфа под строкой -->
+                        <tr class="sm:hidden bg-white border-t border-gray-200">
+                            <td colspan="6" class="px-4 py-3 text-xs text-gray-600 space-y-1">
+                                <div><span class="font-semibold">Категория:</span> {{ r.category }}</div>
+                                <div><span class="font-semibold">Комментарий:</span> {{ r.comments }}</div>
+                                <div><span class="font-semibold">Карта:</span> {{ r.card_number }}</div>
+                            </td>
+                        </tr>
+
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- SUCCESS MODAL -->
+    <input type="checkbox" id="okModal" class="modal-toggle"/>
+    <div class="modal" role="dialog">
+        <div class="modal-box bg-white border border-gray-200 rounded-xl">
+            <h3 class="font-bold text-lg text-gray-800">Успех</h3>
+            <p id="okText" class="py-4 text-gray-700">Подтверждено</p>
+            <div class="modal-action">
+                <label for="okModal" class="btn bg-blue-600 hover:bg-blue-700 text-white">Ок</label>
+            </div>
+        </div>
+    </div>
+
+    <!-- ERROR MODAL -->
+    <input type="checkbox" id="errModal" class="modal-toggle"/>
+    <div class="modal" role="dialog">
+        <div class="modal-box bg-white border border-gray-200 rounded-xl">
+            <h3 class="font-bold text-lg text-red-600">Ошибка</h3>
+            <p id="errText" class="py-4 text-gray-700">Ошибка</p>
+            <div class="modal-action">
+                <label for="errModal" class="btn bg-blue-600 hover:bg-blue-700 text-white">Ок</label>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function openOk(msg) {
+            document.getElementById('okText').textContent = msg || 'OK';
+            document.getElementById('okModal').checked = true;
+        }
+
+        function openErr(msg) {
+            document.getElementById('errText').textContent = msg || 'Ошибка';
+            document.getElementById('errModal').checked = true;
+        }
+
+        for (const btn of document.querySelectorAll('.confirm')) {
+            btn.addEventListener('click', () => {
+                const id = btn.dataset.pendingId;
+                const fd = new FormData();
+                fd.append('company_finances_id', id);
+
+                fetch('/courier/confirm', {
+                    method: 'POST',
+                    body: fd,
+                    credentials: 'same-origin'
+                })
+                    .then(res => res.json())
+                    .then(json => {
+                        if (json.status === 'ok') location.reload();
+                    })
+                    .catch(e => openErr(e?.message || 'Ошибка сети'));
+            });
+        }
+    </script>
+{% endblock %}

@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Мой сайт{% endblock %}</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; background-color: #f2f2f2; }
+        header { background: #4CAF50; padding: 10px; color: white; }
+        footer { background: #ddd; padding: 10px; text-align: center; margin-top: 30px; }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>Шапка сайта</h1>
+</header>
+
+<main>
+    {% block content %}{% endblock %}
+</main>
+
+<footer>
+    &copy; {{ "now"|date("Y") }} Мой сайт
+</footer>
+
+</body>
+</html>

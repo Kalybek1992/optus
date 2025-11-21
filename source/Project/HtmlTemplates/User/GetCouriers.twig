@@ -1,0 +1,135 @@
+{% extends './Navbar/Navbar.twig' %}
+
+{% block content %}
+
+    {% include './Breadcrumb/GetCouriers.twig' %}
+
+    {% for courier in couriers %}
+        <!-- Карточка курьера -->
+        <div class="max-w-2xl mx-auto bg-white rounded-2xl shadow-lg p-6 space-y-4 relative mt-4">
+            <!-- Имя и действия -->
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                    <div class="text-xl font-semibold text-gray-800">{{ courier.name }}</div>
+                    {% if courier.balance_unaccepted and courier.balance_unaccepted > 0 %}
+                        <span class="px-2 py-0.5 text-xs font-semibold bg-red-100 text-red-600 rounded-full">
+                            Неподтв. {{ courier.balance_unaccepted }}
+                        </span>
+                    {% endif %}
+                </div>
+                <div class="flex space-x-2">
+                    <label for="delete_account"
+                           class="text-gray-500 hover:text-red-600 cursor-pointer"
+                           title="Удалить"
+                           tabindex="0"
+                           data-email="{{ courier.email }}"
+                           data-name="{{ courier.name }}"
+                           data-entity-user_id="{{ courier.user_id }}">
+                        <i class="fa-solid fa-trash text-xl"></i>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Почта -->
+            <div class="flex items-center gap-2 text-sm">
+                <span class="font-semibold text-black">Почта:</span>
+                <p class="font-semibold text-gray-600 italic" id="email">{{ courier.email }}</p>
+
+                <!-- Кнопка копирования -->
+                <button type="button"
+                        class="ml-2 w-8 h-8 flex items-center justify-center text-gray-600 hover:text-gray-900"
+                        onclick="copyText('{{ courier.email }}')">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                              d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8l6 6v4"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M14 2v6h6"/>
+                    </svg>
+                </button>
+
+                <!-- Редактировать -->
+                <label for="change_email"
+                       data-entity-user_id="{{ courier.user_id }}"
+                       data-entity_email="{{ courier.email }}"
+                       class="w-8 h-8 flex items-center justify-center cursor-pointer text-gray-600 hover:text-gray-900"
+                       title="Редактировать">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                              d="M11 5h2M12 4v2M4 20h16M16.5 3.5a2.121 2.121 0 113 3L12 14l-4 1 1-4 7.5-7.5z"/>
+                    </svg>
+                </label>
+            </div>
+
+            <!-- Пароль -->
+            <div class="flex items-center gap-2 text-sm">
+                <span class="font-semibold text-black">Пароль:</span>
+                <span id="password" class="font-semibold text-gray-600 italic">{{ courier.password }}</span>
+
+                <!-- Копировать -->
+                <button type="button"
+                        class="ml-2 text-gray-600 hover:text-gray-900"
+                        onclick="copyText('{{ courier.password }}')">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                              d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8l6 6v4"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M14 2v6h6"/>
+                    </svg>
+                </button>
+
+                <!-- Редактировать -->
+                <label for="change_password"
+                       data-entity-user_id="{{ courier.user_id }}"
+                       data-entity_password="{{ courier.password }}"
+                       class="w-8 h-8 flex items-center justify-center cursor-pointer text-gray-600 hover:text-gray-900"
+                       title="Редактировать">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                              d="M11 5h2M12 4v2M4 20h16M16.5 3.5a2.121 2.121 0 113 3L12 14l-4 1 1-4 7.5-7.5z"/>
+                    </svg>
+                </label>
+            </div>
+
+            <!-- Баланс -->
+            <a href="/transaction/getCourierFinances?courier_id={{ courier.id }}"
+               class="block hover:shadow-md transition-shadow duration-200">
+                <div class="p-4 bg-white rounded-xl shadow-sm text-sm uppercase border border-gray-200 space-y-2">
+                    <!-- Общий баланс или Долг -->
+                    <div class="flex justify-between items-center">
+                        <div class="font-semibold text-gray-500">
+                            {% if courier.balance_sum >= 0 %}
+                                Общий баланс
+                            {% else %}
+                                Долг
+                            {% endif %}
+                        </div>
+                        <div class="font-semibold text-gray-600 text-base">
+                            {{ courier.balance_sum }}
+                        </div>
+                    </div>
+                    <!-- Непринятый баланс -->
+                    <div class="flex justify-between items-center">
+                        <div class="font-semibold text-gray-500">
+                            Непринятый баланс
+                        </div>
+                        <div class="font-semibold text-gray-600 text-base">
+                            {{ courier.balance_unaccepted ?? 0 }}
+                        </div>
+                    </div>
+                </div>
+            </a>
+        </div>
+    {% endfor %}
+
+
+
+    <div class="flex items-center justify-center py-6">
+        {% include './Pagination/Pagination.twig' %}
+    </div>
+
+
+    {% include './ChangeUserModal.twig' %}
+
+    <script src="/assets/js/CopyText.js?v=<?= time() ?>"></script>
+
+
+
+{% endblock %}

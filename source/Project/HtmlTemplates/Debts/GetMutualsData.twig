@@ -1,0 +1,223 @@
+{% extends './Navbar/Navbar.twig' %}
+
+{% block content %}
+
+    {% include './Breadcrumb/GetMutualsData.twig' %}
+
+    <div class="max-w-8xl mx-auto bg-white rounded-2xl shadow-lg p-6 space-y-4 relative mt-4">
+        <div class="w-full max-w-md bg-white border border-gray-200 rounded-xl p-4 shadow-sm space-y-3 text-sm">
+            <!-- Поставщик -->
+            <div class="flex justify-between items-center">
+                <span class="font-semibold text-gray-500">Поставщик:</span>
+                <span class="font-bold italic text-black">{{ username }}</span>
+            </div>
+
+            <!-- Почта -->
+            <div class="flex justify-between items-center">
+                <span class="font-semibold text-gray-500">Почта:</span>
+                <span class="font-bold italic text-black">{{ email }}</span>
+            </div>
+
+            <!-- Дата -->
+            <div class="flex justify-between items-center">
+                <span class="font-semibold text-gray-500">Дата:</span>
+                <span class="font-bold italic text-black">{{ date }}</span>
+            </div>
+
+            <!-- Остаток товарный долг -->
+            <div class="flex justify-between items-center">
+                <span class="font-semibold text-gray-500">Остаток товарный долг:</span>
+                <span class="font-bold italic text-black">{{ remaining_goot }}</span>
+            </div>
+
+            <!-- Остаток транзит -->
+            <div class="flex justify-between items-center">
+                <span class="font-semibold text-gray-500">Остаток транзит:</span>
+                <span class="font-bold italic text-black">{{ remaining_client }}</span>
+            </div>
+        </div>
+
+
+        <!-- Таблица расходов -->
+        {#        {% if mutual_settlements is empty %}#}
+        {#            <div role="alert" class="alert alert-warning mt-4">#}
+        {#                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 shrink-0 stroke-current" fill="none"#}
+        {#                     viewBox="0 0 24 24">#}
+        {#                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"#}
+        {#                          d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>#}
+        {#                </svg>#}
+        {#                <span>Ничего не найдено</span>#}
+        {#            </div>#}
+        {#        {% else %}#}
+        <!-- Таблица -->
+        <div class="overflow-x-auto w-full border border-gray-200 rounded-lg shadow-sm">
+            <table class="table w-full text-sm text-left divide-x divide-gray-200">
+                <thead class="bg-gray-100 text-xs text-gray-500 uppercase">
+                <tr class="divide-x divide-gray-200">
+                    <th class="px-3 py-2">Дата транзакции</th>
+                    <th class="px-3 py-2">Компания поставщика</th>
+                    <th class="px-3 py-2">Сумма ТР</th>
+                    <th class="px-3 py-2">Комиссия</th>
+                    <th class="px-3 py-2">Процент</th>
+                    <th class="px-3 py-2">Описание</th>
+                    <th class="px-3 py-2">Остаток клиент услуги</th>
+                    <th class="px-3 py-2">Дата транзакции</th>
+                    <th class="px-3 py-2">Наша компании</th>
+                    <th class="px-3 py-2">Сумма ТР</th>
+                    <th class="px-3 py-2">Комиссия</th>
+                    <th class="px-3 py-2">Процент</th>
+                    <th class="px-3 py-2">Описание</th>
+                    <th class="px-3 py-2">Остаток товарной долг</th>
+                </tr>
+                </thead>
+                <tbody class="text-sm divide-y divide-gray-100">
+                {% for mutual in mutual_settlements %}
+                    <td class="px-3 py-2 text-sm text-gray-700">{{ mutual.our_date }}</td>
+                    <td class="px-3 py-2 text-sm text-gray-700">{{ mutual.client_company_name }}</td>
+                    <td class="px-3 py-2 text-sm text-gray-700">{{ mutual.client_transaction_amount }}</td>
+                    <td class="px-3 py-2 text-sm text-gray-700">{{ mutual.client_interest_income }}</td>
+                {% endfor %}
+                </tbody>
+                <tfoot class="bg-gray-100 text-xs text-gray-500 uppercase">
+                <tr class="divide-x divide-gray-200">
+                    <th class="px-3 py-2">Дата транзакции</th>
+                    <th class="px-3 py-2">Компания поставщика</th>
+                    <th class="px-3 py-2">Сумма ТР</th>
+                    <th class="px-3 py-2">Комиссия</th>
+                    <th class="px-3 py-2">Процент</th>
+                    <th class="px-3 py-2">Описание</th>
+                    <th class="px-3 py-2">Остаток клиент услуги</th>
+                    <th class="px-3 py-2">Дата транзакции</th>
+                    <th class="px-3 py-2">Наша компании</th>
+                    <th class="px-3 py-2">Сумма ТР</th>
+                    <th class="px-3 py-2">Комиссия</th>
+                    <th class="px-3 py-2">Процент</th>
+                    <th class="px-3 py-2">Описание</th>
+                    <th class="px-3 py-2">Остаток товарной долг</th>
+                </tr>
+                </tfoot>
+            </table>
+        </div>
+        {#        {% endif %}#}
+    </div>
+
+    <input type="checkbox" id="cornerModal" class="hidden peer" />
+    <div class="fixed bottom-4 right-4 bg-white border shadow-lg rounded-lg p-4 w-80 z-50 hidden peer-checked:flex peer-checked:flex-col">
+        <div class="flex items-start justify-between">
+            <div>
+                <h3 class="text-lg font-semibold">Уведомление</h3>
+                <p id="txtModal" class="text-sm text-gray-600">Пользователь успешно добавлен.</p>
+            </div>
+            <label for="cornerModal" class="ml-4 text-gray-400 hover:text-gray-600 cursor-pointer">✕</label>
+        </div>
+    </div>
+
+
+    <div class="flex items-center justify-center py-6">
+        {% include './Pagination/Pagination.twig' %}
+    </div>
+
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pikaday/css/pikaday.css">
+    <script src="https://cdn.jsdelivr.net/npm/pikaday/pikaday.js"></script>
+
+    <!-- Инициализация -->
+    <script>
+        function showCornerModal(message) {
+            const checkbox = document.getElementById('cornerModal');
+            const txtModal = document.getElementById('txtModal');
+            checkbox.checked = true;
+            txtModal.innerHTML= message;
+
+
+            setTimeout(() => {
+                checkbox.checked = false;
+            }, 5000);
+        }
+
+        const pickerFrom = new Pikaday({
+            field: document.getElementById('datepicker_from'),
+            format: 'DD.MM.YYYY', // Русский формат даты
+            firstDay: 1,
+            i18n: {
+                previousMonth: 'Предыдущий',
+                nextMonth: 'Следующий',
+                months: ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'],
+                weekdays: ['Воскресенье', 'Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота'],
+                weekdaysShort: ['Вс', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб']
+            },
+            toString(date, format) {
+                // форматирует в dd.mm.yyyy
+                const day = String(date.getDate()).padStart(2, '0');
+                const month = String(date.getMonth() + 1).padStart(2, '0');
+                const year = date.getFullYear();
+                return `${day}.${month}.${year}`;
+            },
+            parse(dateString, format) {
+                const parts = dateString.split('.');
+                const day = parseInt(parts[0], 10);
+                const month = parseInt(parts[1], 10) - 1;
+                const year = parseInt(parts[2], 10);
+                return new Date(year, month, day);
+            }
+        });
+
+        const pickerTo = new Pikaday({
+            field: document.getElementById('datepicker_to'),
+            format: 'DD.MM.YYYY', // Русский формат даты
+            firstDay: 1,
+            i18n: {
+                previousMonth: 'Предыдущий',
+                nextMonth: 'Следующий',
+                months: ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'],
+                weekdays: ['Воскресенье', 'Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота'],
+                weekdaysShort: ['Вс', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб']
+            },
+            toString(date, format) {
+                // форматирует в dd.mm.yyyy
+                const day = String(date.getDate()).padStart(2, '0');
+                const month = String(date.getMonth() + 1).padStart(2, '0');
+                const year = date.getFullYear();
+                return `${day}.${month}.${year}`;
+            },
+            parse(dateString, format) {
+                const parts = dateString.split('.');
+                const day = parseInt(parts[0], 10);
+                const month = parseInt(parts[1], 10) - 1;
+                const year = parseInt(parts[2], 10);
+                return new Date(year, month, day);
+            }
+        });
+
+
+        document.getElementById('searchFilters').addEventListener('click', () => {
+            const dateFrom = document.getElementById('datepicker_from');
+            const datepickerTo = document.getElementById('datepicker_to');
+
+            if (!dateFrom.value && !datepickerTo.value) {
+                showCornerModal('Выберите фильтр');
+                return;
+            }
+
+            if (!dateFrom.value && datepickerTo.value) {
+                showCornerModal('Выберите начало даты!');
+                return;
+            }
+
+
+            const params = new URLSearchParams();
+
+            if (dateFrom.value) params.append('date_from', dateFrom.value);
+            if (datepickerTo.value) params.append('date_to', datepickerTo.value);
+
+            // Замените '/search' на нужный тебе путь
+            window.location.href = `/debts/getMutualSettlements?${params.toString()}`;
+        });
+
+
+    </script>
+
+
+
+
+{% endblock %}

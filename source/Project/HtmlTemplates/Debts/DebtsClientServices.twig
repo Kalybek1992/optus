@@ -1,0 +1,372 @@
+{% extends './Navbar/Navbar.twig' %}
+
+{% block content %}
+
+    {% include './Breadcrumb/DebtsClientServices.twig' %}
+
+    <div class="flex justify-center items-start min-h-screen bg-base-200 pt-6 px-6">
+        <div class="bg-base-100 border-4 border-base-300 shadow-xl rounded-2xl p-6 w-full max-w-screen-xl lg:px-12 space-y-10">
+
+            {% if mutual_settlement is empty %}
+                <div role="alert" class="alert alert-warning">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 shrink-0 stroke-current" fill="none" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    </svg>
+                    <span>Отсутствие взаимный расчет!</span>
+                </div>
+            {% endif %}
+
+            {% for mutual in mutual_settlement %}
+                <!-- Блок "Оплата поставщику" -->
+                <div>
+                    <h2 class="text-2xl font-bold text-center mb-6">Оплата поставщику</h2>
+                    <div class="overflow-x-auto border border-gray-300 rounded-lg p-2 bg-base-100">
+                        <table class="table table-zebra w-full">
+                            <thead>
+                                <tr>
+                                    <th>Название компании</th>
+                                    <th>ИНН</th>
+                                    <th>Назначение платежа</th>
+                                    <th>Сумма</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            {% set good_amount_total = 0 %}
+                                {% for good in mutual.suppliers %}
+                                    <tr>
+                                        <td>{{ good.good_company_name }}</td>
+                                        <td>{{ good.good_inn }}</td>
+                                        <td>{{ good.good_description }}</td>
+                                        <td>{{ good.good_amount }}</td>
+                                    </tr>
+                                    {% set  good_amount_total =  good_amount_total + good.good_amount %}
+                                {% endfor %}
+                                <!-- Итог -->
+                                <tr>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td id="debit-suppliers"
+                                        data-debt-suppliers="{{  good_amount_total }}">{{  good_amount_total }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <!-- Блок "Клиент услуги" -->
+                <div>
+                    <h2 class="text-2xl font-bold text-center mb-6">Клиент услуги</h2>
+                    <div class="overflow-x-auto border border-gray-300 rounded-lg p-2 bg-base-100">
+                        <table class="table table-zebra w-full">
+                            <thead>
+                                <tr>
+                                    <th>Название компании</th>
+                                    <th>ИНН</th>
+                                    <th>Назначение платежа</th>
+                                    <th>Сумма</th>
+                                    <th>Процент</th>
+                                    <th>В деньгах</th>
+                                    <th>Долг в бн</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            {% set interest_total = 0 %}
+                            {% set service_transaction_total = 0 %}
+                            {% set service_amount_total = 0 %}
+                            {% set supplier_id = 0 %}
+
+                            {% for service in mutual.services %}
+                                <tr>
+                                    <td>{{ service.service_company_name }}</td>
+                                    <td>{{ service.service_inn }}</td>
+                                    <td>{{ service.service_description }}</td>
+                                    <td>{{ service.service_transaction_amount }}</td>
+                                    <td>{{ service.service_percent }}</td>
+                                    <td>{{ service.service_interest_income }}</td>
+                                    <td>{{ service.service_amount }}</td>
+                                </tr>
+                                <!-- Итог -->
+                                {% set interest_total = interest_total + service.service_interest_income %}
+                                {% set service_transaction_total = service_transaction_total + service.service_transaction_amount %}
+                                {% set service_amount_total = service_amount_total + service.service_amount %}
+                                {% set supplier_id = service.supplier_id %}
+                            {% endfor %}
+                                <tr>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td>{{ service_transaction_total }}</td>
+                                    <td></td>
+                                    <td>{{ interest_total  }}</td>
+                                    <td id="debit-clients"
+                                        data-debt-clients="{{ service_amount_total }}">{{ service_amount_total }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <!-- Кнопка -->
+                <div class="flex justify-center">
+                    <button
+                            data-debt-suppliers="{{  good_amount_total }}"
+                            data-debt-clients="{{ service_amount_total }}"
+                            data-debt-supplier-id="{{ supplier_id }}"
+                            class="mutual-settlement btn bg-purple-600 border-2 border-purple-800 text-white text-lg px-8 py-3 rounded-xl shadow-lg hover:bg-purple-700 transition duration-300">
+                        Взаиморасчёт
+                    </button>
+                </div>
+
+                <div class="w-full border-t-2 border-gray-300 mb-6"></div>
+
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="flex items-center justify-center py-10"></div>
+
+    <!-- Модальное окно -->
+    <dialog id="settlementModal" class="modal">
+        <div class="modal-box w-full max-w-2xl space-y-4">
+            <h3 class="text-xl font-bold text-center mb-2">Взаиморасчёт</h3>
+            <div class="flex justify-between text-sm sm:text-base font-semibold text-gray-700">
+                <span>Долг транзит:</span>
+                <span id="modal-debt">0,00 ₽</span>
+            </div>
+            <div class="flex justify-between text-sm sm:text-base font-semibold text-gray-700">
+                <span>Доступно на оплату:</span>
+                <span id="modal-available">0,00 ₽</span>
+            </div>
+            <div>
+                <label for="repayment-input" class="label font-semibold text-gray-700 mb-1">Сумма для погашения</label>
+                <input
+                        type="number"
+                        id="repayment-input"
+                        inputmode="decimal"
+                        min="0"
+                        step="0.01"
+                        class="input w-full border border-gray-400 rounded-xl px-4 py-2
+                        focus:outline-none focus:ring-0 focus:border-gray-400 hover:border-gray-400"
+                        autocomplete="off"
+                >
+            </div>
+            <div>
+                <input
+                        type="range"
+                        id="repayment-range"
+                        min="0"
+                        step="0.01"
+                        class="range w-full rounded-xl"
+                >
+            </div>
+
+            <div class="flex justify-between text-sm sm:text-base font-semibold text-gray-700">
+                <span>Остаток долга:</span>
+                <span id="remaining-debt">0,00 ₽</span>
+            </div>
+            <div class="flex justify-between text-sm sm:text-base font-semibold text-gray-700">
+                <span>Остаток на заказ товара:</span>
+                <span id="remaining-available">0,00 ₽</span>
+            </div>
+
+            <div class="flex flex-col sm:flex-row justify-end sm:space-x-3 space-y-2 sm:space-y-0 pt-4">
+                <button
+                        id="pay-all"
+                        class="btn bg-purple-600 border-2 border-purple-800 text-white text-sm sm:text-base px-6 py-2 rounded-xl shadow-lg hover:bg-purple-700 transition duration-300"
+                >
+                    Погасить полностью
+                </button>
+
+                <button
+                        id="confirm-pay"
+                        class="btn bg-purple-600 border-2 border-purple-800 text-white text-sm sm:text-base px-6 py-2 rounded-xl shadow-lg hover:bg-purple-700 transition duration-300"
+                >
+                    Подтвердить
+                </button>
+
+                <form method="dialog">
+                    <button
+                            class="btn bg-red-500 text-white text-sm sm:text-base px-6 py-2 rounded-xl shadow-lg hover:bg-red-600 transition duration-300"
+                    >
+                        Отмена
+                    </button>
+                </form>
+            </div>
+        </div>
+    </dialog>
+
+    <input type="checkbox" id="notifications" class="hidden peer" />
+    <div class="fixed bottom-4 right-4 z-50 max-w-sm w-full
+            hidden peer-checked:flex flex-col bg-white border border-gray-300 rounded-xl shadow-xl
+            animate-fade-in transition-opacity duration-300 ease-out
+            px-5 py-4 space-y-2">
+
+        <div class="flex items-start justify-between">
+            <div class="flex items-start space-x-2">
+                <svg class="w-6 h-6 text-blue-500 mt-1 shrink-0" fill="none" stroke="currentColor" stroke-width="1.5"
+                     viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                          d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022 23.85 23.85 0 0 0 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0 3 3 0 1 0 5.714 0ZM3.124 7.5A8.969 8.969 0 0 1 5.292 3m13.416 0a8.969 8.969 0 0 1 2.168 4.5"/>
+                </svg>
+
+                <div>
+                    <h3 class="text-base font-semibold text-gray-900">Уведомление</h3>
+                    <p id="notifications-txt" class="text-sm text-gray-600 leading-snug mt-1">...</p>
+                </div>
+            </div>
+
+            <label for="notifications" class="text-gray-400 hover:text-gray-600 transition cursor-pointer">
+                ✕
+            </label>
+        </div>
+    </div>
+
+    <script src="/assets/js/PostData.js?v=<?= time() ?>"></script>
+
+
+    <script>
+        const modal = document.getElementById('settlementModal');
+        const input = document.getElementById('repayment-input');
+        const range = document.getElementById('repayment-range');
+        const remainingDebt = document.getElementById('remaining-debt');
+        const remainingAvailable = document.getElementById('remaining-available');
+        const modalDebt = document.getElementById('modal-debt');
+        const modalAvailable = document.getElementById('modal-available');
+        const payAllBtn = document.getElementById('pay-all');
+        const confirmPayBtn = document.getElementById('confirm-pay');
+
+        document.querySelectorAll('.mutual-settlement').forEach(btn => {
+            btn.addEventListener('click', () => {
+                // Получаем данные с атрибутов кнопки
+                const debt = Math.floor(parseFloat(btn.dataset.debtClients) || 0);
+                const available = Math.floor(parseFloat(btn.dataset.debtSuppliers) || 0);
+                const maxRepay = Math.min(debt, available);
+
+                modalDebt.textContent = debt.toLocaleString() + ' ₽';
+                modalAvailable.textContent = available.toLocaleString() + ' ₽';
+
+                input.value = '0';
+                input.max = maxRepay;
+                input.step = '1';
+
+                range.max = maxRepay;
+                range.step = '1';
+                range.value = 0;
+
+                updateRemaining();
+
+                // Сохраним текущие данные в атрибутах модального окна или глобальных переменных, если нужно
+                modal.dataset.currentDebt = debt;
+                modal.dataset.currentAvailable = available;
+                modal.dataset.supplierId = btn.dataset.debtSupplierId || '';
+
+                modal.showModal();
+            });
+        });
+
+        range.addEventListener('input', () => {
+            let val = parseInt(range.value) || 0;
+            const max = Math.min(getDebt(), getAvailable());
+            if (val > max) val = max;
+
+            input.value = val;
+            updateRemaining();
+        });
+
+        input.addEventListener('input', () => {
+            input.value = input.value.replace(/[^\d]/g, ''); // Только цифры
+
+            let val = parseFloat(input.value) || 0;
+
+            const max = Math.min(getDebt(), getAvailable());
+            if (val > max) val = max;
+
+            input.value = val;
+            range.value = val;
+            updateRemaining();
+        });
+
+        payAllBtn.onclick = () => {
+            const val = Math.min(getDebt(), getAvailable());
+
+            input.value = val;
+            range.value = val;
+            updateRemaining();
+        };
+
+        function updateRemaining() {
+            const repay = parseInt(input.value) || 0;
+            const debt = getDebt();
+            const available = getAvailable();
+
+            const remainingDebtValue = Math.max(0, debt - repay);
+            const remainingAvailableValue = Math.max(0, available - repay);
+
+            remainingDebt.textContent = remainingDebtValue.toLocaleString() + ' ₽';
+            remainingAvailable.textContent = remainingAvailableValue.toLocaleString() + ' ₽';
+        }
+
+        function getDebt() {
+            return Math.floor(parseFloat(modal.dataset.currentDebt) || 0);
+        }
+
+        function getAvailable() {
+
+            return Math.floor(parseFloat(modal.dataset.currentAvailable) || 0);
+        }
+
+        function showCornerModal(message) {
+            const checkbox = document.getElementById('notifications');
+            const txtModal = document.getElementById('notifications-txt');
+            checkbox.checked = true;
+            txtModal.innerHTML= message;
+
+
+            setTimeout(() => {
+                checkbox.checked = false;
+            }, 5000);
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            const msg = localStorage.getItem('cornerModalMessage');
+            if (msg) {
+                showCornerModal(msg);
+                localStorage.removeItem('cornerModalMessage'); // чтобы не повторялось
+            }
+        });
+
+        confirmPayBtn.addEventListener('click', async (e) => {
+            const amountRepaid = input.value.replace(/\D/g, '');
+            const supplierId = modal.dataset.supplierId;
+
+
+            if (amountRepaid <= 0) {
+                return;
+            }
+
+
+            const result = await postData('/debts/mutualSettlement', {
+                amount_repaid: amountRepaid,
+                supplier_id: supplierId
+            });
+
+            if (result.status === 'error' || result === 'error') {
+                showCornerModal('Не удалось провести взаимозачет!')
+                return;
+            }
+
+            localStorage.setItem(
+                'cornerModalMessage',
+                'Успешно провели взаимный расчет ожидайте подтверждения со стороны поставщика!'
+            );
+            location.reload();
+        });
+
+
+    </script>
+
+
+
+
+
+
+{% endblock %}

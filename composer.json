@@ -1,0 +1,24 @@
+{
+  "autoload": {
+    "psr-4": {
+      "Source\\": "source/"
+    }
+  },
+  "require": {
+    "ext-mbstring": "*",
+    "ext-curl": "*",
+    "ext-pdo": "*",
+    "ext-mcrypt": "*",
+    "ext-openssl": "*",
+    "ext-zip": "*",
+    "ext-dom": "*",
+    "ext-libxml": "*",
+    "twig/twig": "^3.20",
+    "ext-couchbase": "*",
+    "ext-intl": "*",
+    "phpoffice/phpspreadsheet": "^5.2"
+  },
+  "config": {
+    "secure-http": false
+  }
+}

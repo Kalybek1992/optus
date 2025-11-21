@@ -1,0 +1,483 @@
+{% extends './Navbar/Navbar.twig' %}
+
+{% block content %}
+
+    {% include './Breadcrumb/LinkExpensesCourier.twig' %}
+
+    <div class="w-full max-w-5xl mx-auto px-4 pb-96 my-8">
+        <ul class="list bg-base-100 rounded-lg shadow-md space-y-4">
+            <li class="relative p-4 hover:bg-base-200 transition rounded-lg border border-gray-300">
+                {% for entitie in entities %}
+                    <div class="space-y-2">
+                        <!-- ИНН -->
+                        <div class="flex items-center text-sm text-base-content opacity-80">
+
+                            <span id="legal_entities"
+                                  data-entity-id="{{ entitie.id }}"
+                                  data-entity-bank_account="{{ entitie.bank_account }}"
+                                  data-entity-company_name="{{ entitie.company_name }}"
+                                  data-entity-transaction_data="{{ entitie.transaction_data }}"
+                                  data-entity-inn="{{ entitie.inn }}"
+                                  data-entity-description="{{ entitie.description }}"
+                                  class="mr-2 font-semibold text-gray-600">ИНН:
+                            </span>
+
+                            <span class="italic font-mono text-gray-800"
+                                  id="inn-{{ loop.index }}">{{ entitie.inn }}</span>
+
+                            <button type="button" class="ml-2 text-gray-600 hover:text-gray-900"
+                                    onclick="copyText('{{ entitie.inn }}')">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2"
+                                     viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                          d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8l6 6v4"/>
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M14 2v6h6"/>
+                                </svg>
+                            </button>
+                        </div>
+
+                        <!-- Счёт -->
+                        <div class="flex items-center text-sm text-base-content opacity-80">
+                            <span class="mr-2 font-semibold text-gray-600">Счёт:</span>
+                            <span class="italic font-mono text-gray-800"
+                                  id="account-{{ loop.index }}">{{ entitie.bank_account }}</span>
+                            <button type="button" class="ml-2 text-gray-600 hover:text-gray-900"
+                                    onclick="copyText('{{ entitie.bank_account }}')">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2"
+                                     viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                          d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8l6 6v4"/>
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M14 2v6h6"/>
+                                </svg>
+                            </button>
+                        </div>
+
+                        <!-- Компания -->
+                        <div class="flex items-center text-sm text-base-content opacity-80">
+                            <span class="mr-2 font-semibold text-gray-600">Компания:</span>
+                            <span class="italic font-serif text-gray-800">{{ entitie.company_name }}</span>
+                            <button type="button" class="ml-2 text-gray-600 hover:text-gray-900"
+                                    onclick="copyText('{{ entitie.company_name }}')">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2"
+                                     viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                          d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8l6 6v4"/>
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M14 2v6h6"/>
+                                </svg>
+                            </button>
+                        </div>
+
+                        <!-- Дата -->
+                        <div class="flex items-center text-sm text-base-content opacity-80">
+                            <span class="mr-2 font-semibold text-gray-600">Дата транзакции:</span>
+                            <span class="italic font-serif text-gray-800">{{ entitie.transaction_data }}</span>
+                        </div>
+
+                        <!-- От кого / Кому -->
+                        {% if entitie.from_whom %}
+                            <div class="flex items-center text-sm text-base-content opacity-80">
+                                <span class="mr-2 font-semibold text-gray-600">От кого компания:</span>
+                                <span class="italic font-serif text-gray-800">{{ entitie.from_whom }}</span>
+                                <button type="button" class="ml-2 text-gray-600 hover:text-gray-900"
+                                        onclick="copyText('{{ entitie.from_whom }}')">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2"
+                                         viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                              d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8l6 6v4"/>
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M14 2v6h6"/>
+                                    </svg>
+                                </button>
+                            </div>
+                        {% elseif entitie.to_whom %}
+                            <div class="flex items-center text-sm text-base-content opacity-80">
+                                <span class="mr-2 font-semibold text-gray-600">Кому компания:</span>
+                                <span class="italic font-serif text-gray-800">{{ entitie.to_whom }}</span>
+                                <button type="button" class="ml-2 text-gray-600 hover:text-gray-900"
+                                        onclick="copyText('{{ entitie.to_whom }}')">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2"
+                                         viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                              d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8l6 6v4"/>
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M14 2v6h6"/>
+                                    </svg>
+                                </button>
+                            </div>
+                        {% endif %}
+
+                        <!-- hhhhhhh -->
+                        {% if entitie.from_whom_bank %}
+                            <div class="flex items-center text-sm text-base-content opacity-80">
+                                <span class="mr-2 font-semibold text-gray-600">От кого банк:</span>
+                                <span class="italic font-serif text-gray-800">{{ entitie.from_whom_bank }}</span>
+                                <button type="button" class="ml-2 text-gray-600 hover:text-gray-900"
+                                        onclick="copyText('{{ entitie.from_whom_bank }}')">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2"
+                                         viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                              d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8l6 6v4"/>
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M14 2v6h6"/>
+                                    </svg>
+                                </button>
+                            </div>
+                        {% elseif entitie.to_whom_bank %}
+                            <div class="flex items-center text-sm text-base-content opacity-80">
+                                <span class="mr-2 font-semibold text-gray-600">Кому банк:</span>
+                                <span class="italic font-serif text-gray-800">{{ entitie.to_whom_bank }}</span>
+                                <button type="button" class="ml-2 text-gray-600 hover:text-gray-900"
+                                        onclick="copyText('{{ entitie.to_whom_bank }}')">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2"
+                                         viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                              d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8l6 6v4"/>
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M14 2v6h6"/>
+                                    </svg>
+                                </button>
+                            </div>
+                        {% endif %}
+
+                        <!-- Баланс -->
+                        <div class="flex items-center text-sm text-gray-700 font-semibold bg-gray-100 rounded-lg px-3 py-2 w-fit">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                 stroke-width="1.5" stroke="currentColor" class="size-6 w-5 h-5 mr-2 text-gray-500">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                      d="M2.25 18.75a60.07 60.07 0 0 1 15.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 0 1 3 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 0 0-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 0 1-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 0 0 3 15h-.75M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm3 0h.008v.008H18V10.5Zm-12 0h.008v.008H6V10.5Z"/>
+                            </svg>
+                            Сумма: <span class="ml-2 font-mono"
+                                         id="balance"
+                                         data-entity-balance="{{ entitie.balance }}">{{ entitie.balance }}</span>
+                        </div>
+
+                        <!-- Описание -->
+                        <div class="mb-4">
+                            <label for="description" class="block text-sm font-medium text-gray-700 mb-1">
+                                Описание
+                            </label>
+                            <textarea id="description" name="description"
+                                      class="textarea textarea-bordered w-full text-sm text-base-content italic"
+                                      rows="4" readonly>{{ entitie.description }}</textarea>
+                        </div>
+                    </div>
+
+
+                    <!-- Карты и комментарий -->
+                    <div class="space-y-4 mt-4">
+
+                        <!-- ВЫБОР КАРТЫ (НЕ ИЗМЕНЁН) -->
+                            <div x-data="{
+                                open: false,
+                                selectedCard: null
+                            }" class="relative w-full max-w-md">
+
+                                {% if cards is empty %}
+                                    <a id="open-create-card-modal" class="cursor-pointer" data-company="{{ legal_id }}">
+                                        <div role="alert" class="alert alert-warning">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 shrink-0 stroke-current"
+                                                 fill="none" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                      d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                                            </svg>
+                                            <span>Создайте карту для этой компании!</span>
+                                        </div>
+                                    </a>
+
+                                {% else %}
+
+                                    <!-- Кнопка выбора карты -->
+                                    <button @click="open = !open"
+                                            class="w-full text-left bg-white border border-gray-300 px-5 py-3 rounded-xl shadow-sm hover:shadow-md transition text-base font-medium">
+                                        <template x-if="!selectedCard">
+                                            <span>Выберите карту</span>
+                                        </template>
+                                        <template x-if="selectedCard">
+                                            <span class="font"
+                                                  x-text="selectedCard.number.replace(/(\d{4})(?=\d)/g, '$1 ')"></span>
+                                        </template>
+                                    </button>
+
+                                {% endif %}
+
+                                <!-- Скрытое поле -->
+                                <input id="card_id_hidden" type="hidden" name="card_id" :value="selectedCard?.id">
+
+                                <!-- ВЫПАДАЮЩИЙ СПИСОК КАРТ -->
+                                <div x-show="open"
+                                     @click.outside="open = false"
+                                     class="absolute mt-2 w-full z-50 bg-white border border-gray-200 rounded-xl shadow-xl p-4 space-y-3 transition-all duration-300"
+                                     x-transition>
+                                    {% for card in cards %}
+                                        <div
+                                                @click="selectedCard = { id: {{ card.id }}, number: '{{ card.card_number }}' }; open = false"
+                                                class="cursor-pointer px-4 py-2 rounded-md hover:bg-gray-100 transition">
+
+                                            <div class="font-bold text-sm">
+                                                {{ card.card_number|slice(0, 4) }} {{ card.card_number|slice(4, 4) }} {{ card.card_number|slice(8, 4) }} {{ card.card_number|slice(12, 4) }}
+                                            </div>
+
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+
+                            <!-- ВЫБОР КУРЬЕРА (ТЕПЕРЬ ЕДИНСТВЕННЫЙ РЕЖИМ) -->
+                            <div x-data="{
+                                    openCourierList: false,
+                                    selectedCourier: null
+                                }" class="w-full max-w-5xl">
+
+                                    <!-- Скрыто устанавливаем тип -->
+                                    <input type="hidden" name="delivery_type" value="courier">
+
+                                    <div class="relative">
+
+                                        {% if couriers is empty %}
+
+                                            <a href="/user/addUser?return_page=/entities/linkRemovalOrder?order_id={{ bank_order.id }}"
+                                               class="btn h-12 w-80 px-4 text-left border border-gray-300 bg-gray-50 text-gray-700 hover:bg-blue-100 rounded-xl flex items-center justify-between transition">
+                                                <template x-if="!selectedCourier">
+                                                    <span>Создать курьера</span>
+                                                </template>
+                                                <template x-if="selectedCourier">
+                                                    <span x-text="selectedCourier.name"></span>
+                                                </template>
+                                            </a>
+
+                                        {% else %}
+
+                                            <!-- Кнопка выбора курьера -->
+                                            <button @click="openCourierList = !openCourierList"
+                                                    class="btn h-12 w-80 px-4 text-left border border-gray-300 bg-gray-50 text-gray-700 hover:bg-blue-100 rounded-xl flex items-center justify-between transition">
+
+                                                <template x-if="!selectedCourier">
+                                                    <span>Выберите курьера</span>
+                                                </template>
+                                                <template x-if="selectedCourier">
+                                                    <span x-text="selectedCourier.name"></span>
+                                                </template>
+
+                                                <svg class="w-4 h-4 ml-2 text-gray-400" fill="none" stroke="currentColor"
+                                                     stroke-width="2"
+                                                     viewBox="0 0 24 24">
+                                                    <path d="M19 9l-7 7-7-7"/>
+                                                </svg>
+                                            </button>
+
+                                            <!-- Скрытое поле -->
+                                            <input type="hidden" name="courier_id" :value="selectedCourier?.id">
+
+                                            <!-- Выпадающий список -->
+                                            <div x-show="openCourierList"
+                                                 @click.outside="openCourierList = false"
+                                                 class="absolute mt-2 w-80 z-50 bg-white border border-gray-200 rounded-xl shadow-xl p-2 space-y-1 transition-all duration-300"
+                                                 x-transition>
+                                                {% for courier in couriers %}
+                                                    <div @click="selectedCourier = { id: {{ courier.id }}, name: '{{ courier.name }}' }; openCourierList = false"
+                                                         class="cursor-pointer px-4 py-2 rounded-md hover:bg-gray-100 transition text-sm flex flex-col">
+                                                        <span class="font-medium text-gray-900">{{ courier.name }}</span>
+                                                        <span class="text-gray-600 text-xs truncate">{{ courier.email }}</span>
+                                                    </div>
+                                                {% endfor %}
+                                            </div>
+                                        {% endif %}
+                                </div>
+                            </div>
+                        <!-- КОММЕНТАРИЙ -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Комментарий</label>
+                            <textarea id="comments"
+                                      class="textarea textarea-bordered w-full"
+                                      rows="3" maxlength="256"
+                                      placeholder="Введите комментарий..."></textarea>
+                        </div>
+
+                        <!-- КНОПКА -->
+                        <div class="text-right">
+                            <label id="save_expense"
+                                   class="btn btn-primary btn-sm">Сохранить</label>
+                        </div>
+                    </div>
+                {% endfor %}
+
+            </li>
+        </ul>
+    </div>
+
+    <input type="checkbox" id="save_expense_modal" class="modal-toggle"/>
+    <div class="modal" role="dialog">
+        <div class="modal-box space-y-4">
+            <h1 class="text-lg font-bold text-gray-800">Подтвердить отправку курьеру</h1>
+
+            <!-- Сумма -->
+            <div>
+                <div class="text-xs uppercase font-semibold text-gray-500 mb-1 tracking-wide">Сумма</div>
+                <div class="bg-green-100 px-3 py-2 rounded-xl text-sm text-green-700 font-medium"
+                     id="modal_balance"></div>
+            </div>
+
+            <!-- Карта -->
+            <div id="modal_card_block" class="mb-4">
+                <div class="text-xs uppercase font-semibold text-gray-500 mb-1 tracking-wide">Карта</div>
+                <div class="bg-gray-100 px-3 py-2 rounded-xl text-sm text-gray-800 font-mono"
+                     id="modal_card_number"></div>
+            </div>
+
+            <!-- Назначение -->
+            <div id="modal_appointment_block" class="hidden">
+                <div class="text-xs uppercase font-semibold text-gray-500 mb-1 tracking-wide">Назначение</div>
+                <div class="bg-gray-100 px-3 py-2 rounded-xl text-sm text-gray-800" id="modal_appointment"></div>
+            </div>
+
+            <!-- Курьер -->
+            <div id="modal_courier_info" class="hidden space-y-1">
+                <div class="text-xs uppercase font-semibold text-gray-500 mb-1 tracking-wide">Курьер</div>
+                <div class="bg-gray-100 px-3 py-2 rounded-xl text-sm text-gray-800 font-mono"
+                     id="modalCourierName"></div>
+                <div class="bg-gray-100 px-3 py-2 rounded-xl text-sm text-gray-800 font-mono"
+                     id="modalCourierEmail"></div>
+            </div>
+
+            <!-- Комментарий -->
+            <div>
+                <div class="text-xs uppercase font-semibold text-gray-500 mb-1 tracking-wide">Комментарий</div>
+                <textarea readonly id="modal_comments"
+                          class="w-full textarea textarea-bordered bg-gray-100 text-sm text-gray-800 rounded-xl"></textarea>
+            </div>
+
+            <!-- Кнопки -->
+            <div class="modal-action pt-2">
+                <button id="confirmExpense" class="btn btn-primary btn-sm">Подтвердить</button>
+                <label for="save_expense_modal" class="btn btn-sm">Отменить</label>
+            </div>
+        </div>
+    </div>
+
+    <dialog id="errorModal" class="modal">
+        <div class="modal-box">
+            <h3 class="text-lg font-bold">Ошибка!</h3>
+            <p id="errorText" class="py-4"></p>
+            <div class="modal-action">
+                <form method="dialog">
+                    <button class="btn">Закрыть</button>
+                </form>
+            </div>
+        </div>
+    </dialog>
+
+    <dialog id="success_modal" class="modal">
+        <div class="modal-box">
+            <h3 class="text-lg font-bold">Успех!</h3>
+            <p id="successText" class="py-4">Успешно отправили курьеру.</p>
+            <div class="modal-action">
+                <form method="dialog">
+                    <a href="/entities/unknownAccounts" class="btn">готово</a>
+                </form>
+            </div>
+        </div>
+    </dialog>
+
+    {% if cards is empty %}
+        {% include './AddCardModal.twig' %}
+    {% endif %}
+
+    <script src="/assets/js/CopyText.js?v=<?= time() ?>"></script>
+    <script src="/assets/js/PostData.js?v=<?= time() ?>"></script>
+
+    <script>
+        const openErrorModal = (message) => {
+            errorText.innerHTML = message;
+            document.getElementById('errorModal').showModal();
+        };
+
+        const legalEntities = document.getElementById('legal_entities');
+        const comment = document.getElementById('comments');
+        const balance = document.getElementById('balance');
+
+        const commentsModal = document.getElementById('modal_comments');
+        const balanceModal = document.getElementById('modal_balance');
+        const modalPayer = document.getElementById('modalPayer');
+        const modalRecipient = document.getElementById('modalRecipient');
+
+        const modalAppointment = document.getElementById('modal_appointment');
+        const modalCourierBlock = document.getElementById('modal_courier_info');
+        const modalCourierName = document.getElementById('modalCourierName');
+        const modalCourierEmail = document.getElementById('modalCourierEmail');
+
+        let legal_id, card_id, comments_string, courier_id = null;
+
+        document.getElementById('save_expense').addEventListener('click', () => {
+            legal_id = legalEntities.getAttribute('data-entity-id');
+            card_id = document.getElementById('card_id_hidden').value;
+            comments_string = comment.value;
+
+            const courierInput = document.querySelector('input[name="courier_id"]');
+
+            const modalCardBlock = document.getElementById('modal_card_block');
+            const modalAppointmentBlock = document.getElementById('modal_appointment_block');
+
+            // Сброс отображения
+            modalCardBlock.classList.add('hidden');
+            modalAppointmentBlock.classList.add('hidden');
+            modalCourierBlock.classList.add('hidden');
+
+            if (!card_id) {
+                openErrorModal('Выберите карту!');
+                return;
+            }
+
+            if (!comments_string) {
+                openErrorModal('Укажите комментарий!');
+                return;
+            }
+
+            const selectedType = 'courier';
+            balanceModal.textContent = balance.textContent;
+            commentsModal.textContent = comments_string;
+
+            // Назначение
+            modalAppointment.textContent = selectedType === 'courier' ? 'Курьеру' : 'Товарный баланс';
+            modalAppointmentBlock.classList.remove('hidden');
+
+            // Курьер
+            courier_id = courierInput?.value || null;
+
+            if (!courier_id) {
+                openErrorModal('Выберите курьера!');
+                return;
+            }
+
+            const courierNameEl = document.querySelector('[x-text="selectedCourier.name"]');
+            const courierEmailEl = document.querySelector('.text-xs.truncate');
+
+            modalCourierName.textContent = courierNameEl?.textContent.trim() || '';
+            modalCourierEmail.textContent = courierEmailEl?.textContent.trim() || '';
+            modalCourierBlock.classList.remove('hidden');
+            document.getElementById('save_expense_modal').checked = true;
+        });
+
+        document.getElementById('confirmExpense').addEventListener('click', async () => {
+            let data;
+            data = {
+                legal_id: legal_id,
+                card_id: card_id,
+                courier_id: courier_id,
+                comment: comments_string,
+            };
+
+            const result = await postDataRes('/transaction/sendingCourier', data);
+
+            document.getElementById('save_expense_modal').checked = false;
+
+            if (result === 'error') {
+                openErrorModal('Ошибка при отправке данных!');
+                return;
+            }
+
+            if (result.success) {
+                document.getElementById('success_modal').showModal();
+            } else {
+                openErrorModal('Не удалось сохранить доход!');
+            }
+        });
+    </script>
+
+
+{% endblock %}

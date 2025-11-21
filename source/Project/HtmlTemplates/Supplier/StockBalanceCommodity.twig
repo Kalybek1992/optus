@@ -1,0 +1,421 @@
+{% extends './Navbar/Navbar.twig' %}
+
+{% block content %}
+
+    {% include './Breadcrumb/DistributionCommodityMoney.twig' %}
+
+    <div class="w-full max-w-5xl mx-auto px-4 pb-96 my-8">
+        <ul class="list bg-base-100 rounded-lg shadow-md space-y-4">
+            <li class="relative p-4 bg-base-200 rounded-lg">
+
+                <!-- Указать сумму -->
+                <div x-data="{
+                        total: {{ stock_balances }},
+                        entered: '',
+                        get status() {
+                            if (!this.entered) return 'ok';
+                            if (isNaN(this.entered)) return 'invalid';
+                            return 'ok';
+                        }
+                    }" class="flex items-center gap-3 mb-4">
+
+                    <!-- Баланс -->
+                    <div class="flex items-center text-sm font-semibold px-3 py-3 h-12 rounded-lg border border-green-500 bg-white text-black font-bold w-36">
+                        Сумма: <span id="stock-balances" class="ml-2 font-mono" x-text="total"></span>
+                    </div>
+
+                    <!-- Поле ввода -->
+                    <input id="balance" type="text" x-model="entered"
+                           :class="status === 'invalid'
+                ? 'border border-red-500 text-red-500 bg-white'
+                : 'border border-green-500 text-green-700 bg-white'"
+                           class="h-12 w-32 px-3 rounded-lg focus:outline-none transition-colors duration-200"
+                           placeholder="Введите сумму">
+
+                    <!-- Ошибка -->
+                    <div class="text-sm mt-1 text-red-500"
+                         x-text="status === 'invalid' ? 'Введите число!' : ''"></div>
+                </div>
+
+
+                <!-- Выбор передачи -->
+                <div class="space-y-4" x-data="{
+                selected: null,
+                openClientList: false,
+                selectedClient: null,
+                selectedExpense: null,
+                expensePath: [],
+                select(type) {
+                        this.selected = type;
+                        this.openClientList = false;
+                        if(type === 'client') this.selectedExpense = null;
+                        if(type === 'expense') this.selectedClient = null;
+                    }
+                }">
+
+                    <!-- Клиент -->
+                    <div class="flex items-center gap-2">
+                        <input type="radio" id="radio_client" name="delivery_type" value="client"
+                               class="hidden peer/client" x-model="selected" @change="select('client')">
+
+                        <label for="radio_client"
+                               class="w-48 h-12 flex items-center justify-center border rounded-xl cursor-pointer
+                                  bg-white text-green-700
+                                  peer-checked/client:bg-emerald-600 peer-checked/client:text-white
+                                  hover:peer-checked/client:bg-emerald-700 transition">
+                            Закрыть долг клиента
+                        </label>
+
+                        <div class="relative" x-show="selected === 'client'" x-transition>
+                            {% if clients is empty %}
+                                <a href="/supplier/addUserPage?return_page=/supplier/stockBalanceCommodity"
+                                   class="w-80 h-12 flex items-center justify-between border rounded-xl px-4 bg-white text-green-700 border-green-500 hover:bg-green-50 transition">
+                                    <template x-if="!selectedClient">
+                                        <span>Создать клиента</span>
+                                    </template>
+                                    <template x-if="selectedClient">
+                                        <span x-text="selectedClient.name"></span>
+                                    </template>
+                                </a>
+                            {% else %}
+                                <button @click="openClientList = !openClientList"
+                                        class="w-80 h-12 flex items-center justify-between border rounded-xl px-4 bg-white text-green-700 border-green-500 hover:bg-green-50 transition">
+                                    <template x-if="!selectedClient">
+                                        <span>Выберите клиента</span>
+                                    </template>
+                                    <template x-if="selectedClient">
+                                        <span x-text="selectedClient.name"></span>
+                                    </template>
+                                    <svg class="w-4 h-4 ml-2 text-green-600" fill="none" stroke="currentColor"
+                                         stroke-width="2" viewBox="0 0 24 24">
+                                        <path d="M19 9l-7 7-7-7"/>
+                                    </svg>
+                                </button>
+
+                                <input type="hidden" name="client_id" :value="selectedClient?.id">
+                                <input type="hidden" name="client_name" :value="selectedClient?.name">
+
+                                <div x-show="openClientList"
+                                     @click.outside="openClientList = false"
+                                     class="absolute mt-2 w-80 z-50 bg-white border border-green-200 rounded-xl shadow-sm p-2 space-y-1 transition-all duration-300">
+                                    {% for client in clients %}
+                                        <div @click="selectedClient = { id: {{ client.id }}, name: '{{ client.name }}' }; openClientList = false"
+                                             class="cursor-pointer px-4 py-2 rounded-md hover:bg-green-50 transition text-sm flex flex-col">
+                                            <span class="font-medium text-green-700">{{ client.name }}</span>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                    </div>
+
+                    <!-- Расход -->
+                    <div class="flex items-center gap-2">
+                        <input type="radio" id="radio_expense" name="delivery_type" value="expense"
+                               class="hidden peer/expense" x-model="selected" @change="select('expense')">
+
+                        <label for="radio_expense"
+                               class="w-48 h-12 flex items-center justify-center border rounded-xl cursor-pointer
+                                  bg-white text-green-700
+                                  peer-checked/expense:bg-emerald-600 peer-checked/expense:text-white
+                                  hover:peer-checked/expense:bg-emerald-700 transition">
+                            Определить как расход
+                        </label>
+
+                        <!-- Категории расходов -->
+                        <div class="relative" x-show="selected === 'expense'" x-transition>
+                            <div class="flex items-center justify-between w-full max-w-xl">
+                                <div x-data="{ open: false, level: 0, path: [] }" class="relative w-full">
+                                    <button @click="open = !open"
+                                            class="w-full h-12 text-left border rounded-xl px-5 bg-white text-green-700 border-green-500 hover:bg-green-100 transition flex items-center">
+                                        <template x-if="path.length === 0">
+                                            <span>Выберите категорию расхода</span>
+                                        </template>
+                                        <template x-if="path.length > 0">
+                                            <span id="category" x-text="path.join(' > ')"></span>
+                                        </template>
+                                    </button>
+
+                                    <div x-show="open"
+                                         @click.outside="open = false"
+                                         class="absolute mt-2 w-full  rounded-xl shadow-xl p-4 space-y-3 transition-all">
+                                        <div x-show="level > 0" class="mb-2">
+                                            <button @click="level--; path.pop()" class="text-sm hover:underline">←
+                                                Назад
+                                            </button>
+                                        </div>
+
+                                        {{ categories_html|raw }}
+                                    </div>
+                                </div>
+
+                                <a href="/categories/supplierCategories?return_page=/supplier/stockBalanceCommodity"
+                                   class="ml-4 text-sm font-semibold text-green-600 hover:underline whitespace-nowrap">
+                                    + Создать категорию
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Закрыть долг -->
+                    <div class="flex items-center gap-2">
+                        <input type="radio" id="radio_debt" name="delivery_type" value="debt"
+                               class="hidden peer/debt" x-model="selected" @change="select('debt')">
+                        <label for="radio_debt"
+                               class="w-48 h-12 flex items-center justify-center border rounded-xl cursor-pointer
+                                  bg-white text-green-700
+                                  peer-checked/debt:bg-emerald-600 peer-checked/debt:text-white
+                                  hover:peer-checked/debt:bg-emerald-700 transition">
+                            Закрыть долг компании
+                        </label>
+                    </div>
+
+                    <!-- Комментарий -->
+                    <div>
+                        <label class="block text-sm font-medium text-green-800 mb-1">Комментарий</label>
+                        <textarea id="comments"
+                                  class="textarea textarea-bordered w-full border-green-500"
+                                  rows="3" maxlength="256"
+                                  placeholder="Введите комментарий..."></textarea>
+                    </div>
+
+                    <!-- Сохранить -->
+                    <div class="text-right">
+                        <button id="save_expense"
+                                class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2 px-6 rounded-lg transition-colors duration-200 w-full shadow-sm">
+                            Сохранить
+                        </button>
+                    </div>
+                </div>
+            </li>
+        </ul>
+    </div>
+
+    <!-- Модальное окно распределения товарных денег -->
+    <input type="checkbox" id="save_expense_modal" class="modal-toggle"/>
+    <div class="modal">
+        <div class="modal-box relative rounded-2xl p-6 sm:p-8 w-full max-w-md">
+            <h3 class="text-xl sm:text-2xl font-semibold text-green-800 mb-6 text-center">
+                Распоряжение товарными деньгами
+            </h3>
+
+            <div class="space-y-4">
+                <!-- Назначение -->
+                <div>
+                    <p class="text-sm font-medium text-gray-700 mb-1">Назначение</p>
+                    <div id="modal-purpose" class="text-black font-semibold text-base break-words"></div>
+                </div>
+
+                <div>
+                    <p class="text-sm font-medium text-gray-700 mb-1">Назначение (детали)</p>
+                    <div id="modal-appointment"
+                         class="text-black font-semibold text-base break-words border border-green-300 rounded-lg px-3 py-2 bg-white"></div>
+                </div>
+
+                <!-- Сумма -->
+                <div>
+                    <p class="text-sm font-medium text-gray-700 mb-1">Сумма</p>
+                    <div id="modal-balance"
+                         class="text-black font-bold text-lg border border-green-300 rounded-lg px-3 py-2 bg-white"></div>
+                </div>
+
+                <!-- Остаток -->
+                <div>
+                    <p class="text-sm font-medium text-gray-700 mb-1">Остаток</p>
+                    <div id="modal-remainder"
+                         class="text-black font-bold text-lg border border-green-300 rounded-lg px-3 py-2 bg-white"></div>
+                </div>
+
+                <!-- Комментарий -->
+                <div>
+                    <p class="text-sm font-medium text-gray-700 mb-1">Комментарий</p>
+                    <textarea readonly id="modal-comments"
+                              class="w-full rounded-lg border border-green-300 text-black px-3 py-2 text-sm sm:text-base outline-none focus:outline-none bg-white"
+                              rows="3"></textarea>
+                </div>
+            </div>
+
+            <!-- Кнопки -->
+            <div class="flex justify-end gap-3 mt-6">
+                <label for="save_expense_modal"
+                       class="btn btn-ghost px-5 py-2 text-gray-800 border border-green-300 rounded-lg hover:bg-green-50 transition">
+                    Отмена
+                </label>
+                <button id="confirmExpense"
+                        class="btn bg-green-600 hover:bg-green-700 text-white border-none px-6 py-2 rounded-lg transition">
+                    Подтвердить
+                </button>
+            </div>
+        </div>
+    </div>
+
+
+    <dialog id="errorModal" class="modal">
+        <div class="modal-box border">
+            <h3 class="text-lg font-bold text-green-800">Ошибка!</h3>
+            <p id="errorText" class="py-4 text-green-700"></p>
+            <div class="modal-action">
+                <form method="dialog">
+                    <button class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2 px-6 rounded-lg w-full transition-colors duration-200 shadow-sm">
+                        Закрыть
+                    </button>
+                </form>
+            </div>
+        </div>
+    </dialog>
+
+    <dialog id="success_modal" class="modal">
+        <div class="modal-box border">
+            <h3 class="text-lg font-bold text-green-800">Успех!</h3>
+            <p id="successText" class="py-4 text-green-700">Успешно захоронили перевод товарных денег.</p>
+            <div class="modal-action">
+                <form method="dialog">
+                    <a href="/supplier/stockBalanceCommodity"
+                       class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2 px-6 rounded-lg w-full transition-colors duration-200 shadow-sm">
+                        готово
+                    </a>
+                </form>
+            </div>
+        </div>
+    </dialog>
+    <script src="/assets/js/PostData.js?v=<?= time() ?>"></script>
+
+    <script>
+        const openErrorModal = (message) => {
+            errorText.innerHTML = message;
+            document.getElementById('errorModal').showModal();
+        };
+
+
+        const commentsModal = document.getElementById('modal-comments');
+        const modalBalance = document.getElementById('modal-balance');
+        const modalPurpose = document.getElementById('modal-purpose');
+        const modalAppointment = document.getElementById('modal-appointment');
+        const modalRemainder = document.getElementById('modal-remainder');
+        let postData = null;
+
+        document.getElementById('save_expense').addEventListener('click', () => {
+            const selectedRadio = document.querySelector('input[name="delivery_type"]:checked');
+            const balanceInput = document.getElementById('balance');
+            const enteredValue = balanceInput && typeof balanceInput.value !== 'undefined'
+                ? balanceInput.value.trim()
+                : '';
+            const amount = Number(enteredValue);
+            let categoryPath = '';
+
+            if (!enteredValue || isNaN(Number(enteredValue)) || Number(enteredValue) <= 0) {
+                openErrorModal('Укажите корректную сумму!');
+                return;
+            }
+
+            if (!selectedRadio) {
+                openErrorModal('Выберите назначение!');
+                return;
+            }
+
+            const deliveryType = selectedRadio.value;
+            let selectedId = null;
+            let userName = null;
+
+            if (deliveryType === 'courier') {
+                const courierInput = document.querySelector('input[name="courier_id"]');
+                const userinput = document.querySelector('input[name="courier_name"]');
+                if (courierInput && courierInput.value) {
+                    selectedId = courierInput.value;
+                    userName = userinput.value;
+                } else {
+                    openErrorModal('Выберите курьера!');
+                    return;
+                }
+            } else if (deliveryType === 'client') {
+                const clientInput = document.querySelector('input[name="client_id"]');
+                const userinput = document.querySelector('input[name="client_name"]');
+
+                if (clientInput && clientInput.value) {
+                    selectedId = clientInput.value;
+                    userName = userinput.value;
+                } else {
+                    openErrorModal('Выберите клиента!');
+                    return;
+                }
+            } else if (deliveryType === 'expense') {
+                const categoryElement = document.getElementById('category');
+                categoryPath = categoryElement ? categoryElement.textContent.trim() : '';
+                if (!categoryPath) {
+                    openErrorModal('Выберите категорию назначения!');
+                    return;
+                }
+
+                userName = categoryPath;
+            }
+
+            const commentsTextarea = document.getElementById('comments');
+            const commentValue = commentsTextarea ? commentsTextarea.value.trim() : '';
+            if (!commentValue) {
+                openErrorModal('Введите комментарий!');
+                return;
+            }
+
+            const stockBalances = document.getElementById('stock-balances');
+            const summ = Number(stockBalances.innerHTML) || 0;
+
+            const purpose = {
+                courier: 'Курьеру',
+                client: 'Клиенту',
+                supplier: 'Поставщику',
+                client_services: 'Клиент услуги',
+                expense: 'Расход',
+                debt: 'Закрытие долга компании',
+            };
+
+            postData = {
+                delivery_type: deliveryType,
+                selected_id: selectedId,
+                category_path: categoryPath,
+                amount: amount || 0,
+                comments: commentValue,
+            }
+
+            if (deliveryType === 'debt'){
+                userName = 'Долг компании'
+            }
+
+            modalPurpose.textContent = purpose[deliveryType] || 'Не известно';
+            modalAppointment.textContent = userName || 'Не известно';
+            modalBalance.textContent = amount || 0;
+            commentsModal.textContent = commentValue;
+            modalRemainder.textContent = summ - (amount || 0);
+            document.getElementById('save_expense_modal').checked = true;
+        });
+
+        document.getElementById('confirmExpense').addEventListener('click', async () => {
+
+            if (!postData) {
+                openErrorModal('Ошибка сбора данных!');
+                return;
+            }
+
+            console.log(postData);
+
+            const result = await postDataRes('/supplier/definitionCommodityMoney', postData);
+
+            document.getElementById('save_expense_modal').checked = false;
+
+            if (result === 'error') {
+                openErrorModal('Ошибка при отправке данных!');
+                return;
+            }
+
+            if (result.success) {
+                document.getElementById('success_modal').showModal();
+            } else {
+                openErrorModal('Не удалось сохранить доход!');
+            }
+        });
+
+        document.getElementById('save_expense_modal').checked = false;
+    </script>
+
+
+{% endblock %}

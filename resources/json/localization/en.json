@@ -1,0 +1,53 @@
+{
+  "⬅️ Вернуться в MENU": {
+    "button": "simple",
+    "success_1": {
+      "r_text": "\uD83D\uDCDA Главное меню"
+    }
+  },
+  "/start": {
+    "button": "simple",
+    "success_1": {
+      "r_text": "\uD83D\uDCDA Главное меню"
+    }
+  },
+  "simple": {
+    "button": "⬅️ Вернуться в MENU"
+  },
+  "\uD83D\uDE4B\uD83C\uDFFF\u200D♂\uFE0F Работа с клиентами": {
+    "button": "clients",
+    "success_1": {
+      "r_text": "*Вы можете:*\n\n-Ввести любые данные, которые вам только известны о клиенте (кроме ID - это отдельная кнопка);\n-Выбрать одну из кнопок в меню"
+    }
+  },
+  "clients": {
+    "button": "\uD83D\uDE4B\uD83C\uDFFF\u200D♂\uFE0F Работа с клиентами"
+  },
+  "search_id": {
+    "button": "\uD83C\uDF9F Поиск по ID"
+  },
+  "search_token": {
+    "button": "\uD83C\uDFAB Поиск по токену"
+  },
+  "\uD83C\uDF9F Поиск по ID": {
+    "button": "search_id",
+    "success_1": {
+      "r_text": "\uD83C\uDF1D Введите *ID* клиента на сервисе."
+    }
+  },
+  "\uD83C\uDFAB Поиск по токену": {
+    "button": "search_token",
+    "success_1": {
+      "r_text": "\uD83C\uDF1D Введите *TOKEN* клиента на сервисе. {{text}}"
+    }
+  },
+  "return": {
+    "button": "⬅️ Вернуться в MENU"
+  },
+  "search_set_user": {
+    "button": "search_set_user",
+    "success_1": {
+      "i_text": "✉ Почтовый сервис ✉\nID\n{{text}}\nEmail\n{{text}}\nTOKEN\n{{text}}\n\n➖➖➖➖➖\n✅ Работает без ограничений\n\uD83D\uDCB3 Tariff: {{text}}\n\uD83C\uDFAB Имя: {{text}}\n\uD83D\uDD05 Telegram: @{{text}}\n\uD83D\uDCC6 Дата регистрации: {{text}}\n\uD83D\uDCB0 Олачено подписок на сумму: {{text}} т.\n\uD83C\uDF69 Подписка активна до: {{text}} {{text}} продуктов"
+    }
+  }
+}

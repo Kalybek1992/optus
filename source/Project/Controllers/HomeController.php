@@ -1,0 +1,166 @@
+<?php
+
+namespace Source\Project\Controllers;
+
+use Source\Base\Core\DataContainer;
+use Source\Base\Core\Logger;
+use Source\Project\Controllers\Base\BaseController;
+use Source\Project\DataContainers\InformationDC;
+use Source\Project\LogicManagers\LogicPdoModel\BankOrderLM;
+use Source\Project\LogicManagers\LogicPdoModel\CompanyFinancesLM;
+use Source\Project\LogicManagers\LogicPdoModel\CouriersLM;
+use Source\Project\LogicManagers\LogicPdoModel\DebtsLM;
+use Source\Project\LogicManagers\LogicPdoModel\LegalEntitiesLM;
+use Source\Project\LogicManagers\LogicPdoModel\ManagersLM;
+use Source\Project\LogicManagers\LogicPdoModel\StockBalancesLM;
+use Source\Project\LogicManagers\LogicPdoModel\TaskPlannerLM;
+use Source\Project\LogicManagers\LogicPdoModel\TransactionsLM;
+use Source\Project\LogicManagers\LogicPdoModel\UsersLM;
+
+
+class HomeController extends BaseController
+{
+    /**
+     * @return string
+     * @throws \Exception
+     */
+    public function homePage(): string
+    {
+        $user = InformationDC::get('user');
+        $home_page_role = $user['role'] . 'HomePage';
+
+        if (method_exists($this, $home_page_role)) {
+            return $this->$home_page_role();
+        }
+
+        return $this->authPage();
+    }
+
+    public function authPage(): string
+    {
+        //Logger::log(print_r('tet', true), 'bindAccountSupplier');
+        return $this->twig->render('AuthPage.twig');
+    }
+
+    public function adminHomePage(): string
+    {
+        $unknown_accounts = LegalEntitiesLM::getEntitiesNulCount();
+        $pending_orders = BankOrderLM::getBankOrderCountPending();
+        $balance = LegalEntitiesLM::getEntitiesBalance();
+        $client_services = DebtsLM::getDebtsClientServicesCount();
+        $stock_balances = StockBalancesLM::getStockBalances()->balance ?? 0;
+        $our_accounts = LegalEntitiesLM::getEntitiesOurAccount();
+        $confirmation = CompanyFinancesLM::confirmationCostsCourier();
+        $date_from = date('d.m.Y');
+        $date_to = date('d.m.Y', strtotime('+4 days'));
+        $task_planner = TaskPlannerLM::getAllTaskPlan($date_from, $date_to);
+        $legal_entitie = LegalEntitiesLM::getNonOurCompanies();
+
+
+        //Logger::log(print_r($task_planner, true), 'adminHomePage');
+        //var_dump($balance);
+
+        return $this->twig->render('AdminHomePage.twig', [
+            'unknown_accounts' => $unknown_accounts,
+            'pending_orders' => $pending_orders,
+            'our_account_balance' => $balance->our_account_balance ?? 0,
+            'client_goods_balance' => $balance->client_goods_balance ?? 0,
+            'supplier_goods_balance' => $balance->supplier_goods_balance ?? 0,
+            'client_services_balance' => $balance->client_services_balance ?? 0,
+            'couriers_balance' => $balance->couriers_balance ?? 0,
+            'сlient_debt' => $balance->client_debt ?? 0,
+            'client_services' => $client_services,
+            'stock_balances' => $stock_balances,
+            'our_accounts' => $our_accounts,
+            'confirmation_costs_courier' => $confirmation['courier_expense'] ?? [],
+            'return_debit_courier' => $confirmation['return_debit_courier'] ?? [],
+            'courier_income_other' => $confirmation['courier_income_other'] ?? [],
+            'debt_repayment_companies_supplier' => $confirmation['debt_repayment_companies_supplier'] ?? [],
+            'task_planner' => $task_planner,
+            'legal_entitie' => $legal_entitie,
+            'role' => 'admin'
+        ]);
+    }
+
+    public function courierHomePage(): string
+    {
+        $user = InformationDC::get('user');
+        $courier = CouriersLM::getCourierByUserId($user['id']);
+
+        return $this->twig->render('Courier/CourierHome.twig', [
+            'courier' => $courier,
+            'role' => 'courier'
+        ]);
+    }
+
+    public function supplierHomePage(): string
+    {
+        $user = InformationDC::get('user');
+        $supplier = UsersLM::getUserSupplier($user['id']);
+        $no_managers = LegalEntitiesLM::getLegalNoManagers($supplier->suppliers_id);
+        $supplier_users = ManagersLM::getManagersOrClientsAll($supplier->suppliers_id);
+        $supplier_companies = LegalEntitiesLM::getLegalSupplierCompany($supplier->suppliers_id);
+        $supplier_debts = DebtsLM::getDebtSupplierPage($supplier->suppliers_id);
+
+        //Logger::log(print_r($re, true), 'supplier_companies');
+
+        return $this->twig->render('Supplier/SupplierHome.twig', [
+            'supplier' => $user,
+            'supplier_users' => $supplier_users,
+            'no_managers' => $no_managers,
+            'companies' => $supplier_companies,
+            'debts' => $supplier_debts,
+            'stock_balance' => $supplier->stock_balance ?? 0,
+        ]);
+    }
+
+    public function shopHomePage(): string
+    {
+        $user = InformationDC::get('user');
+        $user_shop = UsersLM::getUserShop($user['id']);
+        $page = InformationDC::get('page') ?? 0;
+        $date_from = InformationDC::get('date_from');
+        $date_to = InformationDC::get('date_to');
+        $limit = 60;
+        $offset = $page * $limit;
+        $shop_id = $user_shop->shop_id ?? 0;
+
+        if (!$user_shop){
+            return $this->twig->render('Shop/ErrorPage.twig');
+        }
+
+        $transactions = TransactionsLM::getEntitiesShopTransactions(
+            $shop_id,
+            $offset,
+            $limit,
+            $date_from,
+            $date_to
+        );
+
+        $transactions_sum = TransactionsLM::getEntitiesShopTransactionsSum(
+            $shop_id,
+            $date_from,
+            $date_to
+        );
+
+        $transactions_count = TransactionsLM::getEntitiesShopTransactionsCount(
+            $shop_id,
+            $date_from,
+            $date_to
+        );
+        $page_count = ceil($transactions_count / $limit);
+
+        //Logger::log(print_r($user, true), 'supplier_companies');
+
+        return $this->twig->render('Shop/ShopReceiptsDate.twig', [
+            'page' => $page + 1,
+            'transactions' => $transactions,
+            'transactions_sum' => $transactions_sum,
+            'date_from' => $date_from,
+            'date_to' => $date_to,
+            'shop_name' => $user_shop->name ?? '',
+            'page_count' => $page_count,
+            'shop_id' => $shop_id,
+        ]);
+    }
+}

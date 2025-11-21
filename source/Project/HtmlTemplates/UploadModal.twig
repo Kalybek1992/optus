@@ -1,0 +1,77 @@
+{% block content %}
+    <!-- Open the modal using ID.showModal() method -->
+    <dialog id="my_modal_2" class="modal">
+        <div class="modal-box">
+            <h3 class="text-lg font-bold mb-4">Загрузить транзакции</h3>
+
+            <form id="upload_form" class="flex flex-col">
+                <input
+                        type="file"
+                        name="file"
+                        id="file_input"
+                        class="file-input my-4"
+                        accept="text/plain"
+                        required
+                />
+                <div class="flex justify-end gap-4 mt-6">
+                    <!-- Кнопка Загрузить: синий акцент + отступы -->
+                    <button type="button" id="upload_button" class="btn bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded">
+                        Загрузить
+                    </button>
+
+                    <!-- Кнопка Закрыть: серый фон + отступы -->
+                    <button type="button" id="close_button" class="btn bg-gray-300 hover:bg-gray-400 text-gray-800 px-6 py-2 rounded">
+                        Закрыть
+                    </button>
+                </div>
+            </form>
+        </div>
+    </dialog>
+
+    <dialog id="errorUpload" class="modal">
+        <div class="modal-box">
+            <h3 class="text-lg font-bold">Ошибка!</h3>
+            <p id="errorText" class="py-4"></p>
+            <div class="modal-action">
+                <form method="dialog">
+                    <button class="bg-blue-600 text-white px-6 py-2 rounded">
+                        Закрыть
+                    </button>
+                </form>
+            </div>
+        </div>
+    </dialog>
+
+
+    <dialog id="successUpload" class="modal">
+        <div class="modal-box">
+            <h3 class="text-lg font-bold mb-4">Успешная загрузка</h3>
+            <div class="space-y-2 text-base">
+                <p><span class="font-semibold">Количество транзакций:</span> <span id="transactionsCount">0</span></p>
+                <p><span class="font-semibold">Новых аккаунтов:</span> <span id="newAccountsCount">0</span></p>
+                <p><span class="font-semibold">Обновлено баланс аккаунтов:</span> <span id="updatedAccountsCount">0</span></p>
+            </div>
+            <div class="modal-action mt-6">
+                <form method="dialog">
+                    <button id="ready" class="bg-blue-600 text-white px-6 py-2 rounded font-medium hover:bg-blue-700">
+                        Готово
+                    </button>
+                </form>
+            </div>
+        </div>
+    </dialog>
+
+
+    <script src="/assets/js/UploadModal.js?v=<?= time() ?>"></script>
+
+    <script>
+        let uploadModal1 = document.getElementById('my_modal_2');
+        let uploadForm1 = document.getElementById('upload_form');
+        let fileInput1 = document.getElementById('file_input');
+        const closeButton1 = document.getElementById('close_button');
+
+    </script>
+
+
+
+{% endblock %}

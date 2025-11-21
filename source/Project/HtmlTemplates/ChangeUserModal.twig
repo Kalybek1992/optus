@@ -1,0 +1,473 @@
+{% block content %}
+
+    <!-- input type="Email" -->
+    <input type="checkbox" id="change_email" class="modal-toggle" />
+    <div class="modal" role="dialog">
+        <div class="modal-box max-w-md">
+            <h1 class="text-lg font-bold text-gray-800 mb-4">Изменение электронной почты</h1>
+
+            <div class="space-y-3">
+                <!-- Email input -->
+                <div class="flex flex-col">
+                    <span class="font-semibold text-gray-700 mb-2">Новая почта:</span>
+                    <label class="input w-full flex items-center gap-2 border rounded-md p-2 bg-white">
+                        <svg class="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect width="20" height="16" x="2" y="4" rx="2"></rect>
+                            <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path>
+                        </svg>
+                        <input type="email" id="new_email" name="email" placeholder="mail@site.com" required class="w-full outline-none text-gray-800" />
+                    </label>
+                    <div class="validator-hint text-sm text-gray-500 mt-1 hidden" id="emailHint">Введите корректный email</div>
+                </div>
+
+                <!-- Информационный текст -->
+                <div class="alert alert-info rounded-xl text-white">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 shrink-0 stroke-current text-white" fill="none" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M13 16h-1v-4h-1m1-4h.01M12 20a8 8 0 100-16 8 8 0 000 16z" />
+                    </svg>
+                    <span class="text-white">
+                        После изменения электронной почты вход в кабинет по старому адресу будет недоступен. Обязательно сообщите новую почту пользователю для восстановления доступа.
+                    </span>
+                </div>
+            </div>
+
+            <!-- Кнопки действий -->
+            <div class="modal-action mt-6">
+                <label id="submitChangeEmail" class="btn bg-blue-600 hover:bg-blue-700 text-white border-none rounded-lg px-6">
+                    Изменить
+                </label>
+                <label id="changeEmailClose" for="change_email" class="btn btn-outline rounded-lg">Закрыть</label>
+            </div>
+        </div>
+    </div>
+
+    <!-- input type="password" -->
+    <input type="checkbox" id="change_password" class="modal-toggle" />
+    <div class="modal" role="dialog">
+        <div class="modal-box max-w-md">
+            <h1 class="text-lg font-bold text-gray-800 mb-4">Изменение пароля</h1>
+
+            <div class="space-y-3">
+                <!-- Поле ввода нового пароля -->
+                <div class="flex flex-col">
+                    <span class="font-semibold text-gray-700 mb-2">Новый пароль:</span>
+                    <label class="input w-full flex items-center gap-2 border rounded-md p-2 bg-white">
+                        <svg class="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none"
+                             viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                  d="M12 15v2m0-6a2 2 0 00-2 2v4a2 2 0 004 0v-4a2 2 0 00-2-2zm6-4V7a6 6 0 00-12 0v2" />
+                            <rect x="6" y="10" width="12" height="10" rx="2" ry="2"></rect>
+                        </svg>
+                        <input type="text" id="new_password" name="password" placeholder="Введите новый пароль"
+                               required class="w-full outline-none text-gray-800" />
+                    </label>
+                    <div class="validator-hint text-sm text-gray-500 mt-1" id="passwordHint">
+                        Пароль должен быть не менее 6 символов
+                    </div>
+                </div>
+
+                <!-- Информационное сообщение -->
+                <div class="alert alert-info rounded-xl text-white">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 shrink-0 stroke-current text-white" fill="none" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M13 16h-1v-4h-1m1-4h.01M12 20a8 8 0 100-16 8 8 0 000 16z" />
+                    </svg>
+                    <span class="text-white">После изменения пароля необходимо сообщить его пользователю, иначе вход в кабинет будет невозможен.</span>
+                </div>
+            </div>
+
+            <!-- Кнопки действий -->
+            <div class="modal-action mt-6">
+                <label id="generatePassword" class="btn bg-blue-600 hover:bg-blue-700 text-white border-none rounded-lg px-6">
+                    Сгенерировать
+                </label>
+                <label id="submitChangePassword" class="btn bg-blue-600 hover:bg-blue-700 text-white border-none rounded-lg px-6">
+                    Изменить
+                </label>
+                <label id="changePasswordClose" for="change_password" class="btn btn-outline rounded-lg">Закрыть</label>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- type="unlink_account" -->
+    <input type="checkbox" id="unlink_account" class="modal-toggle" />
+    <div class="modal" role="dialog">
+        <div class="modal-box max-w-md">
+            <h1 class="text-lg font-bold text-gray-800 mb-4">Вы действительно хотите отвязать счёт?</h1>
+
+            <div class="space-y-3">
+                <div class="p-3 border border-gray-200 rounded-xl bg-gray-50 flex flex-col">
+                    <span class="font-semibold text-gray-700">Пользователь:</span>
+                    <span id="unlinkUserName" class="text-gray-800 mt-1 break-all"></span>
+                </div>
+
+                <div class="p-3 border border-gray-200 rounded-xl bg-gray-50 flex flex-col">
+                    <span class="font-semibold text-gray-700">ИНН:</span>
+                    <span id="companyInn" class="text-gray-800 mt-1 break-all"></span>
+                </div>
+
+                <div class="p-3 border border-gray-200 rounded-xl bg-gray-50 flex flex-col">
+                    <span class="font-semibold text-gray-700">Название компании:</span>
+                    <span id="companyName" class="text-gray-800 mt-1 break-all"></span>
+                </div>
+
+                <div class="alert alert-info rounded-xl mt-3 text-white">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 shrink-0 stroke-current text-white" fill="none" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M13 16h-1v-4h-1m1-4h.01M12 20a8 8 0 100-16 8 8 0 000 16z" />
+                    </svg>
+                    <span class="text-white">После отвязки счёта все долги пользователя будут удалены.</span>
+                </div>
+            </div>
+
+            <div class="modal-action mt-6">
+                <button id="confirmUnlink" class="btn bg-blue-600 hover:bg-blue-700 text-white border-none rounded-lg px-6">
+                    Подтвердить
+                </button>
+                <label for="unlink_account" class="btn btn-outline rounded-lg">Отменить</label>
+            </div>
+        </div>
+    </div>
+
+    <!-- type="delete_account" -->
+    <input type="checkbox" id="delete_account" class="modal-toggle" />
+    <div class="modal" role="dialog">
+        <div class="modal-box max-w-md">
+            <h1 class="text-lg font-bold text-gray-800 mb-4">Вы действительно хотите удалить пользователя?</h1>
+
+            <div class="space-y-3">
+                <!-- Имя пользователя -->
+                <div class="p-3 border border-gray-200 rounded-xl bg-gray-50 flex flex-col">
+                    <span class="font-semibold text-gray-700">Имя:</span>
+                    <span id="deleteName" class="text-gray-800 mt-1 break-all">—</span>
+                </div>
+
+                <!-- Информационное сообщение -->
+                <div class="alert alert-info rounded-xl mt-3 text-white">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 shrink-0 stroke-current text-white" fill="none" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M13 16h-1v-4h-1m1-4h.01M12 20a8 8 0 100-16 8 8 0 000 16z" />
+                    </svg>
+                    <span class="text-white">После удаления все счета пользователя будут отменены а долги будут удалены.</span>
+                </div>
+            </div>
+
+            <!-- Кнопки действий -->
+            <div class="modal-action mt-6">
+                <button id="confirmDeleteAccount" class="btn bg-red-600 hover:bg-red-700 text-white border-none rounded-lg px-6">
+                    Подтвердить
+                </button>
+                <label for="delete_account" class="btn btn-outline rounded-lg">Отменить</label>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- type="change_percentage" -->
+    <input type="checkbox" id="change_percentage" class="modal-toggle" />
+    <div class="modal" role="dialog">
+        <div class="modal-box max-w-md">
+            <h1 class="text-lg font-bold text-gray-800 mb-4">Изменение процента</h1>
+
+            <div class="space-y-3">
+                <!-- Пользователь -->
+                <div class="p-3 border border-gray-200 rounded-xl bg-gray-50 flex flex-col">
+                    <span class="font-semibold text-gray-700">Пользователь:</span>
+                    <span id="changePercentUserName" class="text-gray-800 mt-1 break-all">—</span>
+                </div>
+
+                <!-- Старый процент -->
+                <div class="p-3 border border-gray-200 rounded-xl bg-white flex items-center justify-between">
+                    <div>
+                        <span class="font-semibold text-gray-700">Старый процент</span>
+                        <div id="oldPercentage" class="text-gray-800 mt-1 text-lg font-medium">—%</div>
+                    </div>
+                    <!-- иконка-подсказка -->
+                    <div class="text-sm text-gray-400">Текущий</div>
+                </div>
+
+                <!-- Поле ввода процента -->
+                <div class="flex flex-col">
+                    <span class="font-semibold text-gray-700 mb-2">Новый процент:</span>
+                    <label class="input w-full flex items-center gap-2 border rounded-md p-2 bg-white">
+                        <svg class="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none"
+                             viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                  d="M17 7a2 2 0 11-4 0 2 2 0 014 0zM7 17a2 2 0 104 0 2 2 0 00-4 0zM6 18L18 6" />
+                        </svg>
+                        <input type="text" id="new_percentage" name="percentage"
+                               placeholder="Укажите процент (например, 10)"
+                               required class="w-full outline-none text-gray-800" />
+                    </label>
+                </div>
+
+                <!-- Информационное сообщение -->
+                <div class="alert alert-info rounded-xl mt-3 text-white">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 shrink-0 stroke-current text-white" fill="none" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M13 16h-1v-4h-1m1-4h.01M12 20a8 8 0 100-16 8 8 0 000 16z" />
+                    </svg>
+                    <span class="text-white">Новый процент не будет применяться к уже существующим долгам.</span>
+                </div>
+            </div>
+
+            <!-- Кнопки действий -->
+            <div class="modal-action mt-6">
+                <button id="confirmNewPercentage" class="btn bg-blue-600 hover:bg-blue-700 text-white border-none rounded-lg px-6">
+                    Подтвердить
+                </button>
+                <label for="change_percentage" class="btn btn-outline rounded-lg">Отменить</label>
+            </div>
+        </div>
+    </div>
+
+
+    <dialog id="errorEmail" class="modal">
+        <div class="modal-box">
+            <h3 class="text-lg font-bold">Ошибка!</h3>
+            <p id="errorText" class="py-4">Неправильный формат Почты</p>
+            <div class="modal-action">
+                <form method="dialog">
+                    <button class="btn">Закрыть</button>
+                </form>
+            </div>
+        </div>
+    </dialog>
+    <script src="/assets/js/PostData.js?v=<?= time() ?>"></script>
+
+    <script>
+        const modalCheckbox = document.getElementById('change_email');
+        const changeEmail = document.getElementById('change');
+        const errorText = document.getElementById('errorText');
+        const newEmailInput = document.getElementById('new_email');
+        const passwordModalCheckbox = document.getElementById('change_password');
+        const unlinkAccount = document.getElementById('unlink_account');
+        const passwordInput = document.getElementById('new_password');
+        const percentageInput = document.getElementById('new_percentage');
+        const deleteAccount = document.getElementById('delete_account');
+        const changePercentage = document.getElementById('change_percentage');
+        let currentUserId = null;
+        let clientId = null;
+        let leId = null;
+        let user = null;
+
+
+        const openErrorModal = (message) => {
+            errorText.innerHTML = message;
+            document.getElementById('errorEmail').showModal();
+        };
+
+        const closeModal = (checkbox) => {
+            checkbox.checked = false;
+        };
+
+        const isValidEmail = (email) => !!email && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+
+        const isValidPassword = (password) => typeof password === 'string' && password.length >= 6;
+
+
+        document.querySelectorAll('label[for="change_email"]').forEach(button => {
+            button.addEventListener('click', () => {
+                currentUserId = button.dataset.entityUser_id;
+                changeEmail.innerHTML = button.dataset.entity_email;
+            });
+        });
+
+        document.getElementById('submitChangeEmail').addEventListener('click', async () => {
+            const email = newEmailInput.value.trim();
+
+            if (!isValidEmail(email)) {
+                closeModal(modalCheckbox, newEmailInput);
+                openErrorModal('Неправильный формат почты!');
+                return;
+            }
+
+            const result = await postData('/user/changeEmail', {
+                user_id: currentUserId,
+                email: email
+            });
+
+
+            switch (result.value) {
+                case 'repeat_email':
+                    closeModal(modalCheckbox, newEmailInput);
+                    openErrorModal('Такая почта уже существует!');
+                    return;
+                case 'Invalid parameters':
+                    closeModal(modalCheckbox, newEmailInput);
+                    openErrorModal('Неверные параметры!');
+                    return;
+            }
+
+
+            if (result === 'error') {
+                closeModal(modalCheckbox, newEmailInput);
+                openErrorModal('Ошибка запроса!');
+            }else {
+                closeModal(modalCheckbox, newEmailInput);
+                location.reload();
+            }
+
+        });
+
+        document.getElementById('generatePassword')?.addEventListener('click', () => {
+            const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+            let password = "";
+            for (let i = 0; i < 12; i++) {
+                password += charset.charAt(Math.floor(Math.random() * charset.length));
+            }
+            passwordInput.value = password;
+        });
+
+        document.querySelectorAll('label[for="change_password"]').forEach(button => {
+            button.addEventListener('click', () => {
+                currentUserId = button.dataset.entityUser_id;
+            });
+        });
+
+        document.querySelectorAll('label[for="delete_account"]').forEach(button => {
+            button.addEventListener('click', () => {
+                currentUserId = button.dataset.entityUser_id;
+
+                const name = button.dataset.name;
+
+                document.getElementById('deleteName').innerText = name;
+            });
+        });
+
+
+        document.getElementById('submitChangePassword').addEventListener('click', async () => {
+            const password = passwordInput.value.trim();
+
+            if (!isValidPassword(password)) {
+                closeModal(passwordModalCheckbox, passwordInput);
+                openErrorModal('Пароль должен содержать минимум 6 символов!');
+                return;
+            }
+
+            const result = await postData('/user/changePassword', {
+                user_id: currentUserId,
+                password: password
+            });
+
+            if (result === 'error') {
+                closeModal(passwordModalCheckbox, passwordInput);
+                openErrorModal('Ошибка при отправке запроса!');
+            }
+
+            if (result.success) {
+                closeModal(passwordModalCheckbox, passwordInput);
+                location.reload();
+            } else {
+                closeModal(passwordModalCheckbox, passwordInput);
+                openErrorModal('Не удалось изменить пароль!');
+            }
+        });
+
+        document.querySelectorAll('label[for="unlink_account"]').forEach(button => {
+            button.addEventListener('click', () => {
+                clientId = button.dataset.clientId;
+                leId = button.dataset.leId;
+                supplierClient = button.dataset.supplierClient ? parseInt(button.dataset.supplierClient) : null;
+                const userName = button.dataset.userName;
+                const companyName = button.dataset.companyName;
+                const companyInn = button.dataset.companyInn;
+                user = userName;
+
+                document.getElementById('unlinkUserName').innerText = userName;
+                document.getElementById('companyName').innerText = companyName;
+                document.getElementById('companyInn').innerText = companyInn;
+            });
+        });
+
+        document.querySelectorAll('label[for="change_percentage"]').forEach(button => {
+            button.addEventListener('click', () => {
+                currentUserId = button.dataset.entityUser_id;
+
+                const userName = button.dataset.userName;
+                const oldPercentage = button.dataset.oldPercentage;
+
+
+                document.getElementById('changePercentUserName').innerText = userName;
+                document.getElementById('oldPercentage').innerText = oldPercentage;
+
+            });
+        });
+
+        document.getElementById('confirmUnlink').addEventListener('click', async () => {
+            // Если supplierClient === 1 → другой маршрут
+            const url = supplierClient === 1
+                ? '/supplier/unlinkAccount'
+                : '/entities/unlinkAccount';
+
+
+            const result = await postData(url, {
+                legal_id: leId
+            });
+
+
+            if (result.error === 'client_debt_suppliers') {
+                openErrorModal(
+                    'Поставщик привязал клиенту, и данный момент есть активный долг поставщика. Обратитесь к поставщику "' + user + '"'
+                );
+                return;
+            }
+
+            if (result.success) {
+                closeModal(unlinkAccount);
+                location.reload();
+            } else {
+                closeModal(unlinkAccount);
+                openErrorModal('Не удалось отвязать счёт!');
+            }
+        });
+
+        document.getElementById('changePasswordСlose')?.addEventListener('click', () => {
+            closeModal(passwordModalCheckbox, passwordInput);
+        });
+
+        document.getElementById('changeEmailClose')?.addEventListener('click', () => {
+            closeModal(changeEmail, newEmailInput);
+        });
+
+        document.getElementById('confirmDeleteAccount').addEventListener('click', async () => {
+            const result = await postData('/user/userDelete', {
+                user_id: currentUserId
+            });
+
+
+            if (result.success) {
+                location.reload();
+            } else {
+                closeModal(deleteAccount, false);
+                openErrorModal('Не удалось удалить пользователя!');
+            }
+        });
+
+        document.getElementById('confirmNewPercentage').addEventListener('click', async () => {
+
+            let percentage = percentageInput.value;
+
+            const result = await postData('/user/changePercentage', {
+                user_id: currentUserId,
+                percentage: percentage
+            });
+
+            if (isNaN(percentage) || percentage < 0 || percentage > 100) {
+                closeModal(changePercentage, percentageInput);
+                openErrorModal('Введите корректный процент от 0 до 100.');
+            }
+
+            if (result.success) {
+                location.reload();
+            } else {
+                closeModal(changePercentage, percentageInput);
+                openErrorModal('Не удалось изменить процент у пользователя!');
+            }
+
+        });
+    </script>
+
+{% endblock %}

@@ -1,0 +1,315 @@
+{
+  "⬅️ Вернуться в MENU": {
+    "button": "simple",
+    "success_1": {
+      "r_text": "\uD83D\uDCDA Главное меню"
+    }
+  },
+  "/start": {
+    "button": "simple",
+    "success_1": {
+      "r_text": "\uD83D\uDCDA Главное меню"
+    }
+  },
+  "\uD83D\uDE4B\uD83C\uDFFF\u200D♂\uFE0F Работа с клиентами": {
+    "button": "clients",
+    "success_1": {
+      "r_text": "*Вы можете:*\n\n-Ввести любые данные, которые вам только известны о клиенте (кроме ID - это отдельная кнопка);\n-Выбрать одну из кнопок в меню"
+    }
+  },
+  "\uD83D\uDED2 Товары": {
+    "button": "products",
+    "success_1": {
+      "r_text": "\uD83D\uDD0D *Выберите вариант поиска:*\n по *имени* товара, по продукт *ID* или по *SKU.*"
+    }
+  },
+  "\uD83C\uDD94 Поиск по продукт ID": {
+    "button": "search_product_id",
+    "success_1": {
+      "r_text": "\uD83C\uDD94 *Укажите ID продукта.*"
+    }
+  },
+  "\uD83D\uDD0D Поиск по SKU": {
+    "button": "search_product_sku",
+    "success_1": {
+      "r_text": "\uD83D\uDD0D *Укажите SKU продукта.*"
+    }
+  },
+  "\uD83D\uDD20 Поиск по названию": {
+    "button": "search_product_name",
+    "success_1": {
+      "r_text": "\uD83D\uDD20 *Укажите название продукта.*"
+    }
+  },
+  "waiting_confirm_payment": {
+    "button": "\uD83D\uDCB3 Подтвердить платёж"
+  },
+  "\uD83D\uDCB3 Подтвердить платёж": {
+    "button": "waiting_confirm_payment",
+    "success_1": {
+      "i_buttons": {
+        "Подтвердить оплату ✅": "confirm_payment-{{text}}-{{text}}-{{text}}-{{text}}-{{text}}"
+      },
+      "r_text": "Введите ID оплаты.",
+      "i_text": "ID клиента \n```{{text}}```\n➖➖➖➖➖➖➖➖\n\uD83D\uDCB3 Tariff: {{text}}\n\uD83D\uDCB0 Оплачено на сумму: {{text}} т\n\uD83D\uDCC5 Оплата произведена в {{text}}\n\uD83C\uDF69Подписка до: {{text}} | {{text}} продуктов"
+    },
+    "error_txt": {
+      "r_text": "Вели неправильные данные повторите ещё раз"
+    },
+    "error_no_payments": {
+      "r_text": "*ID Оплаты*\n```{{text}}```\nОплата не существует, либо уже подтверждена, либо просрочена."
+    }
+  },
+  "\uD83C\uDF9F Поиск по ID": {
+    "button": "search_id",
+    "success_1": {
+      "r_text": "\uD83C\uDF1D Введите *ID* клиента на сервисе."
+    }
+  },
+  "\uD83C\uDFAB Поиск по токену": {
+    "button": "search_token",
+    "success_1": {
+      "r_text": "\uD83C\uDF1D Введите *TOKEN* клиента на сервисе."
+    }
+  },
+  "✉ Поиск по почте": {
+    "button": "search_mail",
+    "success_1": {
+      "r_text": "✉ Введите *ПОЧТУ* клиента на сервисе."
+    }
+  },
+  "search_set_user": {
+    "button": "search_set_user",
+    "success_1": {
+      "i_text": "\uD83C\uDFEA BAZARBAY \uD83C\uDFEA\nID\n```{{text}}```\nEmail\n```{{text}}```\nTOKEN\n```{{text}}```\n\n➖➖➖➖➖➖➖➖\n\uD83D\uDCB3 Tariff: {{text}}\n\uD83D\uDECD\uFE0F Магазины: _{{text}}_\n\uD83D\uDD05 Telegram: @{{text}}\n\uD83D\uDCC6 Дата регистрации: {{text}}\n\uD83D\uDCB0 Оплачено подписок на сумму: {{text}} т.\n\uD83C\uDF69 Подписка активна до: {{text}} | {{text}} продуктов"
+    },
+    "error_token": {
+      "i_text": "❌Указан неверный токен.❌ \n\nПожалуйста, попробуйте снова."
+    },
+    "error_id": {
+      "i_text": "❌Указан неверный ID.❌ \n\nПожалуйста, попробуйте снова."
+    },
+    "error_email": {
+      "i_text": "❌Указан неверный почта.❌ \n\nПожалуйста, попробуйте снова."
+    },
+    "not_user": {
+      "i_text": "❌Пользователь не найден.❌ \n\nПожалуйста, попробуйте снова."
+    }
+  },
+  "add_tariff": {
+    "button": "add_tariff",
+    "success_1": {
+      "i_buttons": {
+        "Добавить тариф \uD83D\uDCBC": "add_tariff-{{text}}"
+      },
+      "r_text": "Тариф пользователя добавлен.\n\uD83D\uDCB3 Тариф: {{text}}|{{text}}\n\uD83D\uDCB0 Цена {{text}}\n\uD83C\uDF63 Подписка активна до: {{text}} | {{text}} продуктов"
+    },
+    "tariff_updated": {
+      "r_text": "Тариф пользователя обновлён.\n\uD83D\uDCB3 Тариф: {{text}}|{{text}}\n\uD83D\uDCB0 Цена {{text}}\n\uD83C\uDF63 Подписка активна до: {{text}} | {{text}} продуктов"
+    }
+  },
+  "tariffs": {
+    "button": "tariffs",
+    "success_1": {
+      "i_buttons": {
+        "{{text}}": "set_tariff-{{text}}"
+      },
+      "i_text": "\uD83D\uDCCA Выберите тариф, который вы хотите применить к пользователю."
+    },
+    "no_tariff": {
+      "r_text": "ℹ\uFE0F Не нашли не одного тарифа ℹ\uFE0F"
+    },
+    "tariff": {
+      "r_text": "Тариф {{text}}|{{text}} продуктов|Цена {{text}}|на {{text}} дней \uD83D\uDCBC"
+    }
+  },
+  "delete_tariff": {
+    "button": "delete_tariff",
+    "success_1": {
+      "i_buttons": {
+        "Удалить тариф \uD83D\uDD27": "delete_tariff-{{text}}"
+      },
+      "r_text": "У пользователя удалён тариф. \n```{{text}}```\n"
+    },
+    "error_no_tariff": {
+      "r_text": "ID\n```{{text}}```\nУ пользователя тариф не найден"
+    }
+  },
+  "delete_account": {
+    "button": "delete_account",
+    "success_1": {
+      "i_buttons": {
+        "Удалить аккаунт \uD83D\uDEAE": "delete_account_confirmation-{{text}}"
+      },
+      "r_text": "Аккаунт удалён из базы данных"
+    }
+  },
+  "quick_login": {
+    "button": "quick_login",
+    "success_1": {
+      "i_buttons": {
+        "Быстрый вход  \uD83D\uDEAA\uD83D\uDEB6\u200D♂\uFE0F": "get_quick_login_link-{{text}}"
+      },
+      "r_text": "Аккаунт удалён из базы данных"
+    }
+  },
+  "get_quick_login_link": {
+    "button": "get_quick_login_link",
+    "success_1": {
+      "i_buttons": {
+        "Быстрый вход \uD83D\uDEAA\uD83D\uDEB6\u200D♂\uFE0F": "{{text}}"
+      },
+      "i_text": "\uD83D\uDEAA\uD83D\uDEB6\u200D♂\uFE0F Перейдите по ссылке для быстрого входа"
+    }
+  },
+  "delete_account_confirmation": {
+    "button": "delete_account_confirmation",
+    "success_1": {
+      "i_buttons": {
+        "✅ Да": "set_delete_account-{{text}}-yes",
+        "❌ Нет": "set_delete_account-{{text}}-no"
+      },
+      "i_text": "Вы уверены, что хотите удалить аккаунт?"
+    }
+  },
+  "set_delete_account": {
+    "button": "set_delete_account",
+    "delete_account": {
+      "r_text": "Аккаунт удалён из базы данных"
+    },
+    "delete_account_cancel": {
+      "r_text": "Удаление отменено"
+    }
+  },
+  "change_password": {
+    "button": "change_password",
+    "success_1": {
+      "i_buttons": {
+        "Заменить пароль \uD83D\uDD11": "change_password-{{text}}"
+      }
+    },
+    "waiting_new_password": {
+      "r_text": "Старый пароль ```{{text}}```\n\nНовый пароль должен содержать только английские буквы или цифры,\nбыть длиной не менее 8 символов и не совпадать со старым паролем."
+    },
+    "new_password": {
+      "r_text": "Успешно Обновили пароль\n\nСтарый пароль пользователя.\n```{{text}}```\nНовый пароль пользователя.\n```{{text}}```"
+    },
+    "error_password": {
+      "r_text": "*Некорректный пароль*\n\nСтарый пароль ```{{text}}```\n\nНовый пароль должен содержать только английские буквы или цифры, \nбыть длиной не менее 8 символов и не совпадать со старым паролем.\n\n*Попробуйте ещё раз*"
+    },
+    "error": {
+      "r_text": "Не удалось обновить пароль!"
+    }
+  },
+  "change_token": {
+    "button": "change_token",
+    "success_1": {
+      "r_text": "Вход {{text}}"
+    }
+  },
+  "issuance_whatsapp_tariff": {
+    "button": "issuance_whatsapp_tariff",
+    "success_1": {
+      "i_buttons": {
+        "Выдача whatsapp тарифа \uD83D\uDCAC": "issuance_whatsapp_tariff-{{text}}"
+      }
+    }
+  },
+  "unblock_user": {
+    "button": "unblock_user",
+    "success_1": {
+      "r_text": "Пользователь разблокирован ID *{{text}}*",
+      "i_buttons": {
+        "Разблокировать \uD83D\uDD10": "unblock_user-{{text}}"
+      }
+    },
+    "error_unblock": {
+      "r_text": "Пользователь не разблокирован ID *{{text}}*"
+    }
+  },
+  "block_user": {
+    "button": "block_user",
+    "success_1": {
+      "i_buttons": {
+        "Заблокировать \uD83D\uDD12": "block_user-{{text}}"
+      }
+    },
+    "error_block": {
+      "r_text": "Пользователь не заблокирован ID *{{text}}*"
+    }
+  },
+  "user_store": {
+    "button": "user_store",
+    "success_1": {
+      "i_buttons": {
+        "Магазины \uD83D\uDECD\uFE0F": "user_store-{{text}}"
+      }
+    }
+  },
+  "user_merchants": {
+    "button": "user_merchants",
+    "success_1": {
+      "i_buttons": {
+        "\uD83D\uDECD\uFE0F {{text}} | {{text}} кол-во товаров": "user_merchants-{{text}}-{{text}}"
+      },
+      "i_text": "ℹ*Список магазинов*\n\uD83D\uDECD\uFE0FВыберите магазин для просмотра информация"
+    }
+  },
+  "product_information": {
+    "button": "product_information",
+    "success_1": {
+      "i_buttons": {
+        "{{text}}": "product_information-{{text}}"
+      },
+      "i_text": "\uD83D\uDCCB *Список товаров*\n\nКликните на товар для того чтобы посмотреть информацию о товаре.",
+      "r_text": "ℹ*Информация о товаре*\n\n{{text}}\n\uD83D\uDCB0 Максимальная цена:  {{text}}\n\uD83D\uDCB5 Минимальная цена: {{text}}\n\uD83D\uDCB2 Цена:  {{text}}\n\uD83C\uDFF7\uFE0F Название: ``` {{text}} ```\n\uD83C\uDD94 Продукт ID: ```{{text}}```\n\uD83D\uDD22 SKU ID: ```{{text}}```"
+    },
+    "no_product": {
+      "r_text": "ℹ *В магазине товар не найден.*"
+    }
+  },
+  "search_product_information": {
+    "button": "search_product_information",
+    "success_1": {
+      "i_buttons": {
+        "{{text}}": "search_product_information-{{text}}"
+      },
+      "i_text": "\uD83D\uDCCB *Список вариантов товара.*\n\nВыберите товар.",
+      "r_text": "ℹ*Информация о товаре*\n\n{{text}}\n\uD83D\uDECD\uFE0FНазвание магазина: _{{text}}_\n\uD83D\uDCB0 Максимальная цена:  {{text}}\n\uD83D\uDCB5 Минимальная цена: {{text}}\n\uD83D\uDCB2 Цена:  {{text}}\n\uD83C\uDFF7\uFE0F Название: ``` {{text}} ```\n\uD83C\uDD94 Продукт ID: ```{{text}}```\n\uD83D\uDD22 SKU ID: ```{{text}}```"
+    },
+    "no_product": {
+      "r_text": "ℹ *Продукт не найден.*"
+    }
+  },
+  "simple": {
+    "button": "⬅️ Вернуться в MENU"
+  },
+  "clients": {
+    "button": "\uD83D\uDE4B\uD83C\uDFFF\u200D♂\uFE0F Работа с клиентами"
+  },
+  "products": {
+    "button": "\uD83D\uDED2 Товары"
+  },
+  "search_product_id": {
+    "button": "\uD83C\uDD94 Поиск по продукт ID"
+  },
+  "search_product_sku": {
+    "button": "\uD83D\uDD0D Поиск по SKU"
+  },
+  "search_product_name": {
+    "button": "\uD83D\uDD20 Поиск по названию"
+  },
+  "search_id": {
+    "button": "\uD83C\uDF9F Поиск по ID"
+  },
+  "search_token": {
+    "button": "\uD83C\uDFAB Поиск по токену"
+  },
+  "search_mail": {
+    "button": "✉ Поиск по почте"
+  },
+  "return": {
+    "button": "⬅️ Вернуться в MENU"
+  }
+}
+

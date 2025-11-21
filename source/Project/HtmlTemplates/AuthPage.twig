@@ -1,0 +1,92 @@
+{% extends './Navbar/Navbar.twig' %}
+
+{% block content %}
+
+    <!-- Open the modal using ID.showModal() method -->
+
+    <dialog id="my_modal_5" class="modal modal-bottom sm:modal-middle">
+        <div class="modal-box">
+            <h3 class="text-lg font-bold">Ошибка!</h3>
+            <p class="py-4">Неправильный пароль или электронная почта</p>
+            <div class="modal-action">
+                <form method="dialog">
+                    <!-- if there is a button in form, it will close the modal -->
+                    <button class="btn">Закрыть</button>
+                </form>
+            </div>
+        </div>
+    </dialog>
+
+    <div class="w-full max-w-md p-8 bg-white rounded-lg shadow-md mx-auto mt-[50px]">
+        <h2 class="text-2xl font-semibold text-center mb-4">Вход</h2>
+
+        <form id="loginForm" action="#" method="POST">
+            <!-- Email input -->
+            <label class="input w-full mb-4">
+                <svg class="h-[1em] opacity-50" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                    <g stroke-linejoin="round" stroke-linecap="round" stroke-width="2.5" fill="none" stroke="currentColor">
+                        <rect width="20" height="16" x="2" y="4" rx="2"></rect>
+                        <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path>
+                    </g>
+                </svg>
+                <input type="email" id="email" name="email" placeholder="mail@site.com" required class="w-full p-2 border rounded-md" />
+            </label>
+            <div class="validator-hint hidden" id="emailHint">Введите корректный email</div>
+
+            <!-- Password input -->
+            <label class="input w-full mb-4">
+                <svg class="h-[1em] opacity-50" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                    <g stroke-linejoin="round" stroke-linecap="round" stroke-width="2.5" fill="none" stroke="currentColor">
+                        <path d="M2.586 17.414A2 2 0 0 0 2 18.828V21a1 1 0 0 0 1 1h3a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h1a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h.172a2 2 0 0 0 1.414-.586l.814-.814a6.5 6.5 0 1 0-4-4z"></path>
+                        <circle cx="16.5" cy="7.5" r=".5" fill="currentColor"></circle>
+                    </g>
+                </svg>
+                <input type="password" id="password" name="password" required placeholder="Пароль" minlength="8" pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}" title="Пароль должен содержать не менее 8 символов, включая цифры, строчные и заглавные буквы" class="w-full p-2 border rounded-md" />
+            </label>
+            <div class="validator-hint hidden" id="passwordHint">Пароль должен содержать не менее 8 символов, включая цифры, строчные и заглавные буквы</div>
+
+            <!-- Submit Button -->
+            <button type="submit" class="btn btn-primary px-8 py-2 text-lg bg-blue-500 text-white rounded-md mt-4 hover:bg-blue-600 mx-auto block">
+                Войти
+            </button>
+        </form>
+    </div>
+
+    <script src="/assets/js/PostData.js?v=<?= time() ?>"></script>
+    <script>
+        // Получаем форму и кнопку
+        const form = document.getElementById('loginForm');
+        form.addEventListener('submit', async function (e) {
+            e.preventDefault(); // Предотвращаем стандартную отправку формы
+
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+
+            let result = await postData('/user/auth', {
+                email: email,
+                password: password,
+            });
+
+            console.log(result.value);
+
+            if (result.status === 'error' || result === 'error' || result.value === 'error') {
+                const modal = document.getElementById('my_modal_5');
+                if (modal) {
+                    modal.showModal();
+                }
+                return;
+            }
+
+            if (result.status === 'ok') {
+                window.location.reload();
+            }
+        });
+
+    </script>
+
+
+    <script src="/assets/js/main.js?v=<?= time()?>"></script>
+
+
+{% endblock %}

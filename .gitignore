@@ -1,0 +1,5 @@
+/vendor
+/.idea
+/resources/config_cache
+/resources/logs
+/resources/uploads

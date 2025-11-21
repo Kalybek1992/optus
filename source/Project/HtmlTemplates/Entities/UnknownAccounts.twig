@@ -1,0 +1,859 @@
+{% extends './Navbar/Navbar.twig' %}
+
+{% block content %}
+    {% include './Breadcrumb/UnknownAccounts.twig' %}
+
+    <div class="flex flex-col space-y-2 my-8">
+        <div class="w-full max-w-5xl mx-auto px-4 pb-32">
+            <ul class="list bg-base-100 rounded-lg shadow-md space-y-4">
+                {% for entitie in entities %}
+                    <li class="relative p-4 hover:bg-base-200 transition rounded-lg border border-gray-300">
+                        <div class="space-y-2">
+                            <!-- Компания-владелец выписки -->
+                            <div class="text-sm text-base-content mb-5">
+                                <!-- Тема -->
+                                <div class="mr-2 font-bold text-gray-600">
+                                    Название компании, которая принадлежит выписка:
+                                </div>
+                                <!-- Пример -->
+                                <div class="font-bold text-black mt-5 mb-5">
+                                    {{ entitie.our_company_name }}
+                                </div>
+                                <!-- Серая линия-разделитель -->
+                                <div class="w-full h-[2px] bg-gray-300 mb-5"></div>
+                            </div>
+
+                            <!-- Название банка -->
+                            <div class="flex items-center text-sm text-base-content opacity-80">
+                                <span class="mr-2 font-bold text-gray-600">Название банка:</span>
+                                <span class="font-bold text-black">{{ entitie.bank_name }}</span>
+                                <button type="button" class="ml-2 text-gray-600 hover:text-gray-900" onclick="copyText('{{ entitie.bank_name }}')">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8l6 6v4"/>
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M14 2v6h6"/>
+                                    </svg>
+                                </button>
+                            </div>
+
+                            <!-- Компания -->
+                            <div class="flex items-center text-sm text-base-content opacity-80">
+                                <span class="mr-2 font-bold text-gray-600">Компания:</span>
+                                <span class="font-bold text-black">{{ entitie.company_name }}</span>
+                                <button type="button" class="ml-2 text-gray-600 hover:text-gray-900" onclick="copyText('{{ entitie.company_name }}')">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8l6 6v4"/>
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M14 2v6h6"/>
+                                    </svg>
+                                </button>
+                            </div>
+
+
+                            {% set income_count = 0 %}
+                            {% set expense_count = 0 %}
+
+                            {% for transaction in entitie.transaction_data %}
+                                {% if transaction.type == 'income' %}
+                                    {% set income_count = income_count + 1 %}
+                                {% elseif transaction.type == 'expense' %}
+                                    {% set expense_count = expense_count + 1 %}
+                                {% endif %}
+                            {% endfor %}
+                            <details id="transactions" class="group">
+                                <!-- summary делаем flex, чтобы стрелка, иконка и текст шли в ряд -->
+                                <summary  class="flex items-center gap-2 cursor-pointer">
+                                    <svg class="size-5 transition-transform group-open:rotate-90"
+                                         xmlns="http://www.w3.org/2000/svg" fill="none"
+                                         viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                              d="M9 5l7 7-7 7"/>
+                                    </svg>
+
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none"
+                                         viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
+                                         class="size-6">
+                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                              d="M15.75 17.25v3.375c0 .621-.504 1.125-1.125 1.125h-9.75a1.125 1.125 0 0 1-1.125-1.125V7.875c0-.621.504-1.125 1.125-1.125H6.75a9.06 9.06 0 0 1 1.5.124m7.5 10.376h3.375c.621 0 1.125-.504 1.125-1.125V11.25c0-4.46-3.243-8.161-7.5-8.876a9.06 9.06 0 0 0-1.5-.124H9.375c-.621 0-1.125.504-1.125 1.125v3.5m7.5 10.375H9.375a1.125 1.125 0 0 1-1.125-1.125v-9.25m12 6.625v-1.875a3.375 3.375 0 0 0-3.375-3.375h-1.5a1.125 1.125 0 0 1-1.125-1.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H9.75"/>
+                                    </svg>
+
+                                    <span class="font-semibold">Транзакции:</span>
+
+                                    <!-- Доход -->
+                                    <span class="flex items-center gap-1 text-blue-600 ml-2">
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none"
+                                             viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
+                                             class="w-5 h-5">
+                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                  d="m9 12.75 3 3m0 0 3-3m-3 3v-7.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                                        </svg>
+                                        <span>{{ income_count }}</span>
+                                    </span>
+
+                                    <!-- Расход -->
+                                    <span class="flex items-center gap-1 text-red-600 ml-4">
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none"
+                                             viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
+                                             class="w-5 h-5">
+                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                  d="m15 11.25-3-3m0 0-3 3m3-3v7.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                                        </svg>
+                                        <span>{{ expense_count }}</span>
+                                    </span>
+                                </summary>
+
+                                <!-- Содержимое -->
+                                <div class="p-4 border rounded-lg">
+                                    {% for transaction in entitie.transaction_data %}
+                                        <div class="flex flex-col gap-2 p-3 bg-white border rounded-lg shadow-sm text-sm mt-3">
+
+                                            <!-- Тип транзакции -->
+                                            <div class="flex items-center text-sm text-base-content opacity-80">
+                                                <span class="mr-2 font-semibold text-gray-600">Тип:</span>
+                                                <span class="flex items-center gap-2 font-bold uppercase text-gray-800">
+                                                    {% if transaction.type == 'income' %}
+                                                        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m.75 12 3 3m0 0 3-3m-3 3v-6m-1.5-9H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z"/>
+                                                        </svg>
+                                                        Доход
+                                                    {% elseif transaction.type == 'expense' %}
+                                                        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m6.75 12-3-3m0 0-3 3m3-3v6m-1.5-15H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z"/>
+                                                        </svg>
+                                                        Расход
+                                                    {% endif %}
+                                                </span>
+                                            </div>
+
+                                            <!-- Дата -->
+                                            <div class="flex items-center text-sm text-base-content opacity-80">
+                                                <span class="mr-2 font-semibold text-gray-600">Дата:</span>
+                                                <span class="italic font-mono text-gray-800">{{ transaction.date }}</span>
+                                            </div>
+
+                                            <!-- Сумма -->
+                                            <div class="flex items-center text-sm text-base-content opacity-80">
+                                                <span class="mr-2 font-semibold text-gray-600">Сумма:</span>
+                                                <span class="italic font-mono text-gray-800">{{ transaction.amount }}</span>
+                                            </div>
+
+                                            <!-- ИНН -->
+                                            <div class="flex items-center text-sm text-base-content opacity-80">
+                                                <span class="mr-2 font-semibold text-gray-600">ИНН:</span>
+                                                <span class="italic font-mono text-gray-800">{{ transaction.inn }}</span>
+                                                <button type="button" class="ml-2 text-gray-600 hover:text-gray-900"
+                                                        onclick="copyText('{{ transaction.inn }}')">
+                                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2"
+                                                         viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                                              d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8l6 6v4"/>
+                                                        <path stroke-linecap="round" stroke-linejoin="round" d="M14 2v6h6"/>
+                                                    </svg>
+                                                </button>
+                                            </div>
+
+                                            <!-- Счёт -->
+                                            <div class="flex items-center text-sm text-base-content opacity-80">
+                                                <span class="mr-2 font-semibold text-gray-600">Счёт:</span>
+                                                <span class="italic font-mono text-gray-800"
+                                                      id="account-{{ loop.index }}">{{ transaction.bank_account }}</span>
+                                                <button type="button" class="ml-2 text-gray-600 hover:text-gray-900"
+                                                        onclick="copyText('{{ transaction.bank_account }}')">
+                                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2"
+                                                         viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                                              d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8l6 6v4"/>
+                                                        <path stroke-linecap="round" stroke-linejoin="round" d="M14 2v6h6"/>
+                                                    </svg>
+                                                </button>
+                                            </div>
+
+                                            <!-- Название банка  -->
+                                            <div class="flex items-center text-sm text-base-content opacity-80">
+                                                <span class="mr-2 font-semibold text-gray-600">Название банка:</span>
+                                                <span class="italic font-serif text-gray-800">{{ transaction.bank_name }}</span>
+                                                <button type="button" class="ml-2 text-gray-600 hover:text-gray-900"
+                                                        onclick="copyText('{{ transaction.bank_name }}')">
+                                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2"
+                                                         viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                                              d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8l6 6v4"/>
+                                                        <path stroke-linecap="round" stroke-linejoin="round" d="M14 2v6h6"/>
+                                                    </svg>
+                                                </button>
+                                            </div>
+
+                                            <!-- Компания -->
+                                            <div class="flex items-center text-sm text-base-content opacity-80">
+                                                <span class="mr-2 font-semibold text-gray-600">Компания:</span>
+                                                <span class="italic font-serif text-gray-800">{{ transaction.company_name }}</span>
+                                                <button type="button" class="ml-2 text-gray-600 hover:text-gray-900"
+                                                        onclick="copyText('{{ transaction.company_name }}')">
+                                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2"
+                                                         viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                                              d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8l6 6v4"/>
+                                                        <path stroke-linecap="round" stroke-linejoin="round" d="M14 2v6h6"/>
+                                                    </svg>
+                                                </button>
+                                            </div>
+
+                                            <!-- Описание  -->
+                                            <div class="text-sm text-base-content opacity-90">
+                                                <div class="mr-2 font-semibold text-gray-600">
+                                                    Описание:
+                                                </div>
+                                                <div class="italic font-mono text-gray-800 break-words whitespace-pre-wrap leading-snug">{{ transaction.description }}</div>
+                                            </div>
+                                        </div>
+                                    {% endfor %}
+                                    <!-- Кнопка "Скрыть" -->
+                                    <a href="#transactions" class="mt-4 block text-center text-sm font-semibold text-blue-600 hover:underline">
+                                        Начало
+                                    </a>
+                                </div>
+                            </details>
+
+                            <div id="{{ entitie.id }}-percent" class="text-sm text-blue-600 font-semibold mt-1 hidden">
+                                Процент: 0%
+                            </div>
+
+                            <div class="flex items-center space-x-4">
+                                <!-- Кнопка выбора пользователя -->
+                                <div class="dropdown">
+                                    <button type="button"
+                                            class="dropdown-toggle  btn btn-outline btn-sm border-gray-300 text-gray-700 hover:text-gray-900">
+                                        <span class="selected-user-text">Выберите пользователя</span>
+                                        <svg class="ml-2 w-4 h-4" fill="none" stroke="currentColor" stroke-width="2"
+                                             viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+                                        </svg>
+                                    </button>
+
+                                    <div class="dropdown-content hidden z-[1] mt-2 w-[30em] max-h-60 overflow-y-auto rounded-box bg-base-200 shadow">
+                                        <ul class="menu p-0 list_user w-full bg-white rounded-md shadow-inner">
+                                            <a href="/user/addUser?return_page=/entities/unknownAccounts?page={{ page - 1 }}"
+                                               class="block w-full text-blue-600 hover:underline px-4 py-2 text-sm font-bold border-b border-gray-300 bg-white text-center">
+                                                Создать пользователя
+                                            </a>
+                                            <!-- Указать как расход -->
+                                            <a href="/entities/linkExpenses?legal_id={{ entitie.id }}"
+                                               class="block w-full text-blue-600 hover:underline px-4 py-2 text-sm font-bold border-b border-gray-300 bg-white text-center">
+                                                Указать как расход
+                                            </a>
+                                            <!-- Отправить курьеру -->
+                                            <a href="/entities/linkExpensesCourier?legal_id={{ entitie.id }}"
+                                               class="block w-full text-blue-600 hover:underline px-4 py-2 text-sm font-bold border-b border-gray-300 bg-white text-center">
+                                                Отправить курьеру
+                                            </a>
+                                            <!-- Перевод себе -->
+                                            <li class="border-b border-gray-300 last:border-b-0 cursor-pointer w-full bg-white hover:bg-blue-100 transition-colors duration-200 px-4 py-2"
+                                                data-user-role="transaction_to_yourself"
+                                                data-entity-id="{{ entitie.id }}"
+                                                data-entitie-inn="{{ entitie.inn }}"
+                                                data-entitie-bankaccount="{{ entitie.bank_account }}"
+                                                data-entitie-companyname="{{ entitie.company_name }}">
+                                                <a href="#" class="block w-full">
+                                                    <div class="flex flex-col items-center text-center space-y-1">
+                                                            <span class="italic block text-xs text-gray-700 font-bold uppercase tracking-wide">
+                                                                  Перевод себе
+                                                            </span>
+                                                    </div>
+                                                </a>
+                                            </li>
+
+                                            <!-- Определить как товарный баланс -->
+                                            <li class="border-b border-gray-300 last:border-b-0 cursor-pointer w-full bg-white hover:bg-blue-100 transition-colors duration-200 px-4 py-2"
+                                                data-user-role="stock_balances"
+                                                data-entity-id="{{ entitie.id }}"
+                                                data-entitie-inn="{{ entitie.inn }}"
+                                                data-entitie-bankaccount="{{ entitie.bank_account }}"
+                                                data-entitie-companyname="{{ entitie.company_name }}">
+                                                <a href="#" class="block w-full">
+                                                    <div class="flex flex-col items-center text-center space-y-1">
+                                                            <span class="italic block text-xs text-gray-700 font-bold uppercase tracking-wide">
+                                                                  Определить как товарный баланс
+                                                            </span>
+                                                    </div>
+                                                </a>
+                                            </li>
+
+                                            <!-- Привязать пользователям -->
+                                            {% for user in users %}
+                                                <li class="border-b border-gray-300 last:border-b-0 cursor-pointer w-full bg-white hover:bg-blue-100 transition-colors duration-200 px-4 py-2"
+                                                    data-email="{{ user.email }}"
+                                                    data-id="{{ user.id }}"
+                                                    data-entity-id="{{ entitie.id }}"
+                                                    data-user-name="{{ user.name }}"
+                                                    data-user-role="{{ user.role }}"
+                                                    data-entitie-inn="{{ entitie.inn }}"
+                                                    data-entitie-bankaccount="{{ entitie.bank_account }}"
+                                                    data-entitie-companyname="{{ entitie.company_name }}">
+
+                                                    <a href="#" class="block w-full">
+                                                        <div class="flex flex-col items-center text-center space-y-1">
+                                                                <span class="italic block text-xs text-gray-700 font-bold uppercase tracking-wide">
+                                                                    {% if user.role == 'admin' %}
+                                                                        Администратор
+                                                                    {% elseif user.role == 'client' %}
+                                                                        Клиент
+                                                                    {% elseif user.role == 'supplier' %}
+                                                                        Поставщик
+                                                                    {% elseif user.role == 'courier' %}
+                                                                        Курьер
+                                                                    {% elseif user.role == 'client_services' %}
+                                                                        Клиент услуги
+                                                                    {% elseif user.role == 'shop' %}
+                                                                       Магазин
+                                                                    {% else %}
+                                                                        Неизвестная роль
+                                                                    {% endif %}
+                                                                </span>
+                                                            <div class="text-sm font-bold text-gray-600 truncate w-full">
+                                                                {{ user.name }}
+                                                            </div>
+                                                        </div>
+                                                    </a>
+                                                </li>
+                                            {% else %}
+                                                <li class="px-4 py-2 text-center text-error text-sm bg-white border-b border-gray-300">
+                                                    Нет пользователей
+                                                </li>
+                                            {% endfor %}
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+
+    <div class="flex items-center justify-center py-6">
+        {% include './Pagination/Pagination.twig' %}
+    </div>
+
+    <template id="user-item-template">
+        <li class="border border-gray-200 hover:bg-gray-100 transition rounded-lg cursor-pointer px-4 py-2"
+            data-email="" data-entity-id="" data-user-role="">
+            <a href="#" class="block">
+                <div class="flex flex-col items-center text-center space-y-1">
+                    <!-- Роль сверху -->
+                    <span class="role italic block text-xs text-gray-700 font-bold uppercase tracking-wide">
+                    Роль
+                    </span>
+                    <!-- Имя -->
+                    <div class="name text-sm font-bold text-gray-600 truncate w-full">
+                        Имя пользователя
+                    </div>
+                </div>
+            </a>
+        </li>
+    </template>
+
+    <dialog id="universalModal" class="modal">
+        <div class="modal-box">
+            <form id="upload_form" class="flex flex-col">
+                <h3 id="modal-title" class="text-lg font-semibold text-center mb-4">Заголовок</h3>
+
+                <label id="percentage-label"
+                       class="input w-full mb-4 flex items-center gap-2 border rounded-md p-3 hidden">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                         stroke="currentColor" class="size-6">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                              d="m8.99 14.993 6-6m6 3.001c0 1.268-.63 2.39-1.593 3.069a3.746 3.746 0 0 1-1.043 3.296 3.745 3.745 0 0 1-3.296 1.043 3.745 3.745 0 0 1-3.068 1.593c-1.268 0-2.39-.63-3.068-1.593a3.745 3.745 0 0 1-3.296-1.043 3.746 3.746 0 0 1-1.043-3.297 3.746 3.746 0 0 1-1.593-3.068c0-1.268.63-2.39 1.593-3.068a3.746 3.746 0 0 1 1.043-3.297 3.745 3.745 0 0 1 3.296-1.042 3.745 3.745 0 0 1 3.068-1.594c1.268 0 2.39.63 3.068 1.593a3.745 3.745 0 0 1 3.296 1.043 3.746 3.746 0 0 1 1.043 3.297 3.746 3.746 0 0 1 1.593 3.068ZM9.74 9.743h.008v.007H9.74v-.007Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm4.125 4.5h.008v.008h-.008v-.008Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z"/>
+                    </svg>
+                    <input id="new_percentage" name="percentage"
+                           placeholder="Например: 10"
+                           required class="w-full outline-none"/>
+                </label>
+
+                <div class="text-sm text-gray-500 mb-2" id="passwordHint" style="display:none;">
+                    Введите процент без знака «%». Только число.
+                </div>
+
+                <div id="txtModal" class="text-sm text-gray-700 space-y-3">
+                    <div class="grid grid-cols-2 gap-x-4 gap-y-4">
+
+                        <div class="user-info text-gray-500 font-semibold">Имя:</div>
+                        <div class="user-info font-serif text-gray-800" id="modal-name">—</div>
+
+                        <div class="user-info text-gray-500 font-semibold">Почта:</div>
+                        <div class="user-info font-serif text-gray-800" id="modal-email">—</div>
+
+                        <div class="user-info text-gray-500 font-semibold">Роль:</div>
+                        <div class="user-info font-serif text-gray-800" id="modal-role">—</div>
+
+                        <div class="user-info text-gray-500 font-semibold">ИНН:</div>
+                        <div class="user-info font-serif text-gray-800" id="modal-inn">—</div>
+
+                        <div class="text-gray-500 font-semibold">Расчётный счёт:</div>
+                        <div class="font-serif text-gray-800" id="modal-bank">—</div>
+
+                        <div class="text-gray-500 font-semibold">Дата транзакции:</div>
+                        <div class="font-serif text-gray-800" id="modal-transaction">—</div>
+
+                        <div class="text-gray-500 font-semibold">Компания:</div>
+                        <div class="font-serif text-gray-800" id="modal-company">—</div>
+
+                        <div class="text-gray-500 font-semibold">От кого:</div>
+                        <div class="font-serif text-gray-800" id="modal-fromWhom">—</div>
+
+                        <div class="text-gray-500 font-semibold">Сумма:</div>
+                        <div class="font-serif text-gray-800" id="modal-balance">—</div>
+                    </div>
+                </div>
+
+                <div class="flex justify-end gap-3 mt-6">
+                    <button type="button" id="confirmChanges" class="btn btn-primary">Сохранить</button>
+                    <button type="button" onclick="closeUniversalModal()" class="btn btn-secondary">Отмена</button>
+                </div>
+            </form>
+        </div>
+    </dialog>
+
+    <!-- Триггер через checkbox -->
+    <input type="checkbox" id="notifications" class="hidden peer"/>
+    <div class="fixed bottom-4 right-4 z-50 max-w-sm w-full
+            hidden peer-checked:flex flex-col bg-white border border-gray-300 rounded-xl shadow-xl
+            animate-fade-in transition-opacity duration-300 ease-out
+            px-5 py-4 space-y-2">
+
+        <div class="flex items-start justify-between">
+            <div class="flex items-start space-x-2">
+                <svg class="w-6 h-6 text-blue-500 mt-1 shrink-0" fill="none" stroke="currentColor" stroke-width="1.5"
+                     viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                          d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022 23.85 23.85 0 0 0 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0 3 3 0 1 0 5.714 0ZM3.124 7.5A8.969 8.969 0 0 1 5.292 3m13.416 0a8.969 8.969 0 0 1 2.168 4.5"/>
+                </svg>
+
+                <div>
+                    <h3 class="text-base font-semibold text-gray-900">Уведомление</h3>
+                    <p id="notifications-txt" class="text-sm text-gray-600 leading-snug mt-1">...</p>
+                </div>
+            </div>
+
+            <label for="notifications" class="text-gray-400 hover:text-gray-600 transition cursor-pointer">
+                ✕
+            </label>
+        </div>
+    </div>
+
+
+    <script src="/assets/js/CopyText.js?v=<?= time() ?>"></script>
+    <script src="/assets/js/PostData.js?v=<?= time() ?>"></script>
+
+    <script>
+
+        const input = document.getElementById('new_percentage');
+        const error = document.getElementById('percentError');
+        const saveBtn = document.getElementById('confirmChanges');
+        const percentageLabel = document.getElementById('percentage-label');
+
+        const isValid = value => {
+            value = String(value).trim();
+            if (value.endsWith('.')) {
+                value += '0';  // чтобы "15." считалось "15.0"
+            }
+            if (!/^\d+(\.\d{0,2})?$/.test(value)) return false;
+
+            const num = Number(value);
+            return num >= 0 && num <= 100;
+        };
+
+        const updateUI = () => {
+            const ok = isValid(input.value);
+            saveBtn.disabled = !ok;
+            saveBtn.classList.toggle('opacity-40', !ok);
+            saveBtn.classList.toggle('cursor-not-allowed', !ok);
+        };
+
+        const resetUI = () => {
+            saveBtn.disabled = false;
+            saveBtn.classList.remove('opacity-40', 'cursor-not-allowed');
+        };
+
+        input.addEventListener('input', () => {
+            let val = input.value;
+            val = val.replace(/[^0-9.]/g, '');
+
+            const parts = val.split('.');
+            if (parts.length > 2) {
+                val = parts[0] + '.' + parts.slice(1).join('');
+            }
+
+
+            if (!val.startsWith('0.') && val.length > 1) {
+                val = val.replace(/^0+/, '');
+                if (val === '') val = '0';
+            }
+
+            if (Number(val) > 100) val = '100';
+
+            input.value = val;
+            updateUI();
+        });
+
+        document.querySelectorAll('.dropdown-toggle').forEach(toggle => {
+            toggle.addEventListener('click', () => {
+                const dropdown = toggle.closest('.dropdown');
+                const content = dropdown.querySelector('.dropdown-content');
+
+                if (!content) return;
+
+                document.querySelectorAll('.dropdown-content').forEach(otherContent => {
+                    if (otherContent !== content) {
+                        otherContent.classList.add('hidden');
+                    }
+                });
+
+                content.classList.toggle('hidden');
+            });
+        });
+
+        function translateRole(r) {
+            const roles = {
+                admin: 'Администратор',
+                client: 'Клиент',
+                supplier: 'Поставщик',
+                client_services: 'Клиент услуги',
+                courier: 'Курьер',
+                shop: 'Магазин'
+            };
+            return roles[r] || 'Неизвестно';
+        }
+
+        function openUniversalModal(email, user_id, entityId, role, name, inn, bankAccount, transactionData, companyName, fromWhom, balance) {
+            const modal = document.getElementById('universalModal');
+            const confirmBtn = document.getElementById('confirmChanges');
+            const modalTitle = document.getElementById('modal-title');
+            const percentageLabel = document.getElementById('percentage-label');
+
+            if (!modal || !confirmBtn) return;
+
+            // Заполняем данные
+            confirmBtn.dataset.userId = user_id;
+            confirmBtn.dataset.entityId = entityId;
+            confirmBtn.dataset.role = role
+
+            document.getElementById('modal-name').textContent = name || '—';
+            document.getElementById('modal-email').textContent = email || '—';
+            document.getElementById('modal-role').textContent = translateRole(role);
+            document.getElementById('modal-inn').textContent = inn || '—';
+            document.getElementById('modal-bank').textContent = bankAccount || '—';
+            document.getElementById('modal-transaction').textContent = transactionData || '—';
+            document.getElementById('modal-company').textContent = companyName || '—';
+            document.getElementById('modal-fromWhom').textContent = fromWhom || '—';
+            document.getElementById('modal-balance').textContent = balance || '—';
+
+            if (role === 'supplier'){
+                modalTitle.textContent = 'Укажите процент для поставщика';
+                percentageLabel.classList.remove('hidden');
+                updateUI();
+            }
+
+            if (role === 'client_services'){
+                modalTitle.textContent = 'Укажите процент клиент услуги';
+                percentageLabel.classList.remove('hidden');
+                updateUI();
+            }
+
+            if (role === 'client'){
+                modalTitle.textContent = 'Подтвердить клиента';
+                percentageLabel.classList.add('hidden');
+                resetUI();
+            }
+
+            if (role === 'shop'){
+                modalTitle.textContent = 'Определить в магазин';
+                percentageLabel.classList.add('hidden');
+                resetUI();
+            }
+
+
+            if (role === 'stock_balances'){
+                modalTitle.textContent = 'Определить как товарный баланс';
+                document.querySelectorAll('.user-info').forEach(el => el.classList.add('hidden'));
+                resetUI();
+            }
+
+            if (role === 'transaction_to_yourself'){
+                modalTitle.textContent = 'Перевод себе';
+                document.querySelectorAll('.user-info').forEach(el => el.classList.add('hidden'));
+                resetUI();
+            }
+            modal.showModal();
+        }
+
+        function closeUniversalModal() {
+            const modal = document.getElementById('universalModal');
+            if (modal) modal.close();
+
+            // Очистка процента, если надо
+            const percentageInput = document.getElementById('new_percentage');
+            if (percentageInput) percentageInput.value = '';
+        }
+
+        document.getElementById('confirmChanges').addEventListener('click', async () => {
+            const input = document.getElementById('new_percentage');
+            const confirmBtn = document.getElementById('confirmChanges');
+            const modal = document.getElementById('universalModal');
+
+            const percentage = input.value.trim();
+            const userId = confirmBtn.dataset.userId;
+            const entityId = confirmBtn.dataset.entityId;
+            const role = confirmBtn.dataset.role;
+            input.value = '';
+            modal.close();
+
+            if (role === 'supplier') {
+                let result = await postData('/user/bindAccountSupplier', {
+                    user_id: userId,
+                    entity_id: entityId,
+                    percent: percentage,
+                });
+                setChangeValue(result)
+            }
+
+            if (role === 'client_services'){
+                let result = await postData('/user/bindAccountClientServices', {
+                    user_id: userId,
+                    entity_id: entityId,
+                    percent: percentage,
+                });
+                setChangeValue(result)
+            }
+
+            if (role === 'client'){
+                let result = await postData('/user/bindAccountClient', {
+                    user_id: userId,
+                    entity_id: entityId,
+                });
+                setChangeValue(result)
+            }
+
+            if (role === 'stock_balances'){
+                let result = await postData('/transaction/setStockBalances', {
+                    entity_id: entityId,
+                });
+                setChangeValue(result)
+            }
+
+            if (role === 'transaction_to_yourself'){
+                let result = await postData('/transaction/setYourself', {
+                    entity_id: entityId,
+                });
+                setChangeValue(result)
+            }
+
+            if (role === 'shop'){
+
+                let result = await postData('/transaction/setShop', {
+                    entity_id: entityId,
+                    user_id: userId,
+                });
+                setChangeValue(result)
+            }
+        });
+
+        function userChoiceSelector() {
+            document.querySelectorAll('.list_user li').forEach(item => {
+                if (item.dataset.bound === 'true') return;
+
+                item.addEventListener('click', async (e) => {
+                    e.preventDefault();
+
+                    const user_id = item.dataset.id;
+                    const email = item.dataset.email;
+                    const role = item.dataset.userRole;
+                    const name = item.dataset.userName;
+
+                    const entityId = item.dataset.entityId;
+                    const entityInn = item.dataset.entitieInn;
+                    const entityBankAccount = item.dataset.entitieBankaccount;
+                    const entityCompanyName = item.dataset.entitieCompanyname;
+                    const transactionData = item.dataset.entitieTransactiondata;
+                    const fromWhom = item.dataset.entitieFromwhom;
+                    const balance = item.dataset.entitieBalance;
+
+                    const dropdown = item.closest('.dropdown');
+                    const content = dropdown.querySelector('.dropdown-content');
+
+                    if (content) {
+                        content.classList.add('hidden');
+                    }
+
+                    console.log(entityId);
+
+                    openUniversalModal(
+                        email,
+                        user_id,
+                        entityId,
+                        role,
+                        name,
+                        entityInn,
+                        entityBankAccount,
+                        transactionData,
+                        entityCompanyName,
+                        fromWhom,
+                        balance
+                    );
+                });
+
+                item.dataset.bound = 'true';
+            });
+        }
+
+        function setChangeValue(answer) {
+            if (answer === 'error' || answer === '') {
+                showCornerModal('Ошибка выбора пользователя');
+                return;
+            }
+
+            if (answer.success) {
+                localStorage.setItem(
+                    'showCornerModal',
+                    'Пользователь успешно выбран'
+                );
+
+                location.reload();
+                return;
+            }
+
+            if (answer.status === 'error') {
+                showCornerModal('Ошибка выбора пользователя: ' + answer.value);
+            }
+        }
+
+        window.addEventListener('load', () => {
+            const message = localStorage.getItem('showCornerModal');
+
+            if (message) {
+                showCornerModal(message);
+                localStorage.removeItem('showCornerModal');
+            }
+        });
+
+        function showCornerModal(message) {
+            const checkbox = document.getElementById('notifications');
+            const txtModal = document.getElementById('notifications-txt');
+            checkbox.checked = true;
+            txtModal.innerHTML = message;
+
+
+            setTimeout(() => {
+                checkbox.checked = false;
+            }, 5000);
+        }
+
+        userChoiceSelector()
+
+        const dropdownStates = new Map();
+
+        document.querySelectorAll('.dropdown-content').forEach((dropdown) => {
+            const userList = dropdown.querySelector('.list_user');
+            const firstLi = userList.querySelector('li[data-entity-id]');
+            if (!firstLi) return; // если пользователей нет, пропускаем
+
+            const entityId = firstLi.dataset.entityId;
+
+            console.log(entityId);
+
+            dropdownStates.set(entityId, {
+                currentPage: 1,
+                loading: false,
+                allLoaded: false,
+                dropdown,
+                userList
+            });
+
+            dropdown.addEventListener('scroll', () => handleScroll(entityId));
+        });
+
+        function handleScroll(entityId) {
+            const state = dropdownStates.get(entityId);
+
+
+            if (!state || state.loading || state.allLoaded) return;
+
+            const {dropdown} = state;
+            const nearBottom = dropdown.scrollTop + dropdown.clientHeight >= dropdown.scrollHeight - 5;
+
+            if (nearBottom) {
+                loadNextPage(entityId);
+            }
+        }
+
+        async function loadNextPage(entityId) {
+            const state = dropdownStates.get(entityId);
+            if (!state) return;
+
+            state.loading = true;
+            state.currentPage++;
+
+            fetch(`/user/getUsersLinking?page=${state.currentPage}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'ok') {
+                        if (data.success === 'reached_the_end') {
+                            state.allLoaded = true;
+                            return;
+                        }
+
+                        if (Array.isArray(data.users)) {
+                            appendUsers(state.userList, entityId, data.users);
+                        }
+                    }
+                });
+
+            state.loading = false;
+        }
+
+        function appendUsers(userList, entityId, users) {
+            const template = document.getElementById('user-item-template');
+            const firstItem = userList.querySelector('li');
+
+            const entityData = {
+                entitieInn: firstItem?.dataset.entitieInn || '',
+                entitieBankaccount: firstItem?.dataset.entitieBankaccount || '',
+                entitieCompanyname: firstItem?.dataset.entitieCompanyname || '',
+                entitieTransactiondata: firstItem?.dataset.entitieTransactiondata || '',
+                entitieFromwhom: firstItem?.dataset.entitieFromwhom || '',
+                entitieBalance: firstItem?.dataset.entitieBalance || ''
+            };
+
+            users.forEach(user => {
+                const clone = template.content.cloneNode(true);
+                const li = clone.querySelector('li');
+                const roleSpan = clone.querySelector('.role');
+                const nameSpan = clone.querySelector('.name');
+
+                // Устанавливаем data-* атрибуты
+                li.dataset.id = user.id;
+                li.dataset.userRole = user.role;
+                li.dataset.userName = user.name;
+                li.dataset.entityId = entityId; // вот это был ключевой момент!
+
+                li.dataset.entitieInn = entityData.entitieInn;
+                li.dataset.entitieBankaccount = entityData.entitieBankaccount;
+                li.dataset.entitieCompanyname = entityData.entitieCompanyname;
+                li.dataset.entitieTransactiondata = entityData.entitieTransactiondata;
+                li.dataset.entitieFromwhom = entityData.entitieFromwhom;
+                li.dataset.entitieBalance = entityData.entitieBalance;
+
+                // Вставляем текст
+                roleSpan.textContent = translateRole(user.role);
+                nameSpan.textContent = user.name;
+
+                userList.appendChild(clone);
+            });
+
+            // Повторно навешиваем обработчики
+            userChoiceSelector();
+        }
+
+    </script>
+
+
+
+{% endblock %}
