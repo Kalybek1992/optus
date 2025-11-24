@@ -391,7 +391,7 @@ class UserController extends BaseController
                 $from_account_id = $transaction->from_account_id;
                 $to_account_id = $transaction->to_account_id;
 
-                $debts = [
+                $debts[] = [
                     'from_account_id' => $from_account_id,
                     'to_account_id' => $to_account_id,
                     'transaction_id' => $transaction->id,
@@ -619,6 +619,7 @@ class UserController extends BaseController
         }
 
         if ($user->role == 'client'){
+
             $client = ClientsLM::getClientId($user->clients_id);
 
             if (!$client) {

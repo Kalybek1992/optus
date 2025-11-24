@@ -5,6 +5,7 @@ const modal = document.getElementById('my_modal_2');
 const ready = document.getElementById('ready');
 
 const openErrorModal = (message) => {
+    const errorText = document.getElementById('errorText');
     errorText.innerHTML = message;
     document.getElementById('errorUpload').showModal();
 }
@@ -30,7 +31,7 @@ uploadButton.addEventListener('click', async function () {
     const formData = new FormData();
     formData.append('file', file);
     const result = await postDataFile(formData);
-
+    console.log(result);
 
     if (result.status === 'error') {
         switch (result.value) {
@@ -39,6 +40,9 @@ uploadButton.addEventListener('click', async function () {
                 break;
             case 'failed_to_save_file':
                 openErrorModal('Не удалось сохранить файл, попробуйте еще раз!!!');
+                break;
+            case 'error_no_title':
+                openErrorModal('Проверьте содержимого файла не найдена заголовок!!!');
                 break;
             case 'no_extracts_files':
                 openErrorModal('Не нашли транзакции!!!');

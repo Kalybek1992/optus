@@ -30,8 +30,7 @@ final class NewUserRoleCheckMiddleware extends Middleware
         $repeat = InformationDC::get('repeat');
         $new_user = [];
 
-        $encrypted = openssl_encrypt($password, Config::METHOD, Config::ENCRYPTION);
-        $encoded = base64_encode($encrypted);
+
 
         if ($role == 'client' && !$repeat) {
             $result_insert = UsersLM::insertNewUser([
@@ -41,6 +40,10 @@ final class NewUserRoleCheckMiddleware extends Middleware
             ]);
 
         }elseif ($role != 'client' && !$repeat) {
+
+            $encrypted = openssl_encrypt($password, Config::METHOD, Config::ENCRYPTION);
+            $encoded = base64_encode($encrypted);
+
             $result_insert = UsersLM::insertNewUser([
                 'email' => $email,
                 'password' => $encoded,

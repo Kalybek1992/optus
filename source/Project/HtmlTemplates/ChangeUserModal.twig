@@ -3,57 +3,61 @@
     <!-- input type="Email" -->
     <input type="checkbox" id="change_email" class="modal-toggle" />
     <div class="modal" role="dialog">
-        <div class="modal-box max-w-md">
+        <div class="modal-box w-11/12 max-w-md md:max-w-md p-6">
             <h1 class="text-lg font-bold text-gray-800 mb-4">Изменение электронной почты</h1>
 
-            <div class="space-y-3">
+            <div class="space-y-4">
                 <!-- Email input -->
-                <div class="flex flex-col">
+                <div class="flex flex-col w-full">
                     <span class="font-semibold text-gray-700 mb-2">Новая почта:</span>
                     <label class="input w-full flex items-center gap-2 border rounded-md p-2 bg-white">
-                        <svg class="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <svg class="h-5 w-5 text-gray-400 flex-shrink-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <rect width="20" height="16" x="2" y="4" rx="2"></rect>
                             <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path>
                         </svg>
-                        <input type="email" id="new_email" name="email" placeholder="mail@site.com" required class="w-full outline-none text-gray-800" />
+                        <input type="email" id="new_email" name="email" placeholder="mail@site.com" required
+                               class="w-full outline-none text-gray-800" />
                     </label>
                     <div class="validator-hint text-sm text-gray-500 mt-1 hidden" id="emailHint">Введите корректный email</div>
                 </div>
 
                 <!-- Информационный текст -->
-                <div class="alert alert-info rounded-xl text-white">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 shrink-0 stroke-current text-white" fill="none" viewBox="0 0 24 24">
+                <div class="alert alert-info rounded-xl text-white flex items-start gap-2 p-3">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 shrink-0 stroke-current text-white mt-1" fill="none" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                               d="M13 16h-1v-4h-1m1-4h.01M12 20a8 8 0 100-16 8 8 0 000 16z" />
                     </svg>
-                    <span class="text-white">
-                        После изменения электронной почты вход в кабинет по старому адресу будет недоступен. Обязательно сообщите новую почту пользователю для восстановления доступа.
-                    </span>
+                    <span class="text-white text-sm md:text-base">
+                    После изменения электронной почты вход в кабинет по старому адресу будет недоступен. Обязательно сообщите новую почту пользователю для восстановления доступа.
+                </span>
                 </div>
             </div>
 
             <!-- Кнопки действий -->
-            <div class="modal-action mt-6">
-                <label id="submitChangeEmail" class="btn bg-blue-600 hover:bg-blue-700 text-white border-none rounded-lg px-6">
+            <div class="modal-action mt-6 flex flex-col sm:flex-row gap-3 sm:gap-4 justify-end">
+                <label id="submitChangeEmail" class="btn bg-blue-600 hover:bg-blue-700 text-white border-none rounded-lg px-6 py-2 w-full sm:w-auto text-center">
                     Изменить
                 </label>
-                <label id="changeEmailClose" for="change_email" class="btn btn-outline rounded-lg">Закрыть</label>
+                <label id="changeEmailClose" for="change_email" class="btn btn-outline rounded-lg px-6 py-2 w-full sm:w-auto text-center">
+                    Закрыть
+                </label>
             </div>
         </div>
     </div>
 
+
     <!-- input type="password" -->
     <input type="checkbox" id="change_password" class="modal-toggle" />
     <div class="modal" role="dialog">
-        <div class="modal-box max-w-md">
+        <div class="modal-box w-11/12 max-w-md p-6">
             <h1 class="text-lg font-bold text-gray-800 mb-4">Изменение пароля</h1>
 
-            <div class="space-y-3">
+            <div class="space-y-4">
                 <!-- Поле ввода нового пароля -->
-                <div class="flex flex-col">
+                <div class="flex flex-col w-full">
                     <span class="font-semibold text-gray-700 mb-2">Новый пароль:</span>
                     <label class="input w-full flex items-center gap-2 border rounded-md p-2 bg-white">
-                        <svg class="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none"
+                        <svg class="h-5 w-5 text-gray-400 flex-shrink-0" xmlns="http://www.w3.org/2000/svg" fill="none"
                              viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                             <path stroke-linecap="round" stroke-linejoin="round"
                                   d="M12 15v2m0-6a2 2 0 00-2 2v4a2 2 0 004 0v-4a2 2 0 00-2-2zm6-4V7a6 6 0 00-12 0v2" />
@@ -68,24 +72,28 @@
                 </div>
 
                 <!-- Информационное сообщение -->
-                <div class="alert alert-info rounded-xl text-white">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 shrink-0 stroke-current text-white" fill="none" viewBox="0 0 24 24">
+                <div class="alert alert-info rounded-xl text-white flex items-start gap-2 p-3">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 shrink-0 stroke-current text-white mt-1" fill="none" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                               d="M13 16h-1v-4h-1m1-4h.01M12 20a8 8 0 100-16 8 8 0 000 16z" />
                     </svg>
-                    <span class="text-white">После изменения пароля необходимо сообщить его пользователю, иначе вход в кабинет будет невозможен.</span>
+                    <span class="text-white text-sm md:text-base">
+                    После изменения пароля необходимо сообщить его пользователю, иначе вход в кабинет будет невозможен.
+                </span>
                 </div>
             </div>
 
             <!-- Кнопки действий -->
-            <div class="modal-action mt-6">
-                <label id="generatePassword" class="btn bg-blue-600 hover:bg-blue-700 text-white border-none rounded-lg px-6">
+            <div class="modal-action mt-6 flex flex-col sm:flex-row gap-3 sm:gap-4 justify-end">
+                <label id="generatePassword" class="btn bg-blue-600 hover:bg-blue-700 text-white border-none rounded-lg px-6 py-2 w-full sm:w-auto text-center">
                     Сгенерировать
                 </label>
-                <label id="submitChangePassword" class="btn bg-blue-600 hover:bg-blue-700 text-white border-none rounded-lg px-6">
+                <label id="submitChangePassword" class="btn bg-blue-600 hover:bg-blue-700 text-white border-none rounded-lg px-6 py-2 w-full sm:w-auto text-center">
                     Изменить
                 </label>
-                <label id="changePasswordClose" for="change_password" class="btn btn-outline rounded-lg">Закрыть</label>
+                <label id="changePasswordClose" for="change_password" class="btn btn-outline rounded-lg px-6 py-2 w-full sm:w-auto text-center">
+                    Закрыть
+                </label>
             </div>
         </div>
     </div>
@@ -94,10 +102,11 @@
     <!-- type="unlink_account" -->
     <input type="checkbox" id="unlink_account" class="modal-toggle" />
     <div class="modal" role="dialog">
-        <div class="modal-box max-w-md">
+        <div class="modal-box w-11/12 max-w-md p-6">
             <h1 class="text-lg font-bold text-gray-800 mb-4">Вы действительно хотите отвязать счёт?</h1>
 
-            <div class="space-y-3">
+            <div class="space-y-4">
+                <!-- Информация о пользователе -->
                 <div class="p-3 border border-gray-200 rounded-xl bg-gray-50 flex flex-col">
                     <span class="font-semibold text-gray-700">Пользователь:</span>
                     <span id="unlinkUserName" class="text-gray-800 mt-1 break-all"></span>
@@ -113,23 +122,30 @@
                     <span id="companyName" class="text-gray-800 mt-1 break-all"></span>
                 </div>
 
-                <div class="alert alert-info rounded-xl mt-3 text-white">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 shrink-0 stroke-current text-white" fill="none" viewBox="0 0 24 24">
+                <!-- Информационное сообщение -->
+                <div class="alert alert-info rounded-xl mt-3 text-white flex items-start gap-2 p-3">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 shrink-0 stroke-current text-white mt-1" fill="none" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                               d="M13 16h-1v-4h-1m1-4h.01M12 20a8 8 0 100-16 8 8 0 000 16z" />
                     </svg>
-                    <span class="text-white">После отвязки счёта все долги пользователя будут удалены.</span>
+                    <span class="text-white text-sm md:text-base">
+                    После отвязки счёта все долги пользователя будут удалены.
+                </span>
                 </div>
             </div>
 
-            <div class="modal-action mt-6">
-                <button id="confirmUnlink" class="btn bg-blue-600 hover:bg-blue-700 text-white border-none rounded-lg px-6">
+            <!-- Кнопки действий -->
+            <div class="modal-action mt-6 flex flex-col sm:flex-row gap-3 sm:gap-4 justify-end">
+                <button id="confirmUnlink" class="btn bg-blue-600 hover:bg-blue-700 text-white border-none rounded-lg px-6 py-2 w-full sm:w-auto text-center">
                     Подтвердить
                 </button>
-                <label for="unlink_account" class="btn btn-outline rounded-lg">Отменить</label>
+                <label for="unlink_account" class="btn btn-outline rounded-lg px-6 py-2 w-full sm:w-auto text-center">
+                    Отменить
+                </label>
             </div>
         </div>
     </div>
+
 
     <!-- type="delete_account" -->
     <input type="checkbox" id="delete_account" class="modal-toggle" />
@@ -168,10 +184,10 @@
     <!-- type="change_percentage" -->
     <input type="checkbox" id="change_percentage" class="modal-toggle" />
     <div class="modal" role="dialog">
-        <div class="modal-box max-w-md">
+        <div class="modal-box w-11/12 max-w-md p-6">
             <h1 class="text-lg font-bold text-gray-800 mb-4">Изменение процента</h1>
 
-            <div class="space-y-3">
+            <div class="space-y-4">
                 <!-- Пользователь -->
                 <div class="p-3 border border-gray-200 rounded-xl bg-gray-50 flex flex-col">
                     <span class="font-semibold text-gray-700">Пользователь:</span>
@@ -179,16 +195,16 @@
                 </div>
 
                 <!-- Старый процент -->
-                <div class="p-3 border border-gray-200 rounded-xl bg-white flex items-center justify-between">
+                <div class="p-3 border border-gray-200 rounded-xl bg-white flex flex-col sm:flex-row sm:items-center sm:justify-between">
                     <div>
                         <span class="font-semibold text-gray-700">Старый процент</span>
                         <div id="oldPercentage" class="text-gray-800 mt-1 text-lg font-medium">—%</div>
                     </div>
                     <!-- иконка-подсказка -->
-                    <div class="text-sm text-gray-400">Текущий</div>
+                    <div class="text-sm text-gray-400 mt-2 sm:mt-0">Текущий</div>
                 </div>
 
-                <!-- Поле ввода процента -->
+                <!-- Поле ввода нового процента -->
                 <div class="flex flex-col">
                     <span class="font-semibold text-gray-700 mb-2">Новый процент:</span>
                     <label class="input w-full flex items-center gap-2 border rounded-md p-2 bg-white">
@@ -204,38 +220,40 @@
                 </div>
 
                 <!-- Информационное сообщение -->
-                <div class="alert alert-info rounded-xl mt-3 text-white">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 shrink-0 stroke-current text-white" fill="none" viewBox="0 0 24 24">
+                <div class="alert alert-info rounded-xl mt-3 text-white flex items-start gap-2 p-3">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 shrink-0 stroke-current text-white mt-1" fill="none" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                               d="M13 16h-1v-4h-1m1-4h.01M12 20a8 8 0 100-16 8 8 0 000 16z" />
                     </svg>
-                    <span class="text-white">Новый процент не будет применяться к уже существующим долгам.</span>
+                    <span class="text-white text-sm md:text-base">
+                    Новый процент не будет применяться к уже существующим долгам.
+                </span>
                 </div>
             </div>
 
             <!-- Кнопки действий -->
-            <div class="modal-action mt-6">
-                <button id="confirmNewPercentage" class="btn bg-blue-600 hover:bg-blue-700 text-white border-none rounded-lg px-6">
+            <div class="modal-action mt-6 flex flex-col sm:flex-row gap-3 sm:gap-4 justify-end">
+                <button id="confirmNewPercentage" class="btn bg-blue-600 hover:bg-blue-700 text-white border-none rounded-lg px-6 py-2 w-full sm:w-auto text-center">
                     Подтвердить
                 </button>
-                <label for="change_percentage" class="btn btn-outline rounded-lg">Отменить</label>
+                <label for="change_percentage" class="btn btn-outline rounded-lg px-6 py-2 w-full sm:w-auto text-center">
+                    Отменить
+                </label>
             </div>
         </div>
     </div>
 
-
     <dialog id="errorEmail" class="modal">
-        <div class="modal-box">
-            <h3 class="text-lg font-bold">Ошибка!</h3>
-            <p id="errorText" class="py-4">Неправильный формат Почты</p>
-            <div class="modal-action">
-                <form method="dialog">
-                    <button class="btn">Закрыть</button>
+        <div class="modal-box w-11/12 max-w-md p-6">
+            <h3 class="text-lg font-bold text-gray-800 mb-4">Ошибка!</h3>
+            <p id="errorText" class="py-4 text-gray-700">Неправильный формат Почты</p>
+            <div class="modal-action flex flex-col sm:flex-row justify-end gap-3">
+                <form method="dialog" class="w-full sm:w-auto">
+                    <button class="btn w-full sm:w-auto px-6 py-2 text-center">Закрыть</button>
                 </form>
             </div>
         </div>
     </dialog>
-    <script src="/assets/js/PostData.js?v=<?= time() ?>"></script>
 
     <script>
         const modalCheckbox = document.getElementById('change_email');

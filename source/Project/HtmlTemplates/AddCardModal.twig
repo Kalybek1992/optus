@@ -2,18 +2,14 @@
     <!-- Open the modal using ID.showModal() method -->
 
     <dialog id="create_card_modal" class="modal">
-        <div class="modal-box rounded-xl shadow-xl p-6 bg-white" style="max-height: 90vh; overflow-y: auto;">
-
-        <h3 class="text-xl font-bold text-center mb-6">Создать карту</h3>
+        <div class="modal-box rounded-xl shadow-xl p-6 bg-white w-full max-w-lg mx-2 sm:mx-auto" style="max-height: 90vh; overflow-y: auto;">
+            <h3 class="text-xl font-bold text-center mb-6">Создать карту</h3>
 
             <form id="create_card_form" class="space-y-6">
                 <!-- Поле с иконкой -->
                 <div>
-                    <label for="card_number" class="block text-sm font-semibold text-gray-700 mb-2">
-                        Номер карты
-                    </label>
+                    <label for="card_number" class="block text-sm font-semibold text-gray-700 mb-2">Номер карты</label>
                     <div class="relative">
-                        <!-- Иконка слева -->
                         <div class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">
                             <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none"
                                  viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
@@ -21,61 +17,49 @@
                                       d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 0 0 2.25-2.25V6.75A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25v10.5A2.25 2.25 0 0 0 4.5 19.5Z"/>
                             </svg>
                         </div>
-
-                        <!-- Сам input -->
-                        <input
-                                type="text"
-                                id="card_number"
-                                name="card_number"
-                                maxlength="19"
-                                placeholder="1234 5678 9012 3456"
-                                required
-                                autocomplete="off"
-                                autocorrect="off"
-                                autocapitalize="off"
-                                spellcheck="false"
-                                class="pl-10 pr-4 py-2 w-full border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition bg-white text-black"
-                        />
+                        <input type="text" id="card_number" name="card_number" maxlength="19" placeholder="1234 5678 9012 3456"
+                               required autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
+                               class="pl-10 pr-4 py-2 w-full border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition bg-white text-black" />
                     </div>
                 </div>
 
                 <!-- Выбор компании -->
                 <div class="relative w-full">
                     <label class="block text-sm font-semibold text-gray-700 mb-2">Компания</label>
-
-                    <!-- Скрытый input для формы -->
-                    <input  type="hidden" id="company" name="company" required>
-
-                    <!-- Кнопка открытия списка -->
+                    <input type="hidden" id="company" name="company" required>
                     <button type="button" id="company_btn"
                             class="w-full h-auto border border-gray-300 rounded-lg px-3 py-2 text-xs text-gray-900 text-left bg-white flex flex-col items-start">
-                        <span id="company_text" class="font-semibold text-gray-900 text-sm leading-5 break-words">
-                            Выберите компанию
-                        </span>
+                        <span id="company_text" class="font-semibold text-gray-900 text-sm leading-5 break-words">Выберите компанию</span>
                     </button>
-
-                    <!-- Список -->
                     <ul id="company_list"
                         class="hidden absolute left-0 w-full border border-gray-300 rounded-lg mt-1 bg-white overflow-auto text-xs z-10"
-                        style="max-height: 50vh; padding-bottom: 20px;">
-                    </ul>
-
+                        style="max-height: 50vh; padding-bottom: 20px;"></ul>
                 </div>
 
                 <!-- Кнопки -->
-                <div class="flex justify-end gap-4 pt-4 border-t border-gray-200">
-                    <button type="submit" id="add-card" class="btn btn-primary">Создать</button>
-                    <button type="button" id="close-card-modal" class="btn btn-outline">Закрыть</button>
+                <div class="flex flex-col gap-3 pt-4 border-t border-gray-200">
+                    <!-- Кнопка Создать: синий фон, белый текст -->
+                    <button type="submit" id="add-card"
+                            class="btn bg-blue-600 text-white w-full px-6 py-2 rounded-lg hover:bg-blue-700">
+                        Создать
+                    </button>
+
+                    <!-- Кнопка Закрыть: без фона -->
+                    <button type="button" id="close-card-modal"
+                            class="btn btn-outline w-full px-6 py-2 rounded-lg">
+                        Закрыть
+                    </button>
                 </div>
             </form>
         </div>
     </dialog>
 
 
-    <!-- Триггер через checkbox -->
+    <!-- Триггер уведомления -->
     <input type="checkbox" id="notifications" class="hidden peer" />
-    <div class="fixed bottom-4 right-4 z-50 max-w-sm w-full
-            hidden peer-checked:flex flex-col bg-white border border-gray-300 rounded-xl shadow-xl
+    <div class="fixed bottom-4 left-0 right-0 z-50
+            hidden peer-checked:flex flex-col mx-4 sm:mx-auto
+            max-w-full sm:max-w-sm bg-white border border-gray-300 rounded-xl shadow-xl
             animate-fade-in transition-opacity duration-300 ease-out
             px-5 py-4 space-y-2">
 
@@ -99,7 +83,8 @@
         </div>
     </div>
 
-    <script src="/assets/js/PostData.js?v=<?= time() ?>"></script>
+
+
 
     <script>
         const createCardModal = document.getElementById('create_card_modal');

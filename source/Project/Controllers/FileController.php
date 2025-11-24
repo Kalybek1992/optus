@@ -55,17 +55,18 @@ class FileController extends BaseController
         $document = new TransactionsProcessLM($lines);
 
 
-
         if ($document->result_document_processing === 'no_extracts_files') {
             unlink($destination);
             return ApiViewer::getErrorBody(['value' => 'no_extracts_files']);
         }
 
         if ($document->result_document_processing == 'error_no_title') {
+            unlink($destination);
             return ApiViewer::getErrorBody(['value' => 'error_no_title']);
         }
 
         if ($document->result_document_processing == 'processed_invoices') {
+            unlink($destination);
             return ApiViewer::getErrorBody(['value' => 'processed_payments']);
         }
         

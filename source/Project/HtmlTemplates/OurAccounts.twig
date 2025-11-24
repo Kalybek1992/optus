@@ -2,26 +2,27 @@
 
     <div class="max-w-8xl mx-auto bg-white rounded-2xl shadow-lg p-6 space-y-4 relative mt-4">
 
-        <!-- Если отступ отсутствует список наших компаний -->
+        <!-- Если список пуст -->
         {% if our_accounts is empty %}
-            <div role="alert" class="alert alert-warning mt-4">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 shrink-0 stroke-current" fill="none"
-                     viewBox="0 0 24 24">
+            <div role="alert" class="alert alert-warning mt-4 flex items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 shrink-0 stroke-current" fill="none" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                           d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
                 </svg>
-                <span>Наша компаний не добавлены</span>
+                <span>Наши компании не добавлены</span>
             </div>
         {% else %}
 
-            <!-- Заголовок темы таблицы -->
+            <!-- Заголовок -->
             <div class="text-center text-sm font-semibold text-gray-700">
                 Наши компании
                 <div class="mx-auto w-1/2 border-t border-gray-300 mt-7 mb-7"></div>
             </div>
 
-            <!-- Таблица -->
-            <div class="overflow-x-auto w-full border border-gray-200 rounded-lg shadow-sm">
+            {% set total_final_remainder = 0 %}
+
+            <!-- Desktop таблица -->
+            <div class="hidden md:block overflow-x-auto w-full border border-gray-200 rounded-lg shadow-sm">
                 <table class="table w-full text-sm text-left divide-x divide-gray-200">
                     <thead class="bg-gray-100 text-xs text-gray-500 uppercase">
                     <tr class="divide-x divide-gray-200">
@@ -33,7 +34,6 @@
                     </tr>
                     </thead>
                     <tbody class="text-sm divide-y divide-gray-100">
-                    {% set total_final_remainder = 0 %}
                     {% for account in our_accounts %}
                         {% set total_final_remainder = total_final_remainder + account.final_remainder %}
                         <tr class="hover:bg-gray-50 divide-x divide-gray-200">
@@ -53,38 +53,26 @@
                                     {{ account.final_remainder|number_format(0, ',', ' ') }} ₽
                                 {% endif %}
                             </td>
+                            <td class="px-3 py-2 font-bold italic text-gray-700">{{ account.date_created|default('-') }}</td>
                             <td class="px-3 py-2 font-bold italic text-gray-700">
-                                {{ account.date_created|default('-') }}
-                            </td>
-
-                            {% if account.is_expired %}
-                                <td class="px-3 py-2 font-bold italic text-gray-700">
-                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none"
-                                         viewBox="0 0 24 24" stroke-width="1.5"
-                                         stroke="currentColor"
-                                         class="size-6 text-red-500">
+                                {% if account.is_expired %}
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6 text-red-500">
                                         <path stroke-linecap="round" stroke-linejoin="round"
                                               d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374
-                                                     1.948 3.374h14.71c1.73 0 2.813-1.874
-                                                     1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898
-                                                     0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z"/>
+                                             1.948 3.374h14.71c1.73 0 2.813-1.874
+                                             1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898
+                                             0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z"/>
                                     </svg>
-                                </td>
-                            {% else %}
-                                <td class="px-3 py-2 font-bold italic text-gray-700">
-                                    <svg xmlns="http://www.w3.org/2000/svg"
-                                         fill="none"
-                                         viewBox="0 0 24 24"
-                                         stroke-width="1.5"
-                                         stroke="currentColor"
-                                         class="size-6 text-green-500">
+                                {% else %}
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6 text-green-500">
                                         <path stroke-linecap="round" stroke-linejoin="round"
-                                              d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                                              d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/>
                                     </svg>
-                                </td>
-                            {% endif %}
+                                {% endif %}
+                            </td>
                         </tr>
                     {% endfor %}
+                    <!-- Сумма -->
                     <tr class="hover:bg-gray-50 divide-x divide-gray-200">
                         <td class="px-3 py-2 font-bold italic text-gray-700">Сумма конечного остатка</td>
                         <td class="px-3 py-2"></td>
@@ -104,6 +92,41 @@
                     </tfoot>
                 </table>
             </div>
+
+            <!-- Mobile карточки -->
+            <div class="md:hidden space-y-4">
+                {% for account in our_accounts %}
+                    <div class="border border-gray-200 rounded-lg shadow-sm p-4 space-y-1">
+                        <div class="text-xs font-semibold"><span class="font-bold text-green-700">Компания:</span> {{ account.company_name }}</div>
+                        <div class="text-xs font-semibold"><span class="font-bold text-yellow-700">Банк:</span> {{ account.bank_name }}</div>
+                        <div class="text-xs font-semibold">
+                            <span class="font-bold text-purple-700">Конечный остаток:</span>
+                            {% if account.final_remainder == 0 %}
+                                <label for="unlink_account"
+                                       class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium px-3 py-1 rounded-lg transition cursor-pointer"
+                                       data-account-id="{{ account.id }}"
+                                       data-company-name="{{ account.company_name }}"
+                                       data-description="{{ finances.description }}"
+                                       data-bank-name="{{ account.bank_name }}">
+                                    Возврат
+                                </label>
+                            {% else %}
+                                {{ account.final_remainder|number_format(0, ',', ' ') }} ₽
+                            {% endif %}
+                        </div>
+                        <div class="text-xs font-semibold"><span class="font-bold">Дата остатка:</span> {{ account.date_created|default('-') }}</div>
+                        <div class="text-xs font-semibold">
+                            <span class="font-bold">Статус:</span>
+                            {% if account.is_expired %}
+                                <span class="text-red-500">Просрочено</span>
+                            {% else %}
+                                <span class="text-green-500">Загружено</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+
         {% endif %}
     </div>
 

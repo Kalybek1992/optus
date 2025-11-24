@@ -45,21 +45,27 @@ class XlsxLM extends LogicManager
             $row++;
         }
 
-        // Добавляем строку "Сумма"
+        // Итоговая строка
         $sheet->setCellValue('A' . $row, 'Сумма');
         $sheet->setCellValue('G' . $row, '=SUM(G2:G' . ($row - 1) . ')');
 
+        // Статичное имя файла
         $upload_dir = Path::RESOURCES_DIR . 'uploads/';
-        $file_name = bin2hex(random_bytes(16)) . '.xlsx';
+        $file_name = 'TransactionMagazine.xlsx';
         $destination = $upload_dir . $file_name;
+
+        // Если файл существует — удаляем
+        if (file_exists($destination)) {
+            unlink($destination);
+        }
 
         // Сохраняем файл
         $writer = new Xlsx($spreadsheet);
         $writer->save($destination);
 
-
         return $file_name;
     }
+
 
 
 

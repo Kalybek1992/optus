@@ -102,7 +102,7 @@
                             {% endif %}
                         </div>
                         <div class="font-semibold text-gray-600 text-base">
-                            {{ courier.balance_sum }}
+                            {{ courier.balance_sum|number_format(0, ',', ' ') }}  ₽
                         </div>
                     </div>
                     <!-- Непринятый баланс -->
@@ -111,7 +111,7 @@
                             Непринятый баланс
                         </div>
                         <div class="font-semibold text-gray-600 text-base">
-                            {{ courier.balance_unaccepted ?? 0 }}
+                            {{ courier.balance_unaccepted|number_format(0, ',', ' ') }}  ₽
                         </div>
                     </div>
                 </div>

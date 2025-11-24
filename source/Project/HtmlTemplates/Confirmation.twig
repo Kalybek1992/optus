@@ -1,5 +1,7 @@
 {% block content %}
     <div class="max-w-8xl mx-auto space-y-10">
+
+        {# ==================== Confirmation Costs Courier ==================== #}
         {% if confirmation_costs_courier is not empty %}
             <div class="bg-white rounded-2xl shadow-lg p-6 relative">
                 <div class="text-center text-sm font-semibold text-gray-700 mb-6">
@@ -7,7 +9,8 @@
                     <div class="mx-auto w-1/2 border-t border-gray-300 mt-4 mb-4"></div>
                 </div>
 
-                <div class="overflow-x-auto w-full border border-gray-200 rounded-lg shadow-sm">
+                {# Desktop table #}
+                <div class="hidden md:block overflow-x-auto w-full border border-gray-200 rounded-lg shadow-sm">
                     <table class="table w-full text-sm text-left divide-x divide-gray-200">
                         <thead class="bg-gray-100 text-xs text-gray-500 uppercase">
                         <tr class="divide-x divide-gray-200">
@@ -46,21 +49,39 @@
                             </tr>
                         {% endfor %}
                         </tbody>
-                        <tfoot class="bg-gray-100 text-xs text-gray-500 uppercase">
-                        <tr class="divide-x divide-gray-200">
-                            <th class="px-3 py-2">Курьер</th>
-                            <th class="px-3 py-2">Комментарии</th>
-                            <th class="px-3 py-2">Категории</th>
-                            <th class="px-3 py-2">Сумма</th>
-                            <th class="px-3 py-2">Дата</th>
-                            <th class="px-3 py-2 text-center">Подтверждение</th>
-                        </tr>
-                        </tfoot>
                     </table>
+                </div>
+
+                {# Mobile cards #}
+                <div class="md:hidden space-y-4">
+                    {% for confirmation in confirmation_costs_courier %}
+                        <div class="border border-gray-200 rounded-lg shadow-sm p-4">
+                            <div class="text-xs font-semibold mb-1"><span class="font-bold text-green-700">Курьер:</span> {{ confirmation.name }}</div>
+                            <div class="text-xs font-semibold mb-1"><span class="font-bold text-yellow-700">Комментарии:</span> {{ confirmation.comments }}</div>
+                            <div class="text-xs font-semibold mb-1"><span class="font-bold text-purple-700">Категории:</span> {{ confirmation.category }}</div>
+                            <div class="text-xs font-semibold mb-1"><span class="font-bold text-purple-700">Сумма:</span> {{ confirmation.amount }}</div>
+                            <div class="text-xs font-semibold mb-2"><span class="font-bold">Дата:</span> {{ confirmation.date }}</div>
+                            <div class="flex flex-col gap-2">
+                                <button class="btn text-white bg-green-600 hover:bg-green-700 px-4 py-2 rounded-md text-xs font-medium transition"
+                                        data-id="{{ confirmation.id }}"
+                                        data-action="consumption"
+                                        onclick="openConfirmModal(this, 'courier')">
+                                    Подтвердить
+                                </button>
+                                <button class="btn text-white bg-red-600 hover:bg-red-700 px-4 py-2 rounded-md text-xs font-medium transition"
+                                        data-id="{{ confirmation.id }}"
+                                        data-action="consumption"
+                                        onclick="cancelCourierExpense(this, 'courier')">
+                                    Отменить
+                                </button>
+                            </div>
+                        </div>
+                    {% endfor %}
                 </div>
             </div>
         {% endif %}
 
+        {# ==================== Return Debit Courier ==================== #}
         {% if return_debit_courier is not empty %}
             <div class="bg-white rounded-2xl shadow-lg p-6 relative">
                 <div class="text-center text-sm font-semibold text-gray-700 mb-6">
@@ -68,7 +89,8 @@
                     <div class="mx-auto w-1/2 border-t border-gray-300 mt-4 mb-4"></div>
                 </div>
 
-                <div class="overflow-x-auto w-full border border-gray-200 rounded-lg shadow-sm">
+                {# Desktop table #}
+                <div class="hidden md:block overflow-x-auto w-full border border-gray-200 rounded-lg shadow-sm">
                     <table class="table w-full text-sm text-left divide-x divide-gray-200">
                         <thead class="bg-gray-100 text-xs text-gray-500 uppercase">
                         <tr class="divide-x divide-gray-200">
@@ -109,22 +131,40 @@
                             </tr>
                         {% endfor %}
                         </tbody>
-                        <tfoot class="bg-gray-100 text-xs text-gray-500 uppercase">
-                        <tr class="divide-x divide-gray-200">
-                            <th class="px-3 py-2">Курьер</th>
-                            <th class="px-3 py-2">Комментарии</th>
-                            <th class="px-3 py-2">Клиент</th>
-                            <th class="px-3 py-2">Сумма</th>
-                            <th class="px-3 py-2">Остаток долга</th>
-                            <th class="px-3 py-2">Дата</th>
-                            <th class="px-3 py-2 text-center">Подтверждение</th>
-                        </tr>
-                        </tfoot>
                     </table>
+                </div>
+
+                {# Mobile cards #}
+                <div class="md:hidden space-y-4">
+                    {% for confirmation in return_debit_courier %}
+                        <div class="border border-gray-200 rounded-lg shadow-sm p-4">
+                            <div class="text-xs font-semibold mb-1"><span class="font-bold text-green-700">Курьер:</span> {{ confirmation.courier_name }}</div>
+                            <div class="text-xs font-semibold mb-1"><span class="font-bold text-yellow-700">Комментарии:</span> {{ confirmation.comments }}</div>
+                            <div class="text-xs font-semibold mb-1"><span class="font-bold text-purple-700">Клиент:</span> {{ confirmation.client_name }}</div>
+                            <div class="text-xs font-semibold mb-1"><span class="font-bold text-purple-700">Сумма:</span> {{ confirmation.amount }}</div>
+                            <div class="text-xs font-semibold mb-1"><span class="font-bold text-purple-700">Остаток долга:</span> {{ confirmation.debit_amount }}</div>
+                            <div class="text-xs font-semibold mb-2"><span class="font-bold">Дата:</span> {{ confirmation.date }}</div>
+                            <div class="flex flex-col gap-2">
+                                <button class="btn text-white bg-green-600 hover:bg-green-700 px-4 py-2 rounded-md text-xs font-medium transition"
+                                        data-id="{{ confirmation.id }}"
+                                        data-action="debt"
+                                        onclick="openConfirmModal(this, 'courier')">
+                                    Подтвердить
+                                </button>
+                                <button class="btn text-white bg-red-600 hover:bg-red-700 px-4 py-2 rounded-md text-xs font-medium transition"
+                                        data-id="{{ confirmation.id }}"
+                                        data-action="debt"
+                                        onclick="cancelCourierExpense(this, 'courier')">
+                                    Отменить
+                                </button>
+                            </div>
+                        </div>
+                    {% endfor %}
                 </div>
             </div>
         {% endif %}
 
+        {# ==================== Courier Income Other ==================== #}
         {% if courier_income_other is not empty %}
             <div class="bg-white rounded-2xl shadow-lg p-6 relative">
                 <div class="text-center text-sm font-semibold text-gray-700 mb-6">
@@ -132,7 +172,8 @@
                     <div class="mx-auto w-1/2 border-t border-gray-300 mt-4 mb-4"></div>
                 </div>
 
-                <div class="overflow-x-auto w-full border border-gray-200 rounded-lg shadow-sm">
+                {# Desktop table #}
+                <div class="hidden md:block overflow-x-auto w-full border border-gray-200 rounded-lg shadow-sm">
                     <table class="table w-full text-sm text-left divide-x divide-gray-200">
                         <thead class="bg-gray-100 text-xs text-gray-500 uppercase">
                         <tr class="divide-x divide-gray-200">
@@ -165,21 +206,33 @@
                             </tr>
                         {% endfor %}
                         </tbody>
-                        <tfoot class="bg-gray-100 text-xs text-gray-500 uppercase">
-                        <tr class="divide-x divide-gray-200">
-                            <th class="px-3 py-2">Курьер</th>
-                            <th class="px-3 py-2">Комментарии</th>
-                            <th class="px-3 py-2">Описание</th>
-                            <th class="px-3 py-2">Сумма</th>
-                            <th class="px-3 py-2">Дата</th>
-                            <th class="px-3 py-2 text-center">Подтверждение</th>
-                        </tr>
-                        </tfoot>
                     </table>
+                </div>
+
+                {# Mobile cards #}
+                <div class="md:hidden space-y-4">
+                    {% for confirmation in courier_income_other %}
+                        <div class="border border-gray-200 rounded-lg shadow-sm p-4">
+                            <div class="text-xs font-semibold mb-1"><span class="font-bold text-green-700">Курьер:</span> {{ confirmation.courier_name }}</div>
+                            <div class="text-xs font-semibold mb-1"><span class="font-bold text-yellow-700">Комментарии:</span> {{ confirmation.comments }}</div>
+                            <div class="text-xs font-semibold mb-1"><span class="font-bold text-purple-700">Описание:</span> {{ confirmation.transaction_description }}</div>
+                            <div class="text-xs font-semibold mb-1"><span class="font-bold text-purple-700">Сумма:</span> {{ confirmation.amount }}</div>
+                            <div class="text-xs font-semibold mb-2"><span class="font-bold">Дата:</span> {{ confirmation.date }}</div>
+                            <div class="flex flex-col gap-2">
+                                <button class="btn text-white bg-green-600 hover:bg-green-700 px-4 py-2 rounded-md text-xs font-medium transition"
+                                        data-id="{{ confirmation.id }}"
+                                        data-action="debt"
+                                        onclick="openConfirmModal(this, 'courier')">
+                                    Подтвердить
+                                </button>
+                            </div>
+                        </div>
+                    {% endfor %}
                 </div>
             </div>
         {% endif %}
 
+        {# ==================== Debt Repayment Companies Supplier ==================== #}
         {% if debt_repayment_companies_supplier is not empty %}
             <div class="bg-white rounded-2xl shadow-lg p-6 relative">
                 <div class="text-center text-sm font-semibold text-gray-700 mb-6">
@@ -187,7 +240,8 @@
                     <div class="mx-auto w-1/2 border-t border-gray-300 mt-4 mb-4"></div>
                 </div>
 
-                <div class="overflow-x-auto w-full border border-gray-200 rounded-lg shadow-sm">
+                {# Desktop table #}
+                <div class="hidden md:block overflow-x-auto w-full border border-gray-200 rounded-lg shadow-sm">
                     <table class="table w-full text-sm text-left divide-x divide-gray-200">
                         <thead class="bg-gray-100 text-xs text-gray-500 uppercase">
                         <tr class="divide-x divide-gray-200">
@@ -226,19 +280,37 @@
                             </tr>
                         {% endfor %}
                         </tbody>
-                        <tfoot class="bg-gray-100 text-xs text-gray-500 uppercase">
-                        <tr class="divide-x divide-gray-200">
-                            <th class="px-3 py-2">Поставщик</th>
-                            <th class="px-3 py-2">Комментарии</th>
-                            <th class="px-3 py-2">Описание</th>
-                            <th class="px-3 py-2">Сумма</th>
-                            <th class="px-3 py-2">Дата</th>
-                            <th class="px-3 py-2 text-center">Подтверждение</th>
-                        </tr>
-                        </tfoot>
                     </table>
+                </div>
+
+                {# Mobile cards #}
+                <div class="md:hidden space-y-4">
+                    {% for confirmation in debt_repayment_companies_supplier %}
+                        <div class="border border-gray-200 rounded-lg shadow-sm p-4">
+                            <div class="text-xs font-semibold mb-1"><span class="font-bold text-green-700">Поставщик:</span> {{ confirmation.supplier_name }}</div>
+                            <div class="text-xs font-semibold mb-1"><span class="font-bold text-yellow-700">Комментарии:</span> {{ confirmation.comments }}</div>
+                            <div class="text-xs font-semibold mb-1"><span class="font-bold text-purple-700">Описание:</span> {{ confirmation.transaction_description }}</div>
+                            <div class="text-xs font-semibold mb-1"><span class="font-bold text-purple-700">Сумма:</span> {{ confirmation.amount }}</div>
+                            <div class="text-xs font-semibold mb-2"><span class="font-bold">Дата:</span> {{ confirmation.date }}</div>
+                            <div class="flex flex-col gap-2">
+                                <button class="btn text-white bg-green-600 hover:bg-green-700 px-4 py-2 rounded-md text-xs font-medium transition"
+                                        data-id="{{ confirmation.id }}"
+                                        data-action="debt"
+                                        onclick="openConfirmModal(this, 'supplier')">
+                                    Подтвердить
+                                </button>
+                                <button class="btn text-white bg-red-600 hover:bg-red-700 px-4 py-2 rounded-md text-xs font-medium transition"
+                                        data-id="{{ confirmation.id }}"
+                                        data-action="debt"
+                                        onclick="cancelCourierExpense(this, 'supplier')">
+                                    Отменить
+                                </button>
+                            </div>
+                        </div>
+                    {% endfor %}
                 </div>
             </div>
         {% endif %}
     </div>
 {% endblock %}
+
