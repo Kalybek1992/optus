@@ -24,10 +24,10 @@
                             </div>
 
                             <!-- Название банка -->
-                            <div class="flex items-center text-sm text-base-content opacity-80">
-                                <span class="mr-2 font-bold text-gray-600">Название банка:</span>
+                            <div class="flex flex-col sm:flex-row sm:items-center sm:gap-2 text-sm text-base-content opacity-80 mb-3">
+                                <span class="font-bold text-gray-600 mb-1 sm:mb-0">Название банка:</span>
                                 <span class="font-bold text-black">{{ entitie.bank_name }}</span>
-                                <button type="button" class="ml-2 text-gray-600 hover:text-gray-900" onclick="copyText('{{ entitie.bank_name }}')">
+                                <button type="button" class="mt-1 sm:mt-0 ml-0 sm:ml-2 text-gray-600 hover:text-gray-900" onclick="copyText('{{ entitie.bank_name }}')">
                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8l6 6v4"/>
                                         <path stroke-linecap="round" stroke-linejoin="round" d="M14 2v6h6"/>
@@ -36,17 +36,16 @@
                             </div>
 
                             <!-- Компания -->
-                            <div class="flex items-center text-sm text-base-content opacity-80">
-                                <span class="mr-2 font-bold text-gray-600">Компания:</span>
+                            <div class="flex flex-col sm:flex-row sm:items-center sm:gap-2 text-sm text-base-content opacity-80">
+                                <span class="font-bold text-gray-600 mb-1 sm:mb-0">Компания:</span>
                                 <span class="font-bold text-black">{{ entitie.company_name }}</span>
-                                <button type="button" class="ml-2 text-gray-600 hover:text-gray-900" onclick="copyText('{{ entitie.company_name }}')">
+                                <button type="button" class="mt-1 sm:mt-0 ml-0 sm:ml-2 text-gray-600 hover:text-gray-900" onclick="copyText('{{ entitie.company_name }}')">
                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8l6 6v4"/>
                                         <path stroke-linecap="round" stroke-linejoin="round" d="M14 2v6h6"/>
                                     </svg>
                                 </button>
                             </div>
-
 
                             {% set income_count = 0 %}
                             {% set expense_count = 0 %}
@@ -103,9 +102,8 @@
                                 <!-- Содержимое -->
                                 <div class="p-4 border rounded-lg">
                                     {% for transaction in entitie.transaction_data %}
-                                        <div class="flex flex-col gap-2 p-3 bg-white border rounded-lg shadow-sm text-sm mt-3">
-
-                                            <!-- Тип транзакции -->
+                                        <div class="flex flex-col gap-2 p-3 bg-white text-sm">
+                                                <!-- Тип транзакции -->
                                             <div class="flex items-center text-sm text-base-content opacity-80">
                                                 <span class="mr-2 font-semibold text-gray-600">Тип:</span>
                                                 <span class="flex items-center gap-2 font-bold uppercase text-gray-800">
@@ -124,85 +122,42 @@
                                             </div>
 
                                             <!-- Дата -->
-                                            <div class="flex items-center text-sm text-base-content opacity-80">
-                                                <span class="mr-2 font-semibold text-gray-600">Дата:</span>
-                                                <span class="italic font-mono text-gray-800">{{ transaction.date }}</span>
+                                            <div class="flex flex-col sm:flex-row sm:items-center sm:gap-2 text-sm text-base-content opacity-80">
+                                                <span class="font-semibold text-gray-600 mb-1 sm:mb-0">Дата:</span>
+                                                <span class="font-bold text-black">{{ transaction.date }}</span>
                                             </div>
 
                                             <!-- Сумма -->
-                                            <div class="flex items-center text-sm text-base-content opacity-80">
-                                                <span class="mr-2 font-semibold text-gray-600">Сумма:</span>
-                                                <span class="italic font-mono text-gray-800">{{ transaction.amount }}</span>
+                                            <div class="flex flex-col sm:flex-row sm:items-center sm:gap-2 text-sm text-base-content opacity-80">
+                                                <span class="font-semibold text-gray-600 mb-1 sm:mb-0">Сумма:</span>
+                                                <span class="font-bold text-black">{{ transaction.amount }}</span>
                                             </div>
 
                                             <!-- ИНН -->
-                                            <div class="flex items-center text-sm text-base-content opacity-80">
-                                                <span class="mr-2 font-semibold text-gray-600">ИНН:</span>
-                                                <span class="italic font-mono text-gray-800">{{ transaction.inn }}</span>
-                                                <button type="button" class="ml-2 text-gray-600 hover:text-gray-900"
-                                                        onclick="copyText('{{ transaction.inn }}')">
-                                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2"
-                                                         viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round"
-                                                              d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8l6 6v4"/>
-                                                        <path stroke-linecap="round" stroke-linejoin="round" d="M14 2v6h6"/>
-                                                    </svg>
-                                                </button>
+                                            <div class="flex flex-col sm:flex-row sm:items-center sm:gap-2 text-sm text-base-content opacity-80">
+                                                <span class="font-semibold text-gray-600 mb-1 sm:mb-0">ИНН:</span>
+                                                <span class="font-bold text-black">{{ transaction.inn }}</span>
                                             </div>
 
-                                            <!-- Счёт -->
-                                            <div class="flex items-center text-sm text-base-content opacity-80">
-                                                <span class="mr-2 font-semibold text-gray-600">Счёт:</span>
-                                                <span class="italic font-mono text-gray-800"
-                                                      id="account-{{ loop.index }}">{{ transaction.bank_account }}</span>
-                                                <button type="button" class="ml-2 text-gray-600 hover:text-gray-900"
-                                                        onclick="copyText('{{ transaction.bank_account }}')">
-                                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2"
-                                                         viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round"
-                                                              d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8l6 6v4"/>
-                                                        <path stroke-linecap="round" stroke-linejoin="round" d="M14 2v6h6"/>
-                                                    </svg>
-                                                </button>
-                                            </div>
-
-                                            <!-- Название банка  -->
-                                            <div class="flex items-center text-sm text-base-content opacity-80">
-                                                <span class="mr-2 font-semibold text-gray-600">Название банка:</span>
-                                                <span class="italic font-serif text-gray-800">{{ transaction.bank_name }}</span>
-                                                <button type="button" class="ml-2 text-gray-600 hover:text-gray-900"
-                                                        onclick="copyText('{{ transaction.bank_name }}')">
-                                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2"
-                                                         viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round"
-                                                              d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8l6 6v4"/>
-                                                        <path stroke-linecap="round" stroke-linejoin="round" d="M14 2v6h6"/>
-                                                    </svg>
-                                                </button>
+                                            <!-- Название банка -->
+                                            <div class="flex flex-col sm:flex-row sm:items-center sm:gap-2 text-sm text-base-content opacity-80">
+                                                <span class="font-semibold text-gray-600 mb-1 sm:mb-0">Название банка:</span>
+                                                <span class="font-bold text-black">{{ transaction.bank_name }}</span>
                                             </div>
 
                                             <!-- Компания -->
-                                            <div class="flex items-center text-sm text-base-content opacity-80">
-                                                <span class="mr-2 font-semibold text-gray-600">Компания:</span>
-                                                <span class="italic font-serif text-gray-800">{{ transaction.company_name }}</span>
-                                                <button type="button" class="ml-2 text-gray-600 hover:text-gray-900"
-                                                        onclick="copyText('{{ transaction.company_name }}')">
-                                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2"
-                                                         viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round"
-                                                              d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8l6 6v4"/>
-                                                        <path stroke-linecap="round" stroke-linejoin="round" d="M14 2v6h6"/>
-                                                    </svg>
-                                                </button>
+                                            <div class="flex flex-col sm:flex-row sm:items-center sm:gap-2 text-sm text-base-content opacity-80">
+                                                <span class="font-semibold text-gray-600 mb-1 sm:mb-0">Компания:</span>
+                                                <span class="font-bold text-black">{{ transaction.company_name }}</span>
                                             </div>
 
-                                            <!-- Описание  -->
-                                            <div class="text-sm text-base-content opacity-90">
-                                                <div class="mr-2 font-semibold text-gray-600">
-                                                    Описание:
-                                                </div>
-                                                <div class="italic font-mono text-gray-800 break-words whitespace-pre-wrap leading-snug">{{ transaction.description }}</div>
+                                            <!-- Описание -->
+                                            <div class="flex flex-col text-sm text-base-content opacity-90">
+                                                <span class="font-semibold text-gray-600 mb-1">Описание:</span>
+                                                <span class="italic font-mono text-black break-words whitespace-pre-wrap leading-snug">{{ transaction.description }}</span>
                                             </div>
+                                            <!-- Серая линия-разделитель -->
+                                            <div class="w-full h-[0.3px] bg-gray-300"></div>
                                         </div>
                                     {% endfor %}
                                     <!-- Кнопка "Скрыть" -->
@@ -212,9 +167,6 @@
                                 </div>
                             </details>
 
-                            <div id="{{ entitie.id }}-percent" class="text-sm text-blue-600 font-semibold mt-1 hidden">
-                                Процент: 0%
-                            </div>
 
                             <div class="flex items-center space-x-4">
                                 <!-- Кнопка выбора пользователя -->

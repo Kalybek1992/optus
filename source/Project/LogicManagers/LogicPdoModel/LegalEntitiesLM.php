@@ -537,8 +537,7 @@ class LegalEntitiesLM
             ->where([
                 'le.our_account =' . 1,
             ])
-            ->groupBy('SOUNDEX(le.company_name), le.company_name');
-
+            ->groupBy('le.id');
 
         $our_account = PdoConnector::execute($builder);
         $our_account_arr = [];
@@ -573,6 +572,7 @@ class LegalEntitiesLM
             $total_received_interest = $account->total_received ?? 0;
             if ($total_received_interest > 0) {
                 $total_received_interest -= $total_received_interest * 0.29;
+                $total_received_interest = round($total_received_interest, 2); // ограничение до 2 знаков
             }
 
 

@@ -536,6 +536,7 @@ class EntitiesController extends BaseController
     {
         $companies = LegalEntitiesLM::getEntitiesOurAccount();
 
+        //Logger::log(print_r($companies, true), 'getOurEntities');
 
         return $this->twig->render('Entities/ListCompanies.twig', [
             'companies' => $companies,

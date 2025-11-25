@@ -46,8 +46,10 @@
     {% block content %}{% endblock %}
 </div>
 
+
 {% if role == 'admin' %}
     {% include 'BurgerMenu.twig' %}
+    {% include 'AddCardModal.twig' %}
 {% endif %}
 
 <script>

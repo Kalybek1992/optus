@@ -7,7 +7,7 @@
         <ul class="list bg-base-100 rounded-lg shadow-md space-y-4">
             {% for order in bank_orders %}
                 <li class="relative p-4 bg-base-200 rounded-lg border border-gray-300">
-                    <div class="space-y-3">
+                    <div class="flex flex-col gap-3 w-full mx-auto p-4">
                         <!-- Плательщик -->
                         <div id="orderId"
                              data-order-id="{{ order.id }}"
@@ -16,99 +16,100 @@
                              data-order-recipient_company_name="{{ order.recipient_company_name }}"
                              data-order-date="{{ order.date }}"
                              data-order-description="{{ order.description }}"
-                             class="flex items-center text-sm text-base-content opacity-80">
-                            <span class="mr-2 font-semibold text-gray-600">Плательщик:</span>
+                             class="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 text-sm text-base-content opacity-80">
+                            <span class="font-semibold text-gray-600">Плательщик:</span>
                             <span class="italic font-mono text-gray-800">{{ order.sender_company_name }}</span>
-                            <button type="button" class="ml-2 text-gray-600 hover:text-gray-900"
+                            <button type="button" class="ml-0 sm:ml-2 text-gray-600 hover:text-gray-900 self-start sm:self-auto"
                                     onclick="copyText('{{ order.sender_company_name }}')">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2"
-                                     viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                          d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8l6 6v4"/>
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8l6 6v4"/>
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M14 2v6h6"/>
                                 </svg>
                             </button>
                         </div>
 
                         <!-- Банк плательщика -->
-                        <div class="flex items-center text-sm text-base-content opacity-80">
-                            <span class="mr-2 font-semibold text-gray-600">Банк плательщика:</span>
+                        <div class="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 text-sm text-base-content opacity-80">
+                            <span class="font-semibold text-gray-600">Банк плательщика:</span>
                             <span class="italic font-mono text-gray-800">{{ order.sender_bank_name }}</span>
-                            <button type="button" class="ml-2 text-gray-600 hover:text-gray-900"
+                            <button type="button" class="ml-0 sm:ml-2 text-gray-600 hover:text-gray-900 self-start sm:self-auto"
                                     onclick="copyText('{{ order.sender_bank_name }}')">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2"
-                                     viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                          d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8l6 6v4"/>
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8l6 6v4"/>
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M14 2v6h6"/>
                                 </svg>
                             </button>
                         </div>
 
                         <!-- Получатель -->
-                        <div class="flex items-center text-sm text-base-content opacity-80">
-                            <span class="mr-2 font-semibold text-gray-600">Получатель:</span>
+                        <div class="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 text-sm text-base-content opacity-80">
+                            <span class="font-semibold text-gray-600">Получатель:</span>
                             <span class="italic font-mono text-gray-800">{{ order.recipient_company_name }}</span>
-                            <button type="button" class="ml-2 text-gray-600 hover:text-gray-900"
+                            <button type="button" class="ml-0 sm:ml-2 text-gray-600 hover:text-gray-900 self-start sm:self-auto"
                                     onclick="copyText('{{ order.recipient_company_name }}')">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2"
-                                     viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                          d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8l6 6v4"/>
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8l6 6v4"/>
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M14 2v6h6"/>
                                 </svg>
                             </button>
                         </div>
 
                         <!-- Дата -->
-                        <div class="flex items-center text-sm text-base-content opacity-80">
-                            <span class="mr-2 font-semibold text-gray-600">Дата транзакции:</span>
+                        <div class="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 text-sm text-base-content opacity-80">
+                            <span class="font-semibold text-gray-600">Дата транзакции:</span>
                             <span class="italic font-serif text-gray-800">{{ order.date }}</span>
                         </div>
 
                         <!-- Номер документа -->
-                        <div class="flex items-center text-sm text-base-content opacity-80">
-                            <span class="mr-2 font-semibold text-gray-600">Номер документа:</span>
+                        <div class="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 text-sm text-base-content opacity-80">
+                            <span class="font-semibold text-gray-600">Номер документа:</span>
                             <span class="italic font-serif text-gray-800">{{ order.document_number }}</span>
                         </div>
 
                         <!-- Сумма -->
-                        <div class="flex items-center text-sm text-gray-700 font-semibold bg-gray-100 rounded-lg px-3 py-2 w-fit">
+                        <div class="flex items-center text-sm text-gray-700 font-semibold bg-gray-100 rounded-lg px-3 py-2 w-full sm:w-auto">
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                 stroke-width="1.5" stroke="currentColor" class="size-6 w-5 h-5 mr-2 text-gray-500">
+                                 stroke-width="1.5" stroke="currentColor" class="w-5 h-5 mr-2 text-gray-500">
                                 <path stroke-linecap="round" stroke-linejoin="round"
                                       d="M2.25 18.75a60.07 60.07 0 0 1 15.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 0 1 3 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 0 0-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 0 1-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 0 0 3 15h-.75M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm3 0h.008v.008H18V10.5Zm-12 0h.008v.008H6V10.5Z"/>
                             </svg>
-                            Сумма: <span id="balance" class="ml-2 font-mono">{{ order.amount }}</span>
+                            Сумма: <span id="balance" class="ml-2 font-mono">   {{ order.amount|number_format(0, ',', ' ') }} ₽</span>
                         </div>
 
                         <!-- Описание -->
-                        <div class="mb-4">
+                        <div class="flex flex-col">
                             <label for="description" class="block text-sm font-medium text-gray-700 mb-1">
                                 Описание
                             </label>
                             <textarea id="description" name="description"
-                                      class="textarea textarea-bordered w-full text-sm text-base-content italic"
+                                      class="w-full text-sm text-base-content italic border border-blue-300 rounded-lg p-2 focus:ring-0 focus:border-blue-300"
                                       rows="4" readonly>{{ order.description }}</textarea>
                         </div>
                     </div>
 
                     <!-- Чек бокс авто определение -->
-                    <fieldset class="fieldset bg-base-100 border-base-300 rounded-box w-64 border p-4 mt-6">
+                    <fieldset class="fieldset bg-base-100 border-base-300 rounded-box border p-4 mt-6 w-full max-w-full">
                         <legend class="fieldset-legend">Авто определение ордера</legend>
-                        <label class="label gap-2 cursor-pointer">
-                            <input id="autoOrder" type="checkbox" checked class="checkbox border-2 border-black text-black" />
-                            <span class="italic">
-                              После выбора все ордеры с похожим описанием будут автоматически определены
+                        <label class="label flex items-start gap-2 cursor-pointer flex-wrap">
+                            <input id="autoOrder" type="checkbox" checked class="checkbox border-2 border-black text-black mt-1 flex-shrink-0" />
+
+                            <!-- Полный текст для десктопа -->
+                            <span class="italic break-words flex-1 hidden sm:block">
+                                После выбора все ордеры с похожим описанием будут автоматически определены
+                            </span>
+
+                            <!-- Короткий текст для мобильного -->
+                            <span class="italic break-words flex-1 block sm:hidden">
+                                Все ордеры с похожим описанием
                             </span>
                         </label>
                     </fieldset>
 
                     <div class="space-y-4 mt-4">
                         <!-- Категории расходов -->
-                        <div class="flex items-center justify-between w-full max-w-xl mb-2">
+                        <div class="flex flex-col sm:flex-row items-start sm:items-center w-full max-w-xl mb-2 gap-2">
                             <!-- Блок выбора категории -->
-                            <div x-data="{ open: false, level: 0, path: [] }" class="relative w-full">
+                            <div x-data="{ open: false, level: 0, path: [] }" class="relative w-full sm:flex-1">
                                 <!-- Кнопка выбора -->
                                 <button @click="open = !open"
                                         class="w-full text-left bg-white border border-gray-300 px-5 py-3 rounded-xl shadow-sm hover:shadow-md transition text-base font-medium">
@@ -135,22 +136,25 @@
                             </div>
 
                             <!-- Ссылка "Создать категорию" -->
-                            <a href="/categories/pageCategories?return_page=/entities/linkExpensesOrder?order_id={{ order.id }}" class="ml-4 text-sm font-semibold text-blue-600 hover:underline whitespace-nowrap">
+                            <a href="/categories/pageCategories?return_page=/entities/linkExpensesOrder?order_id={{ order.id }}"
+                               class="text-sm font-semibold text-blue-600 hover:underline whitespace-nowrap">
                                 + Создать категорию
                             </a>
                         </div>
+
                         <!-- Комментарий -->
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Комментарий</label>
                             <textarea id="comments"
-                                      class="textarea textarea-bordered w-full"
-                                      rows="3" maxlength="256"
+                                      class="textarea w-full border border-blue-400 focus:border-blue-400 hover:border-blue-400 active:border-blue-400 ring-0 focus:ring-0 resize-none"
+                                      rows="3"
+                                      maxlength="256"
                                       placeholder="Введите комментарий..."></textarea>
                         </div>
+
                         <!-- Кнопка Сохранить -->
                         <div class="text-right">
-                            <label id="save_expense"
-                                   class="btn btn-primary btn-sm">Сохранить</label>
+                            <label id="save_expense" class="btn btn-primary btn-sm">Сохранить</label>
                         </div>
                     </div>
                 </li>
@@ -160,66 +164,67 @@
 
     <input type="checkbox" id="save_expense_modal" class="modal-toggle"/>
     <div class="modal" role="dialog">
-        <div class="modal-box bg-gray-100">
-            <h1 class="text-lg font-bold">Подтвердить расход</h1>
+        <div class="modal-box bg-gray-100
+                w-full max-w-md sm:max-w-lg md:max-w-xl
+                mx-2 sm:mx-auto">
+
+            <h1 class="text-lg font-bold mb-4">Подтвердить расход</h1>
 
             <!-- Данные контрагента -->
-            <div class="space-y-3 text-xs mt-4">
+            <div class="space-y-3 text-xs">
 
                 <!-- Плательщик -->
-                <div class="grid grid-cols-[auto_1fr] gap-x-2 items-start">
-                    <span class="font-semibold text-gray-500">Плательщик:</span>
-                    <span id="modal_payer" class="italic font-mono text-gray-800 break-all"></span>
+                <div>
+                    <span class="font-semibold text-gray-500 block mb-1">Плательщик:</span>
+                    <span id="modal_payer" class="italic font-mono text-black break-all"></span>
                 </div>
 
                 <!-- Банк плательщика -->
-                <div class="grid grid-cols-[auto_1fr] gap-x-2 items-start">
-                    <span class="font-semibold text-gray-500">Банк плательщика:</span>
-                    <span id="modal_payers_bank" class="italic font-mono text-gray-800 break-all"></span>
+                <div>
+                    <span class="font-semibold text-gray-500 block mb-1">Банк плательщика:</span>
+                    <span id="modal_payers_bank" class="italic font-mono text-black break-all"></span>
                 </div>
 
                 <!-- Получатель -->
-                <div class="grid grid-cols-[auto_1fr] gap-x-2 items-start">
-                    <span class="font-semibold text-gray-500">Получатель:</span>
-                    <span id="modal_recipient" class="italic text-gray-800 break-all"></span>
+                <div>
+                    <span class="font-semibold text-gray-500 block mb-1">Получатель:</span>
+                    <span id="modal_recipient" class="italic text-black break-all"></span>
                 </div>
 
                 <!-- Дата транзакции -->
-                <div class="grid grid-cols-[auto_1fr] gap-x-2 items-start">
-                    <span class="font-semibold text-gray-500">Дата транзакции:</span>
-                    <span id="modal_transaction_date" class="italic text-gray-800 break-all"></span>
+                <div>
+                    <span class="font-semibold text-gray-500 block mb-1">Дата транзакции:</span>
+                    <span id="modal_transaction_date" class="italic text-black break-all"></span>
                 </div>
 
             </div>
 
             <!-- Баланс -->
-            <div class="flex text-sm text-gray-700 font-semibold rounded-lg py-2 w-fit">
+            <div class="flex items-center text-sm text-gray-700 font-semibold rounded-lg py-2 px-3 w-fit mt-4">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                     stroke-width="1.5" stroke="currentColor" class="size-6 w-5 h-5 mr-2 text-gray-500">
+                     stroke-width="1.5" stroke="currentColor" class="w-5 h-5 mr-2 text-gray-500">
                     <path stroke-linecap="round" stroke-linejoin="round"
                           d="M2.25 18.75a60.07 60.07 0 0 1 15.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 0 1 3 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 0 0-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 0 1-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 0 0 3 15h-.75M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm3 0h.008v.008H18V10.5Zm-12 0h.008v.008H6V10.5Z"/>
                 </svg>
-                Сумма:<span class="ml-2 font-mono" id="modal_balance"></span>
+                Сумма: <span class="ml-2 font-mono" id="modal_balance"></span>
             </div>
 
             <!-- Описание -->
-            <div class="mb-4">
-                <label for="description" class="block text-sm font-medium text-gray-700 mb-1">
+            <div class="mb-4 mt-4">
+                <label for="modal_description" class="block text-sm font-medium text-gray-700 mb-1">
                     Описание
                 </label>
                 <textarea id="modal_description" name="description"
-                          class="textarea textarea-bordered w-full text-sm text-base-content italic"
+                          class="textarea w-full text-sm text-black italic border border-blue-300 focus:border-blue-300 hover:border-blue-300"
                           rows="4" readonly></textarea>
             </div>
 
-            <!-- Чек бокс авто определение -->
-            <fieldset class="fieldset bg-base-100 border-base-300 rounded-box w-64 border p-4 mt-6">
+            <!-- Чекбокс авто определение -->
+            <fieldset class="fieldset bg-base-100 border border-blue-300 rounded-box w-full p-4 mt-4">
                 <legend class="fieldset-legend">Авто определение ордера</legend>
                 <label class="label gap-2">
                     <input type="checkbox" checked disabled class="checkbox border-2 border-black text-black" />
-                    <span class="italic">
-                        Авто оправление ордера по описанию!
-                    </span>
+                    <span class="italic">Авто определение ордера по описанию!</span>
                 </label>
             </fieldset>
 
@@ -229,7 +234,7 @@
                     Категории
                 </label>
                 <div id="modal_category"
-                     class="w-full text-xs text-base-content italic bg-white border border-gray-300 rounded-lg p-3">
+                     class="w-full text-xs text-black italic bg-white border border-blue-300 rounded-lg p-3">
                 </div>
             </div>
 
@@ -239,15 +244,23 @@
                     Комментарий
                 </label>
                 <textarea id="modal_comments"
-                          class="textarea textarea-bordered w-full text-xs text-base-content italic rounded-lg"
+                          class="textarea w-full text-xs text-black italic border border-blue-300 rounded-lg"
                           rows="3" readonly></textarea>
             </div>
 
-
             <!-- Кнопки -->
-            <div class="modal-action mt-4">
-                <button id="confirmExpense" class="btn text-xs">Подтвердить</button>
-                <label id="changePercentage" for="save_expense_modal" class="btn text-xs">Отменить</label>
+            <div class="modal-action mt-4 flex gap-2 justify-end">
+                <!-- Подтвердить -->
+                <button id="confirmExpense"
+                        class="btn bg-blue-500 text-white text-xs px-4 py-2 rounded">
+                    Подтвердить
+                </button>
+
+                <!-- Отменить -->
+                <label id="changePercentage" for="save_expense_modal"
+                       class="btn bg-white text-black border border-gray-300 text-xs px-4 py-2 rounded cursor-pointer">
+                    Отменить
+                </label>
             </div>
         </div>
     </div>
@@ -282,7 +295,6 @@
             errorText.innerHTML = message;
             document.getElementById('errorModal').showModal();
         };
-
 
         const legalEntities = document.getElementById('orderId');
         const comment = document.getElementById('comments');

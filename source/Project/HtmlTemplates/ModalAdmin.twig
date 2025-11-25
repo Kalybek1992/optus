@@ -51,119 +51,104 @@
         </div>
     </dialog>
 
-    <!-- Модальное окно успеха -->
-    <dialog id="successModal" class="modal">
-        <div class="modal-box">
-            <h3 class="text-lg font-bold text-green-600">Успех!</h3>
-            <p class="py-4">Расход курьера успешно подтверждён.</p>
-            <div class="modal-action">
-                <form method="dialog">
-                    <button id="reloadPage" class="btn btn-success">Обновить</button>
-                </form>
-            </div>
-        </div>
-    </dialog>
-
-    <!-- Модальное окно удаление  -->
+    <!-- Модальное окно удаления -->
     <input type="checkbox" id="confirm_modal_delete" class="modal-toggle"/>
-    <div class="modal" role="dialog">
-        <div class="modal-box max-w-md">
-            <h1 class="text-lg font-bold text-gray-800 mb-4">Подтвердить его удаление</h1>
+    <div class="modal pointer-events-none"> <!-- pointer-events-none отключает клики по фону -->
+        <div class="modal-box pointer-events-auto w-full max-w-full sm:max-w-md p-4 sm:p-6 rounded-xl">
+            <h1 class="text-lg sm:text-xl font-bold text-gray-800 mb-4 text-center sm:text-left">
+                Подтвердить его удаление
+            </h1>
 
             <div class="space-y-4">
                 <!-- Дата -->
                 <div class="flex flex-col">
-                    <label class="font-semibold text-gray-700 mb-1" for="modalDateInput">Дата оплаты:</label>
+                    <label class="font-semibold text-gray-700 mb-1 text-xs sm:text-sm" for="modalDateInput">Дата оплаты:</label>
                     <input type="text" id="modalDateInput"
-                           class="w-full px-3 py-2 border border-blue-300 rounded-lg focus:border-blue-500 focus:outline-none"
+                           class="w-full h-10 sm:h-12 px-3 sm:px-4 bg-gray-50 rounded-lg shadow-sm
+                              border border-blue-300 text-xs sm:text-base cursor-default"
                            readonly>
                 </div>
 
                 <!-- Компания -->
                 <div class="flex flex-col">
-                    <label class="font-semibold text-gray-700 mb-1" for="modalCompanyInput">Компания:</label>
+                    <label class="font-semibold text-gray-700 mb-1 text-xs sm:text-sm" for="modalCompanyInput">Компания:</label>
                     <input type="text" id="modalCompanyInput"
-                           class="w-full px-3 py-2 border border-blue-300 rounded-lg focus:border-blue-500 focus:outline-none"
+                           class="w-full h-10 sm:h-12 px-3 sm:px-4 bg-gray-50 rounded-lg shadow-sm
+                              border border-blue-300 text-xs sm:text-base cursor-default"
                            readonly>
                 </div>
 
                 <!-- Название плана -->
                 <div class="flex flex-col">
-                    <label class="font-semibold text-gray-700 mb-1" for="modalPlanNameInput">Название:</label>
+                    <label class="font-semibold text-gray-700 mb-1 text-xs sm:text-sm" for="modalPlanNameInput">Название:</label>
                     <input type="text" id="modalPlanNameInput"
-                           class="w-full max-w-sm px-3 py-2 border border-blue-300 rounded-lg focus:border-blue-500 focus:outline-none"
+                           class="w-full h-10 sm:h-12 px-3 sm:px-4 bg-gray-50 rounded-lg shadow-sm
+                              border border-blue-300 text-xs sm:text-base cursor-default"
                            readonly>
                 </div>
 
                 <!-- Сумма -->
                 <div class="flex flex-col">
-                    <label class="font-semibold text-gray-700 mb-1" for="modalAmountInput">Сумма:</label>
+                    <label class="font-semibold text-gray-700 mb-1 text-xs sm:text-sm" for="modalAmountInput">Сумма:</label>
                     <input type="text" id="modalAmountInput"
-                           class="w-40 px-3 py-2 border border-blue-300 rounded-lg focus:border-blue-500 focus:outline-none"
+                           class="w-full sm:w-40 h-10 sm:h-12 px-3 sm:px-4 bg-gray-50 rounded-lg shadow-sm
+                              border border-blue-300 text-xs sm:text-base cursor-default"
                            readonly>
                 </div>
 
                 <!-- Выбор повторения -->
-                <div class="mt-6" x-data>
-                    <!-- Повтор уведомлений -->
-                    <span class="font-semibold text-gray-700 mb-2 block text-sm">Повтор уведомлений:</span>
-                    <div class="flex flex-row gap-4 items-center">
-                        <!-- Не повторять -->
-                        <label class="flex items-center gap-2 cursor-pointer">
+                <div class="mt-4 sm:mt-6" x-data>
+                    <span class="font-semibold text-gray-700 mb-2 block text-xs sm:text-sm">Повтор уведомлений:</span>
+                    <div class="flex flex-wrap gap-2 sm:gap-4 items-center">
+                        <label class="flex items-center gap-2 cursor-pointer text-xs sm:text-sm">
                             <input type="checkbox" name="repeatType" value="none"
-                                   class="checkbox checkbox-md border border-blue-300 focus:border-blue-500 checked:bg-blue-600 checked:border-blue-600 checked:text-white"
+                                   class="checkbox checkbox-sm sm:checkbox-md border border-blue-300
+                                      checked:bg-blue-600 checked:border-blue-600"
                                    @click="document.querySelectorAll('input[name=repeatType]').forEach(el => { if(el !== $el) el.checked = false })"
                                    checked/>
-                            <span class="text-gray-800 text-xs">Не повторять</span>
+                            <span>Не повторять</span>
                         </label>
-
-                        <!-- Каждую неделю -->
-                        <label class="flex items-center gap-2 cursor-pointer">
+                        <label class="flex items-center gap-2 cursor-pointer text-xs sm:text-sm">
                             <input type="checkbox" name="repeatType" value="weekly"
-                                   class="checkbox checkbox-md border border-blue-300 focus:border-blue-500 checked:bg-blue-600 checked:border-blue-600 checked:text-white"
+                                   class="checkbox checkbox-sm sm:checkbox-md border border-blue-300
+                                      checked:bg-blue-600 checked:border-blue-600"
                                    @click="document.querySelectorAll('input[name=repeatType]').forEach(el => { if(el !== $el) el.checked = false })"/>
-                            <span class="text-gray-800 text-xs">Каждую неделю</span>
+                            <span>Каждую неделю</span>
                         </label>
-
-                        <!-- Каждый месяц -->
-                        <label class="flex items-center gap-2 cursor-pointer">
+                        <label class="flex items-center gap-2 cursor-pointer text-xs sm:text-sm">
                             <input type="checkbox" name="repeatType" value="monthly"
-                                   class="checkbox checkbox-md border border-blue-300 focus:border-blue-500 checked:bg-blue-600 checked:border-blue-600 checked:text-white"
+                                   class="checkbox checkbox-sm sm:checkbox-md border border-blue-300
+                                      checked:bg-blue-600 checked:border-blue-600"
                                    @click="document.querySelectorAll('input[name=repeatType]').forEach(el => { if(el !== $el) el.checked = false })"/>
-                            <span class="text-gray-800 text-xs">Каждый месяц</span>
+                            <span>Каждый месяц</span>
                         </label>
-                    </div>
-
-                    <div class="alert alert-info rounded-xl mt-3 text-white text-sm flex items-center gap-2">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 shrink-0 stroke-current text-white"
-                             fill="none" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                  d="M13 16h-1v-4h-1m1-4h.01M12 20a8 8 0 100-16 8 8 0 000 16z"/>
-                        </svg>
-                        <span>
-                            Укажите, как часто будет повторяться уведомление. Например, каждую неделю или каждый месяц.
-                        </span>
                     </div>
                 </div>
 
                 <!-- Комментарий -->
                 <div class="flex flex-col">
-                    <label class="font-semibold text-gray-700 mb-1" for="modalCommentInput">Комментарий:</label>
+                    <label class="font-semibold text-gray-700 mb-1 text-xs sm:text-sm" for="modalCommentInput">Комментарий:</label>
                     <textarea id="modalCommentInput"
-                              class="w-full h-24 px-3 py-2 border border-blue-300 rounded-lg focus:border-blue-500 focus:outline-none resize-none"
+                              class="w-full h-24 px-3 sm:px-4 py-2 bg-gray-50 rounded-lg shadow-sm
+                                 border border-blue-300 text-xs sm:text-base cursor-default resize-none"
                               readonly></textarea>
                 </div>
             </div>
 
-            <div class="modal-action mt-4">
+            <!-- Кнопки -->
+            <div class="modal-action mt-4 flex flex-col gap-2 sm:flex-row sm:justify-end pb-[50px]">
                 <button id="confirmSaveDelete"
-                        class="btn bg-blue-600 hover:bg-blue-700 text-white border-none rounded-lg px-6">
+                        class="w-full sm:w-auto h-10 sm:h-12 px-4 sm:px-6 bg-blue-600 hover:bg-blue-700 text-white text-xs sm:text-sm font-semibold rounded-lg transition">
                     Удалить!
                 </button>
-                <label for="confirm_modal_delete" class="btn btn-outline rounded-lg">Отменить</label>
+                <label for="confirm_modal_delete"
+                       class="w-full sm:w-auto h-10 sm:h-12 px-4 sm:px-6 btn btn-outline rounded-lg text-xs sm:text-sm transition">
+                    Отменить
+                </label>
             </div>
         </div>
     </div>
+
 
     <!-- Модальное окно оплаты -->
     <input type="checkbox" id="confirm_modal_paid" class="modal-toggle"/>
@@ -227,6 +212,131 @@
         </div>
     </div>
 
+
+    <!-- Модальное окно редактирования -->
+    <input type="checkbox" id="confirm_modal_edit" class="modal-toggle"/>
+    <div class="modal" role="dialog">
+        <div class="modal-box w-full max-w-full sm:max-w-md p-4 sm:p-6">
+            <h1 class="text-lg sm:text-xl font-bold text-gray-800 mb-4 text-center sm:text-left">Редактировать план</h1>
+
+            <div class="space-y-4">
+                <!-- Дата -->
+                <div class="flex w-full gap-2">
+                    <input type="text"
+                           id="datepicker_from_edit"
+                           placeholder="Дата"
+                           autocomplete="off"
+                           class="w-full h-10 sm:h-[44px] px-3 sm:px-4 bg-white rounded-xl text-sm sm:text-base text-gray-700 border border-blue-300 focus:border-blue-500 focus:outline-none transition-all duration-150" />
+                </div>
+
+                <!-- Старая компания -->
+                <div class="flex flex-col">
+                    <label class="font-medium text-gray-700 mb-1 text-sm sm:text-base">Старая компания</label>
+                    <input type="text" id="modalOldCompanyEdit"
+                           class="w-full px-3 py-2 text-sm sm:text-base border border-blue-300 rounded-lg focus:outline-none"
+                           readonly>
+                </div>
+
+                <!-- Новый селект компании -->
+                <div class="relative w-full" x-data="{ open: false, selected: '' }">
+                    <label class="block font-medium text-gray-700 mb-2 text-sm sm:text-base">Выберите компанию</label>
+                    <div @click="open = !open"
+                         class="border border-blue-300 rounded-xl px-3 py-2 sm:px-4 sm:py-2 bg-white cursor-pointer w-full flex justify-between items-center text-sm sm:text-base">
+                        <span x-text="selected || '— Не выбрано —'"></span>
+                        <svg :class="{ 'rotate-180': open }" class="w-4 h-4 ml-2 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                        </svg>
+                    </div>
+
+                    <ul x-show="open" @click.outside="open = false"
+                        class="absolute z-10 left-0 mt-1 w-full max-h-60 overflow-y-auto border border-blue-300 rounded-xl bg-white shadow-md text-sm sm:text-base">
+                        <li @click="selected=''; open=false; $refs.companyId.value=''"
+                            class="px-3 py-2 hover:bg-blue-100 break-words whitespace-normal cursor-pointer">— Не выбрано —</li>
+                        {% for item in legal_entitie %}
+                            <li @click="selected='{{ item.company_name }}'; open=false; $refs.companyId.value='{{ item.id }}'"
+                                class="px-3 py-2 hover:bg-blue-100 break-words whitespace-normal cursor-pointer">
+                                {{ item.company_name }}
+                            </li>
+                        {% endfor %}
+                        <input type="hidden" x-ref="companyId" id="company_id" value="">
+                    </ul>
+                </div>
+
+                <!-- Название плана -->
+                <div class="flex flex-col">
+                    <label class="font-semibold text-gray-700 mb-1 text-sm sm:text-base" for="modalPlanNameInputEdit">Название:</label>
+                    <input type="text" id="modalPlanNameInputEdit"
+                           class="w-full sm:max-w-sm px-3 py-2 sm:py-2 text-sm sm:text-base border border-blue-300 rounded-lg focus:border-blue-500 focus:outline-none"
+                           placeholder="Название плана">
+                </div>
+
+                <!-- Сумма -->
+                <div class="flex flex-col">
+                    <label class="font-semibold text-gray-700 mb-1 text-sm sm:text-base" for="modalAmountInputEdit">Сумма:</label>
+                    <input type="text" id="modalAmountInputEdit"
+                           class="w-full sm:w-40 px-3 py-2 text-sm sm:text-base border border-blue-300 rounded-lg focus:border-blue-500 focus:outline-none"
+                           placeholder="Сумма">
+                </div>
+
+                <!-- Выбор повторения -->
+                <div class="mt-4 sm:mt-6" x-data>
+                    <span class="font-semibold text-gray-700 mb-2 block text-sm sm:text-base">Повтор уведомлений:</span>
+                    <div class="flex flex-wrap gap-2 sm:gap-4 items-center">
+                        <label class="flex items-center gap-2 cursor-pointer text-sm sm:text-base">
+                            <input type="checkbox" name="repeatTypeEdit" value="none"
+                                   class="checkbox checkbox-md border border-blue-300 focus:border-blue-500 checked:bg-blue-600 checked:border-blue-600 checked:text-white"
+                                   @click="document.querySelectorAll('input[name=repeatTypeEdit]').forEach(el => { if(el !== $el) el.checked = false })"
+                                   checked />
+                            <span>Не повторять</span>
+                        </label>
+                        <label class="flex items-center gap-2 cursor-pointer text-sm sm:text-base">
+                            <input type="checkbox" name="repeatTypeEdit" value="weekly"
+                                   class="checkbox checkbox-md border border-blue-300 focus:border-blue-500 checked:bg-blue-600 checked:border-blue-600 checked:text-white"
+                                   @click="document.querySelectorAll('input[name=repeatTypeEdit]').forEach(el => { if(el !== $el) el.checked = false })" />
+                            <span>Каждую неделю</span>
+                        </label>
+                        <label class="flex items-center gap-2 cursor-pointer text-sm sm:text-base">
+                            <input type="checkbox" name="repeatTypeEdit" value="monthly"
+                                   class="checkbox checkbox-md border border-blue-300 focus:border-blue-500 checked:bg-blue-600 checked:border-blue-600 checked:text-white"
+                                   @click="document.querySelectorAll('input[name=repeatTypeEdit]').forEach(el => { if(el !== $el) el.checked = false })" />
+                            <span>Каждый месяц</span>
+                        </label>
+                    </div>
+
+                    <div class="alert alert-info rounded-xl mt-3 text-white text-xs sm:text-sm flex items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 sm:h-5 sm:w-5 shrink-0 stroke-current text-white" fill="none" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                  d="M13 16h-1v-4h-1m1-4h.01M12 20a8 8 0 100-16 8 8 0 000 16z" />
+                        </svg>
+                        <span>
+                        Укажите, как часто будет повторяться уведомление. Например, каждую неделю или каждый месяц.
+                    </span>
+                    </div>
+                </div>
+
+                <!-- Комментарий -->
+                <div class="flex flex-col">
+                    <label class="font-semibold text-gray-700 mb-1 text-sm sm:text-base" for="modalCommentInputEdit">Комментарий:</label>
+                    <textarea id="modalCommentInputEdit"
+                              class="w-full h-20 sm:h-24 px-3 py-2 text-sm sm:text-base border border-blue-300 rounded-lg focus:border-blue-500 focus:outline-none resize-none"
+                              placeholder="Комментарий"></textarea>
+                </div>
+            </div>
+
+            <!-- Кнопки -->
+            <div class="modal-action mt-4 flex flex-col sm:flex-row gap-2 sm:justify-end pb-[80px]">
+                <button id="confirmSaveEdit"
+                        class="w-full sm:w-auto h-10 sm:h-[44px] px-4 sm:px-6 bg-blue-600 hover:bg-blue-700 text-white text-sm sm:text-base font-semibold rounded-lg transition">
+                    Сохранить
+                </button>
+                <label for="confirm_modal_edit"
+                       class="w-full sm:w-auto h-10 sm:h-[44px] px-4 sm:px-6 btn btn-outline rounded-lg text-sm sm:text-base transition">
+                    Отменить
+                </label>
+            </div>
+        </div>
+    </div>
+    
     <!-- Модальное окно редактирования -->
     <input type="checkbox" id="confirm_modal_edit" class="modal-toggle"/>
     <div class="modal" role="dialog">

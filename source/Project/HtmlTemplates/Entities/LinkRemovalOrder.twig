@@ -7,97 +7,108 @@
     <div class="w-full max-w-5xl mx-auto px-4 pb-96 my-8">
         <ul class="list bg-base-100 rounded-lg shadow-md space-y-4">
             <li class="relative p-4 hover:bg-base-200 transition rounded-lg border border-gray-300">
-                <div class="space-y-3">
+                <div class="space-y-3 max-w-5xl mx-auto px-4 py-8">
+
                     <!-- Плательщик -->
-                    <div id="orderId"
-                         data-order-id="{{ bank_order.id }}"
-                         data-order-payer="{{ bank_order.sender_company_name }}"
-                         data-order-amount="{{ bank_order.amount }}"
-                         data-order-recipient="{{ bank_order.recipient_company_name }}"
-                         class="flex items-center text-sm text-base-content opacity-80">
-                        <span class="mr-2 font-semibold text-gray-600">Плательщик:</span>
-                        <span class="italic font-mono text-gray-800">{{ bank_order.sender_company_name }}</span>
-                        <button type="button" class="ml-2 text-gray-600 hover:text-gray-900"
-                                onclick="copyText('{{ bank_order.sender_company_name}}')">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2"
-                                 viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round"
-                                      d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8l6 6v4"></path>
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M14 2v6h6"></path>
-                            </svg>
-                        </button>
+                    <div class="flex flex-col sm:flex-row sm:items-center">
+                        <span class="text-gray-600 font-semibold text-xs sm:text-sm mb-1 sm:mb-0">Плательщик:</span>
+                        <div id="orderId"
+                                data-order-id="{{ bank_order.id }}"
+                                data-order-payer="{{ bank_order.sender_company_name }}"
+                                data-order-amount="{{ bank_order.amount }}"
+                                data-order-recipient="{{ bank_order.recipient_company_name }}"
+                                class="flex items-center justify-between sm:ml-2">
+                            <span class="italic font-mono text-gray-800 text-sm sm:text-base">{{ bank_order.sender_company_name }}</span>
+                            <button type="button" class="ml-2 text-gray-600 hover:text-gray-900"
+                                    onclick="copyText('{{ bank_order.sender_company_name }}')">
+                                <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" stroke-width="2"
+                                     viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                          d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8l6 6v4"></path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M14 2v6h6"></path>
+                                </svg>
+                            </button>
+                        </div>
                     </div>
 
-                    <!-- Плательщик банк -->
-                    <div class="flex items-center text-sm text-base-content opacity-80">
-                        <span class="mr-2 font-semibold text-gray-600">Банк плательщика:</span>
-                        <span class="italic font-mono text-gray-800">{{ bank_order.sender_bank_name }}</span>
-                        <button type="button" class="ml-2 text-gray-600 hover:text-gray-900"
-                                onclick="copyText('{{ bank_order.sender_bank_name }}')">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2"
-                                 viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round"
-                                      d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8l6 6v4"></path>
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M14 2v6h6"></path>
-                            </svg>
-                        </button>
+                    <!-- Банк плательщика -->
+                    <div class="flex flex-col sm:flex-row sm:items-center">
+                        <span class="text-gray-600 font-semibold text-xs sm:text-sm mb-1 sm:mb-0">Банк плательщика:</span>
+                        <div class="flex items-center justify-between sm:ml-2">
+                            <span class="italic font-mono text-gray-800 text-sm sm:text-base">{{ bank_order.sender_bank_name }}</span>
+                            <button type="button" class="ml-2 text-gray-600 hover:text-gray-900"
+                                    onclick="copyText('{{ bank_order.sender_bank_name }}')">
+                                <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" stroke-width="2"
+                                     viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                          d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8l6 6v4"></path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M14 2v6h6"></path>
+                                </svg>
+                            </button>
+                        </div>
                     </div>
 
                     <!-- Получатель -->
-                    <div class="flex items-center text-sm text-base-content opacity-80">
-                        <span class="mr-2 font-semibold text-gray-600">Получатель:</span>
-                        <span class="italic font-mono text-gray-800">{{ bank_order.recipient_company_name }}</span>
-                        <button type="button" class="ml-2 text-gray-600 hover:text-gray-900"
-                                onclick="copyText('{{ bank_order.recipient_company_name }}')">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2"
-                                 viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round"
-                                      d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8l6 6v4"></path>
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M14 2v6h6"></path>
-                            </svg>
-                        </button>
+                    <div class="flex flex-col sm:flex-row sm:items-center">
+                        <span class="text-gray-600 font-semibold text-xs sm:text-sm mb-1 sm:mb-0">Получатель:</span>
+                        <div class="flex items-center justify-between sm:ml-2">
+                            <span class="italic font-mono text-gray-800 text-sm sm:text-base">{{ bank_order.recipient_company_name }}</span>
+                            <button type="button" class="ml-2 text-gray-600 hover:text-gray-900"
+                                    onclick="copyText('{{ bank_order.recipient_company_name }}')">
+                                <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" stroke-width="2"
+                                     viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                          d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8l6 6v4"></path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M14 2v6h6"></path>
+                                </svg>
+                            </button>
+                        </div>
                     </div>
 
                     <!-- Дата транзакции -->
-                    <div class="flex items-center text-sm text-base-content opacity-80">
-                        <span class="mr-2 font-semibold text-gray-600">Дата транзакции:</span>
-                        <span class="italic font-serif text-gray-800">{{ bank_order.date }}</span>
+                    <div class="flex flex-col sm:flex-row sm:items-center">
+                        <span class="text-gray-600 font-semibold text-xs sm:text-sm mb-1 sm:mb-0">Дата транзакции:</span>
+                        <span class="italic font-serif text-gray-800 text-sm sm:text-base sm:ml-2">{{ bank_order.date }}</span>
                     </div>
 
                     <!-- Номер документа -->
-                    <div class="flex items-center text-sm text-base-content opacity-80">
-                        <span class="mr-2 font-semibold text-gray-600">Номер документа:</span>
-                        <span class="italic font-serif text-gray-800">{{ bank_order.document_number }}</span>
+                    <div class="flex flex-col sm:flex-row sm:items-center">
+                        <span class="text-gray-600 font-semibold text-xs sm:text-sm mb-1 sm:mb-0">Номер документа:</span>
+                        <span class="italic font-serif text-gray-800 text-sm sm:text-base sm:ml-2">{{ bank_order.document_number }}</span>
                     </div>
 
                     <!-- Сумма -->
-                    <div id="balance" class="flex items-center text-sm text-gray-700 font-semibold bg-gray-100 rounded-lg px-3 py-2 w-fit">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                             stroke-width="1.5" stroke="currentColor" class="size-6 w-5 h-5 mr-2 text-gray-500">
-                            <path stroke-linecap="round" stroke-linejoin="round"
-                                  d="M2.25 18.75a60.07 60.07 0 0 1 15.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 0 1 3 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 0 0-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 0 1-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 0 0 3 15h-.75M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm3 0h.008v.008H18V10.5Zm-12 0h.008v.008H6V10.5Z"/>
-                        </svg>
-                        Сумма: <span class="ml-2 font-mono">{{ bank_order.amount }}</span>
+                    <div class="flex flex-col sm:flex-row sm:items-center bg-gray-100 rounded-lg px-3 py-2 w-fit">
+                        <div class="flex items-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                 stroke-width="1.5" stroke="currentColor" class="w-5 h-5 sm:w-6 sm:h-6 text-gray-500 mr-2">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                      d="M2.25 18.75a60.07 60.07 0 0 1 15.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 0 1 3 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 0 0-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 0 1-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 0 0 3 15h-.75M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm3 0h.008v.008H18V10.5Zm-12 0h.008v.008H6V10.5Z"/>
+                            </svg>
+                            <span id="balance" class="font-mono text-gray-800 text-sm sm:text-base"> {{ bank_order.amount|number_format(0, ',', ' ') }} ₽</span>
+                        </div>
                     </div>
 
                     <!-- Описание -->
-                    <div class="mb-4">
-                        <label for="description" class="block text-sm font-medium text-gray-700 mb-1">Описание:</label>
+                    <div class="flex flex-col">
+                        <span class="text-gray-600 font-semibold text-xs sm:text-sm mb-1">Описание:</span>
+
                         <textarea id="description" name="description"
-                                  class="textarea textarea-bordered w-full text-sm text-base-content italic"
+                                  class="w-full text-xs sm:text-sm text-base-content italic
+                                     border border-blue-400 rounded-lg p-2
+                                     focus:border-blue-400 focus:ring-0
+                                     pointer-events-none bg-gray-50"
                                   rows="4" readonly>{{ bank_order.description }}</textarea>
                     </div>
-                </div>
 
+                </div>
 
                 <!-- Карты и комментарий -->
                 <div class="space-y-4 mt-4">
-                    <div x-data="{
-                                open: false,
-                                selectedCard: null
-                            }" class="relative w-full max-w-md">
 
-                        <!-- Кнопка выбора карты-->
+                    <!-- Выбор карты -->
+                    <div x-data="{ open:false, selectedCard:null }" class="relative w-full max-w-md">
+
                         {% if cards is empty %}
                             <a id="open-create-card-modal" class="cursor-pointer" data-company="{{ legal_id }}">
                                 <div role="alert" class="alert alert-warning">
@@ -116,173 +127,176 @@
                                     <span>Выберите карту</span>
                                 </template>
                                 <template x-if="selectedCard">
-                                    <span class="font"
-                                          x-text="selectedCard.number.replace(/(\d{4})(?=\d)/g, '$1 ')"></span>
+                                    <span x-text="selectedCard.number.replace(/(\d{4})(?=\d)/g, '$1 ')"></span>
                                 </template>
                             </button>
                         {% endif %}
 
-                        <!-- Скрытое поле без пробелов -->
                         <input id="card_id_hidden" type="hidden" name="card_id" :value="selectedCard?.id">
 
-                        <!-- Выпадающий список -->
                         <div x-show="open"
                              @click.outside="open = false"
                              class="absolute mt-2 w-full z-50 bg-white border border-gray-200 rounded-xl shadow-xl p-4 space-y-3 transition-all duration-300"
                              x-transition>
                             {% for card in cards %}
-                                <div
-                                        @click="selectedCard = { id: {{ card.id }}, number: '{{ card.card_number }}' }; open = false"
-                                        class="cursor-pointer px-4 py-2 rounded-md hover:bg-gray-100 transition">
-
+                                <div @click="selectedCard = { id: {{ card.id }}, number: '{{ card.card_number }}' }; open = false"
+                                     class="cursor-pointer px-4 py-2 rounded-md hover:bg-gray-100 transition">
                                     <div class="font-bold text-sm">
                                         {{ card.card_number|slice(0, 4) }} {{ card.card_number|slice(4, 4) }} {{ card.card_number|slice(8, 4) }} {{ card.card_number|slice(12, 4) }}
                                     </div>
-
                                 </div>
                             {% endfor %}
                         </div>
                     </div>
-                    <!-- Выбор назначения (Курьер или Товарный баланс) -->
-                    <div x-data="{
-                                selected: null,
-                                openCourierList: false,
-                                selectedCourier: null
-                            }" class="w-full max-w-5xl">
-                        <div class="flex items-center gap-2">
-                            <!-- Назначение -->
-                            <div class="flex gap-2">
-                                <!-- Товарный баланс -->
-                                <input type="radio" id="radio_stock" name="delivery_type" value="stock"
-                                       class="hidden peer/stock" x-model="selected" @change="openCourierList = false">
-                                <label for="radio_stock"
-                                       class="btn h-12 w-48 text-center px-4 border border-gray-300 bg-gray-50 text-gray-700 hover:bg-blue-100 rounded-xl peer-checked/stock:bg-blue-500 peer-checked/stock:text-white transition">
-                                    Товарный баланс
-                                </label>
+                    
+                    <!-- Выбор назначения + курьера -->
+                    <div x-data="{ selected:null, openCourierList:false, selectedCourier:null }"
+                         class="max-w-[450px]  min-w-[100px] mr-auto flex flex-col gap-3">
 
-                                <!-- Курьеру -->
-                                <input type="radio" id="radio_courier" name="delivery_type" value="courier"
-                                       class="hidden peer/courier" x-model="selected" @change="openCourierList = true">
-                                <label for="radio_courier"
-                                       class="btn h-12 w-48 text-center px-4 border border-gray-300 bg-gray-50 text-gray-700 hover:bg-blue-100 rounded-xl peer-checked/courier:bg-blue-500 peer-checked/courier:text-white transition">
-                                    Курьеру
-                                </label>
-                            </div>
+                        <!-- Радио-кнопки, одна под другой -->
+                        <div class="flex flex-col gap-2">
 
-                            <!-- Курьер (шире, но та же высота) -->
-                            <div class="relative" x-show="selected === 'courier'" x-transition>
+                            <input type="radio" id="radio_stock" name="delivery_type" value="stock"
+                                   class="hidden peer/stock"
+                                   x-model="selected"
+                                   @change="openCourierList = false">
 
+                            <label for="radio_stock"
+                                   class="btn h-10 w-full text-center px-3 border border-gray-300 bg-gray-50
+                                           text-gray-700 hover:bg-blue-100 rounded-xl
+                                           peer-checked/stock:bg-blue-500 peer-checked/stock:text-white transition">
+                                Товарный баланс
+                            </label>
 
-                                {% if couriers is empty %}
-                                    <a href="/user/addUser?return_page=/entities/linkRemovalOrder?order_id={{  bank_order.id }}"
-                                       class="btn h-12 w-80 px-4 text-left border border-gray-300 bg-gray-50 text-gray-700 hover:bg-blue-100 rounded-xl flex items-center justify-between transition">
+                            <input type="radio" id="radio_courier" name="delivery_type" value="courier"
+                                   class="hidden peer/courier"
+                                   x-model="selected"
+                                   @change="openCourierList = true">
 
-                                        <template x-if="!selectedCourier">
-                                            <span>Создать курьера</span>
-                                        </template>
-                                        <template x-if="selectedCourier">
-                                            <span x-text="selectedCourier.name"></span>
-                                        </template>
-                                    </a>
-                                {% else %}
-                                    <button @click="openCourierList = !openCourierList"
-                                            class="btn h-12 w-80 px-4 text-left border border-gray-300 bg-gray-50 text-gray-700 hover:bg-blue-100 rounded-xl flex items-center justify-between transition">
-                                        <template x-if="!selectedCourier">
-                                            <span>Выберите курьера</span>
-                                        </template>
-                                        <template x-if="selectedCourier">
-                                            <span x-text="selectedCourier.name"></span>
-                                        </template>
-                                        <!-- Стрелка -->
-                                        <svg class="w-4 h-4 ml-2 text-gray-400" fill="none" stroke="currentColor"
-                                             stroke-width="2"
-                                             viewBox="0 0 24 24">
-                                            <path d="M19 9l-7 7-7-7"/>
-                                        </svg>
-                                    </button>
+                            <label for="radio_courier"
+                                   class="btn h-10 w-full text-center px-3 border border-gray-300 bg-gray-50
+                                       text-gray-700 hover:bg-blue-100 rounded-xl
+                                       peer-checked/courier:bg-blue-500 peer-checked/courier:text-white transition">
+                                Курьеру
+                            </label>
+                        </div>
 
-                                    <input type="hidden" name="courier_id" :value="selectedCourier?.id">
-                                    <!-- Выпадающий список -->
-                                    <div x-show="openCourierList"
-                                         @click.outside="openCourierList = false"
-                                         class="absolute mt-2 w-80 z-50 bg-white border border-gray-200 rounded-xl shadow-xl p-2 space-y-1 transition-all duration-300"
-                                         x-transition>
-                                        {% for courier in couriers %}
-                                            <div @click="selectedCourier = { id: {{ courier.id }}, name: '{{ courier.name }}' }; openCourierList = false"
-                                                 class="cursor-pointer px-4 py-2 rounded-md hover:bg-gray-100 transition text-sm flex flex-col">
-                                                <span class="font-medium text-gray-900">{{ courier.name }}</span>
-                                                <span class="text-gray-600 text-xs truncate">{{ courier.email }}</span>
-                                            </div>
-                                        {% endfor %}
-                                    </div>
-                                {% endif %}
+                        <!-- Блок выбора курьера — ПОД радио-кнопками -->
+                        <div class="relative w-full" x-show="selected === 'courier'" x-transition>
+                            {% if couriers is empty %}
+                                <a href="/user/addUser?return_page=/entities/linkRemovalOrder?order_id={{ bank_order.id }}"
+                                   class="btn h-10 w-full px-3 text-left border border-gray-300 bg-gray-50 text-gray-700
+                                       hover:bg-blue-100 rounded-xl transition flex items-center justify-between">
+                                    <template x-if="!selectedCourier">
+                                        <span>Создать курьера</span>
+                                    </template>
+                                    <template x-if="selectedCourier">
+                                        <span x-text="selectedCourier.name"></span>
+                                    </template>
+                                </a>
+                            {% else %}
 
+                                <button @click="openCourierList = !openCourierList"
+                                        class="btn h-10 w-full px-3 text-left border border-gray-300 bg-gray-50 text-gray-700
+                                            hover:bg-blue-100 rounded-xl transition flex items-center justify-between">
+                                    <template x-if="!selectedCourier">
+                                        <span>Выберите курьера</span>
+                                    </template>
+                                    <template x-if="selectedCourier">
+                                        <span x-text="selectedCourier.name"></span>
+                                    </template>
 
-                            </div>
+                                    <svg class="w-4 h-4 ml-2 text-gray-400" fill="none" stroke="currentColor"
+                                         stroke-width="2" viewBox="0 0 24 24">
+                                        <path d="M19 9l-7 7-7-7"/>
+                                    </svg>
+                                </button>
+
+                                <input type="hidden" name="courier_id" :value="selectedCourier?.id">
+
+                                <div x-show="openCourierList"
+                                     @click.outside="openCourierList = false"
+                                     class="absolute left-0 right-0 mt-2 w-full z-50 bg-white border border-gray-200
+                                     rounded-xl shadow-xl p-2 space-y-1 transition-all duration-300"
+                                     x-transition>
+                                    {% for courier in couriers %}
+                                        <div @click="selectedCourier = { id: {{ courier.id }}, name: '{{ courier.name }}' }; openCourierList = false"
+                                             class="cursor-pointer px-3 py-2 rounded-md hover:bg-gray-100 transition text-sm flex flex-col">
+                                            <span class="font-medium text-gray-900">{{ courier.name }}</span>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+
+                            {% endif %}
                         </div>
                     </div>
+
 
                     <!-- Комментарий -->
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Комментарий</label>
                         <textarea id="comments"
-                                  class="textarea textarea-bordered w-full"
+                                  class="w-full border border-blue-400 rounded-lg p-2 text-sm"
                                   rows="3" maxlength="256"
                                   placeholder="Введите комментарий..."></textarea>
                     </div>
-                    <!-- Кнопка Сохранить -->
+
+                    <!-- Сохранить -->
                     <div class="text-right">
-                        <label id="save_expense"
-                               class="btn btn-primary btn-sm">Сохранить</label>
+                        <label id="save_expense" class="btn btn-primary btn-sm">Сохранить</label>
                     </div>
                 </div>
+
             </li>
         </ul>
     </div>
 
     <input type="checkbox" id="save_expense_modal" class="modal-toggle"/>
     <div class="modal" role="dialog">
-        <div class="modal-box space-y-4">
+        <div class="modal-box
+                w-full mx-2 sm:mx-auto max-w-md sm:max-w-lg md:max-w-xl
+                space-y-4">
+
             <h1 class="text-lg font-bold text-gray-800">Подтвердить доход</h1>
 
             <!-- Плательщик -->
             <div>
                 <div class="text-xs uppercase font-semibold text-gray-500 mb-1 tracking-wide">Плательщик</div>
-                <div class="bg-gray-100 px-3 py-2 rounded-xl text-sm text-gray-800 font-mono" id="modalPayer"></div>
+                <div class="bg-gray-100 px-3 py-2 rounded-xl text-sm text-black font-mono break-all" id="modalPayer"></div>
             </div>
 
             <!-- Получатель -->
             <div>
                 <div class="text-xs uppercase font-semibold text-gray-500 mb-1 tracking-wide">Получатель</div>
-                <div class="bg-gray-100 px-3 py-2 rounded-xl text-sm text-gray-800 font-mono" id="modalRecipient"></div>
+                <div class="bg-gray-100 px-3 py-2 rounded-xl text-sm text-black font-mono break-all" id="modalRecipient"></div>
             </div>
 
             <!-- Сумма -->
             <div>
                 <div class="text-xs uppercase font-semibold text-gray-500 mb-1 tracking-wide">Сумма</div>
-                <div class="bg-green-100 px-3 py-2 rounded-xl text-sm text-green-700 font-medium"
+                <div class="bg-green-100 px-3 py-2 rounded-xl text-sm text-green-700 font-medium break-all"
                      id="modal_balance"></div>
             </div>
 
             <!-- Карта -->
-            <div id="modal_card_block" class="mb-4">
+            <div id="modal_card_block">
                 <div class="text-xs uppercase font-semibold text-gray-500 mb-1 tracking-wide">Карта</div>
-                <div class="bg-gray-100 px-3 py-2 rounded-xl text-sm text-gray-800 font-mono"
+                <div class="bg-gray-100 px-3 py-2 rounded-xl text-sm text-black font-mono break-all"
                      id="modal_card_number"></div>
             </div>
 
             <!-- Назначение -->
             <div id="modal_appointment_block" class="hidden">
                 <div class="text-xs uppercase font-semibold text-gray-500 mb-1 tracking-wide">Назначение</div>
-                <div class="bg-gray-100 px-3 py-2 rounded-xl text-sm text-gray-800" id="modal_appointment"></div>
+                <div class="bg-gray-100 px-3 py-2 rounded-xl text-sm text-black break-all" id="modal_appointment"></div>
             </div>
 
             <!-- Курьер -->
             <div id="modal_courier_info" class="hidden space-y-1">
                 <div class="text-xs uppercase font-semibold text-gray-500 mb-1 tracking-wide">Курьер</div>
-                <div class="bg-gray-100 px-3 py-2 rounded-xl text-sm text-gray-800 font-mono"
+                <div class="bg-gray-100 px-3 py-2 rounded-xl text-sm text-black font-mono break-all"
                      id="modalCourierName"></div>
-                <div class="bg-gray-100 px-3 py-2 rounded-xl text-sm text-gray-800 font-mono"
+                <div class="bg-gray-100 px-3 py-2 rounded-xl text-sm text-black font-mono break-all"
                      id="modalCourierEmail"></div>
             </div>
 
@@ -290,16 +304,26 @@
             <div>
                 <div class="text-xs uppercase font-semibold text-gray-500 mb-1 tracking-wide">Комментарий</div>
                 <textarea readonly id="modal_comments"
-                          class="w-full textarea textarea-bordered bg-gray-100 text-sm text-gray-800 rounded-xl"></textarea>
+                          class="w-full textarea border border-blue-300 text-sm text-black rounded-xl bg-gray-100 focus:border-blue-300 hover:border-blue-300"></textarea>
             </div>
 
             <!-- Кнопки -->
-            <div class="modal-action pt-2">
-                <button id="confirmExpense" class="btn btn-primary btn-sm">Подтвердить</button>
-                <label for="save_expense_modal" class="btn btn-sm">Отменить</label>
+            <div class="modal-action flex justify-end gap-2 pt-2">
+                <!-- Подтвердить -->
+                <button id="confirmExpense"
+                        class="btn bg-blue-500 text-white text-sm px-4 py-2 rounded">
+                    Подтвердить
+                </button>
+
+                <!-- Отменить -->
+                <label for="save_expense_modal"
+                       class="btn bg-white text-black border border-gray-300 text-sm px-4 py-2 rounded cursor-pointer">
+                    Отменить
+                </label>
             </div>
         </div>
     </div>
+
 
     <dialog id="errorModal" class="modal">
         <div class="modal-box">
