@@ -104,7 +104,7 @@ class ClientsLM
             ])
             ->where([
                 "user_id IN($selects)"
-            ]);
+            ])->groupBy("clients.id, u.id, le.id",);
 
 
         $clients_array = [];
@@ -336,7 +336,7 @@ class ClientsLM
         return PdoConnector::execute($builder);
     }
 
-    public static function clientIdDelete(int $client_id): array
+    public static function clientIdDelete(int $client_id)
     {
         $builder = Clients::newQueryBuilder()
             ->delete()

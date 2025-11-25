@@ -104,7 +104,7 @@
             </div>
         {% else %}
             <!-- Таблица -->
-            <div class="overflow-x-auto w-full border border-gray-200 rounded-lg shadow-sm">
+            <div class="hidden md:block overflow-x-auto w-full border border-gray-200 rounded-lg shadow-sm mt-4">
                 <table class="table w-full text-sm text-left divide-x divide-gray-200">
                     <thead class="bg-gray-100 text-xs text-gray-500 uppercase">
                     <tr class="divide-x divide-gray-200">
@@ -170,6 +170,52 @@
                 </table>
             </div>
         {% endif %}
+
+        <div class="lg:hidden space-y-4 mt-4">
+            {% for finances in get_courier_finances %}
+                <div class="border border-gray-200 rounded-lg p-3 shadow-sm bg-white text-[13px] space-y-2">
+
+                    <div><div class="text-gray-500 text-xs">Дата:</div><div class="font-medium">{{ finances.date }}</div></div>
+                    <div><div class="text-gray-500 text-xs">День:</div><div class="font-medium">{{ finances.dey }}</div></div>
+                    <div><div class="text-gray-500 text-xs">Сумма:</div><div class="font-semibold">{{ finances.amount }}</div></div>
+                    <div><div class="text-gray-500 text-xs">Проект:</div><div class="text-[11px] break-all">{{ finances.category }}</div></div>
+                    <div><div class="text-gray-500 text-xs">Категории:</div><div class="text-[11px] break-all">{{ finances.category }}</div></div>
+                    <div><div class="text-gray-500 text-xs">Комментарии:</div><div class="text-[11px] break-all">{{ finances.comments }}</div></div>
+
+                    <div>
+                        <div class="text-gray-500 text-xs">Возврат:</div>
+                        {% if finances.return_account == 1 %}
+                            <label for="unlink_account"
+                                   class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium px-3 py-1 rounded-lg transition cursor-pointer"
+                                   data-order-id="{{ finances.bank_order_id }}"
+                                   data-company-name="{{ finances.company_name }}"
+                                   data-description="{{ finances.description }}"
+                                   data-bank-name="{{ finances.bank_name }}">
+                                Возврат
+                            </label>
+                        {% else %}
+                            —
+                        {% endif %}
+                    </div>
+
+                    <div>
+                        <div class="text-gray-500 text-xs">Статус:</div>
+                        <div class="font-medium">
+                            {% if finances.status == 'confirm_courier' %}
+                                Не принят
+                            {% elseif finances.status == 'pending' %}
+                                Не обработан
+                            {% elseif finances.status == 'processed' %}
+                                Принят
+                            {% else %}
+                                Неизвестно
+                            {% endif %}
+                        </div>
+                    </div>
+
+                </div>
+            {% endfor %}
+        </div>
     </div>
 
     <input type="checkbox" id="cornerModal" class="hidden peer" />
@@ -188,40 +234,43 @@
         {% include './Pagination/Pagination.twig' %}
     </div>
 
+    <!-- Corner Modal -->
     <input type="checkbox" id="cornerModal" class="hidden peer" />
-    <div class="fixed bottom-4 right-4 bg-white border shadow-lg rounded-lg p-4 w-80 z-50 hidden peer-checked:flex peer-checked:flex-col">
+    <div class="fixed bottom-4 right-4 bg-white border shadow-lg rounded-lg p-3 w-72 z-50 hidden peer-checked:flex peer-checked:flex-col text-sm
+            sm:w-80 sm:p-4">
         <div class="flex items-start justify-between">
             <div>
-                <h3 class="text-lg font-semibold">Уведомление</h3>
-                <p id="txtModal" class="text-sm text-gray-600">Пользователь успешно добавлен.</p>
+                <h3 class="text-base font-semibold">Уведомление</h3>
+                <p id="txtModal" class="text-xs text-gray-600">Пользователь успешно добавлен.</p>
             </div>
-            <label for="cornerModal" class="ml-4 text-gray-400 hover:text-gray-600 cursor-pointer">✕</label>
+            <label for="cornerModal" class="ml-3 text-gray-400 hover:text-gray-600 cursor-pointer text-sm">✕</label>
         </div>
     </div>
-    <!-- type="unlink_account" -->
+
+    <!-- Unlink Account Modal -->
     <input type="checkbox" id="unlink_account" class="modal-toggle" />
     <div class="modal" role="dialog">
-        <div class="modal-box max-w-md">
-            <h1 class="text-lg font-bold text-gray-800 mb-4">Вы действительно хотите отменить расход?</h1>
+        <div class="modal-box max-w-sm sm:max-w-md p-4 sm:p-6 text-sm sm:text-base">
+            <h1 class="text-base sm:text-lg font-bold text-gray-800 mb-4">Вы действительно хотите отменить расход?</h1>
 
-            <div class="space-y-3">
-                <div class="p-3 border border-gray-200 rounded-xl bg-gray-50 flex flex-col">
-                    <span class="font-semibold text-gray-700">Описание:</span>
-                    <span id="description" class="text-gray-800 mt-1 break-all"></span>
+            <div class="space-y-2 sm:space-y-3">
+                <div class="p-2 sm:p-3 border border-gray-200 rounded-xl bg-gray-50 flex flex-col">
+                    <span class="font-semibold text-gray-700 text-xs sm:text-sm">Описание:</span>
+                    <span id="description" class="text-gray-800 mt-1 break-all text-xs sm:text-sm"></span>
                 </div>
 
-                <div class="p-3 border border-gray-200 rounded-xl bg-gray-50 flex flex-col">
-                    <span class="font-semibold text-gray-700">Название банка:</span>
-                    <span id="bankName" class="text-gray-800 mt-1 break-all"></span>
+                <div class="p-2 sm:p-3 border border-gray-200 rounded-xl bg-gray-50 flex flex-col">
+                    <span class="font-semibold text-gray-700 text-xs sm:text-sm">Название банка:</span>
+                    <span id="bankName" class="text-gray-800 mt-1 break-all text-xs sm:text-sm"></span>
                 </div>
 
-                <div class="p-3 border border-gray-200 rounded-xl bg-gray-50 flex flex-col">
-                    <span class="font-semibold text-gray-700">Название компании:</span>
-                    <span id="companyName" class="text-gray-800 mt-1 break-all"></span>
+                <div class="p-2 sm:p-3 border border-gray-200 rounded-xl bg-gray-50 flex flex-col">
+                    <span class="font-semibold text-gray-700 text-xs sm:text-sm">Название компании:</span>
+                    <span id="companyName" class="text-gray-800 mt-1 break-all text-xs sm:text-sm"></span>
                 </div>
 
-                <div class="alert alert-info rounded-xl mt-3 text-white">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 shrink-0 stroke-current text-white" fill="none" viewBox="0 0 24 24">
+                <div class="alert alert-info rounded-xl mt-2 sm:mt-3 text-white text-xs sm:text-sm flex items-start gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 sm:h-6 sm:w-6 shrink-0 stroke-current text-white" fill="none" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                               d="M13 16h-1v-4h-1m1-4h.01M12 20a8 8 0 100-16 8 8 0 000 16z" />
                     </svg>
@@ -229,22 +278,25 @@
                 </div>
             </div>
 
-            <div class="modal-action mt-6">
-                <button id="confirmUnlink" class="btn bg-blue-600 hover:bg-blue-700 text-white border-none rounded-lg px-6">
+            <div class="modal-action mt-4 sm:mt-6 flex flex-col sm:flex-row gap-2 sm:gap-4">
+                <button id="confirmUnlink" class="btn bg-blue-600 hover:bg-blue-700 text-white border-none rounded-lg px-4 py-1 sm:px-6 sm:py-2 text-xs sm:text-sm">
                     Подтвердить
                 </button>
-                <label for="unlink_account" class="btn btn-outline rounded-lg">Отменить</label>
+                <label for="unlink_account" class="btn btn-outline rounded-lg px-4 py-1 sm:px-6 sm:py-2 text-xs sm:text-sm">
+                    Отменить
+                </label>
             </div>
         </div>
     </div>
 
+    <!-- Error Modal -->
     <dialog id="errorModal" class="modal">
-        <div class="modal-box">
-            <h3 class="text-lg font-bold">Ошибка!</h3>
-            <p id="errorText" class="py-4"></p>
+        <div class="modal-box max-w-sm sm:max-w-md p-4 sm:p-6 text-sm sm:text-base">
+            <h3 class="text-base sm:text-lg font-bold">Ошибка!</h3>
+            <p id="errorText" class="py-2 sm:py-4 text-xs sm:text-sm"></p>
             <div class="modal-action">
                 <form method="dialog">
-                    <button class="btn">Закрыть</button>
+                    <button class="btn px-4 py-1 sm:px-6 sm:py-2 text-xs sm:text-sm">Закрыть</button>
                 </form>
             </div>
         </div>

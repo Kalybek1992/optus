@@ -1,0 +1,84 @@
+
+{% block content %}
+
+
+    <style>
+        @media (max-width: 640px) {
+            #percentModal .modal-box {
+                width: 94%;
+                padding: 1rem !important;
+            }
+
+            #percentModal .action-buttons {
+                flex-direction: column;
+            }
+
+            #percentModal .action-buttons button {
+                width: 100%;
+                padding-left: 1rem;
+                padding-right: 1rem;
+                padding-top: 0.7rem;
+                padding-bottom: 0.7rem;
+            }
+        }
+    </style>
+
+    <dialog id="percentModal" class="modal">
+        <div class="modal-box">
+            <form id="upload_form" class="flex flex-col">
+                <h3 id="modal-title" class="text-lg font-semibold text-center mb-4">Установить новый процент</h3>
+
+                <label id="percentage-label"
+                       class="input w-full mb-4 flex items-center gap-2 border rounded-md p-3">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                         stroke="currentColor" class="size-6">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                              d="m8.99 14.993 6-6m6 3.001c0 1.268-.63 2.39-1.593 3.069a3.746 3.746 0 0 1-1.043 3.296 3.745 3.745 0 0 1-3.296 1.043 3.745 3.745 0 0 1-3.068 1.593c-1.268 0-2.39-.63-3.068-1.593a3.745 3.745 0 0 1-3.296-1.043 3.746 3.746 0 0 1-1.043-3.297 3.746 3.746 0 0 1-1.593-3.068c0-1.268.63-2.39 1.593-3.068a3.746 3.746 0 0 1 1.043-3.297 3.745 3.745 0 0 1 3.296-1.042 3.745 3.745 0 0 1 3.068-1.594c1.268 0 2.39.63 3.068 1.593a3.745 3.745 0 0 1 3.296 1.043 3.746 3.746 0 0 1 1.043 3.297 3.746 3.746 0 0 1 1.593 3.068ZM9.74 9.743h.008v.007H9.74v-.007Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm4.125 4.5h.008v.008h-.008v-.008Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z"/>
+                    </svg>
+                    <input id="new_percentage" name="percentage"
+                           placeholder="Например: 10"
+                           required class="w-full outline-none"/>
+                </label>
+
+                <div class="text-sm text-gray-500 mb-2" id="passwordHint">
+                    Введите процент без знака «%». Только число.
+                </div>
+
+                <div id="txtModal" class="text-sm text-gray-700 space-y-3">
+                    <div class="grid grid-cols-2 gap-x-4 gap-y-4">
+
+                        <div class="text-gray-500 font-semibold">Дата транзакции:</div>
+                        <div class="font-serif text-gray-800" id="modal-date">—</div>
+
+                        <div class="text-gray-500 font-semibold">Сумма:</div>
+                        <div class="font-serif text-gray-800" id="modal-balance">—</div>
+
+                        <div class="text-gray-500 font-semibold">Старый процент:</div>
+                        <div class="font-serif text-gray-800" id="modal-percent">—</div>
+
+                        <div class="text-gray-500 font-semibold">Старый доход:</div>
+                        <div class="font-serif text-gray-800" id="modal-income">—</div>
+
+                        <div class="text-gray-500 font-semibold">Старый итоговый сумма:</div>
+                        <div class="font-serif text-gray-800" id="modal-final-amount">—</div>
+                    </div>
+                </div>
+
+                <div class="flex justify-end gap-3 mt-6 action-buttons">
+                    <button type="button" id="confirmChanges"
+                            class="btn bg-blue-600 text-white hover:bg-blue-700 px-3">
+                        Сохранить
+                    </button>
+
+                    <button type="button" onclick="closeModal()"
+                            class="btn bg-gray-200 text-gray-800 hover:bg-gray-300 px-3">
+                        Отмена
+                    </button>
+                </div>
+            </form>
+        </div>
+    </dialog>
+
+
+
+{% endblock %}

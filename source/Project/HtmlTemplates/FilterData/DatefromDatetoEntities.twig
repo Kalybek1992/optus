@@ -1,0 +1,37 @@
+{% block content %}
+
+
+    <!-- Выбор фильтра дата -->
+    <div class="flex flex-wrap md:flex-nowrap items-center gap-4 w-full mt-4">
+        <!-- Дата "от" -->
+        <div class="flex items-center w-full md:w-auto gap-2">
+            <span class="text-sm font-medium text-gray-600">ОТ-</span>
+            <input type="text" id="datepicker_from" placeholder="Дата начала" autocomplete="off"
+                   readonly
+                   class="w-full md:w-[12rem] h-[56px] p-4 bg-white rounded-xl shadow-sm text-base font-semibold text-gray-700 uppercase border border-gray-200 cursor-pointer"/>
+        </div>
+
+        <!-- Дата "до" -->
+        <div class="flex items-center w-full md:w-auto gap-2">
+            <span class="text-sm font-medium text-gray-600">ДО-</span>
+            <input type="text" id="datepicker_to" placeholder="Дата окончания" autocomplete="off"
+                   readonly
+                   class="w-full md:w-[12rem] h-[56px] p-4 bg-white rounded-xl shadow-sm text-base font-semibold text-gray-700 uppercase border border-gray-200 cursor-pointer"/>
+        </div>
+
+        <!-- Кнопка поиска -->
+        <div class="w-full md:w-auto">
+            <button id="searchFilters" type="submit"
+                    class="w-full md:w-auto h-[56px] px-6 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-xl shadow-sm transition">
+                Поиск с фильтрам
+            </button>
+        </div>
+    </div>
+
+
+
+    <script src="https://cdn.jsdelivr.net/npm/pikaday/pikaday.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pikaday/css/pikaday.css" />
+
+
+{% endblock %}

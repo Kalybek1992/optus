@@ -478,9 +478,7 @@ class UserController extends BaseController
         $page = InformationDC::get('page') ?? 0;
         $limit = 8;
         $offset = $page * $limit;
-
         $clients = ClientServicesLM::getClientsServices($offset, $limit);
-
 
         if (!$clients) {
             return $this->twig->render('User/NoClients.twig');
@@ -626,7 +624,8 @@ class UserController extends BaseController
                 return ApiViewer::getErrorBody(['value' => 'bad_client_id']);
             }
 
-            $legals_id = explode(',', $client['legal_id'] ?? '');
+            $legals_id = $client['legal_id']  ? explode(',', $client['legal_id']) : [];
+
             ClientsLM::clientIdDelete($client['id']);
         }
 
@@ -651,7 +650,7 @@ class UserController extends BaseController
                 return ApiViewer::getErrorBody(['value' => 'the_supplier_has_debts']);
             }
 
-            $legals_id = explode(',', $role['legal_id'] ?? '');
+            $legals_id = $role['legal_id'] ? explode(',', $role['legal_id']) : [];
 
             if ($user->role == 'supplier'){
                 ClientsLM::supplierClientsAllDelete($role['id']);
@@ -693,7 +692,6 @@ class UserController extends BaseController
 
         return ApiViewer::getOkBody(['success' => 'ok']);
     }
-
 
     public function changePercentage(): array
     {

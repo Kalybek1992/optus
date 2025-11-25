@@ -35,10 +35,9 @@
             </div>
         </div>
 
-        <!-- Таблица расходов -->
         {% if transactions is empty %}
-            <div role="alert" class="alert alert-warning mt-4">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 shrink-0 stroke-current" fill="none"
+            <div role="alert" class="alert alert-warning mt-4 text-xs sm:text-sm">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 sm:h-6 sm:w-6 shrink-0 stroke-current" fill="none"
                      viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                           d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
@@ -46,23 +45,16 @@
                 <span>Ничего не найдено</span>
             </div>
         {% else %}
-
-            <!-- Заголовок темы таблицы -->
-            <div class="text-center text-sm font-semibold text-gray-700">
-                Все транзакции магазина {{ date_from ?? '--.--.----' }} по {{ date_to ?? '--.--.----' }}
-                <div class="mx-auto w-1/2 border-t border-gray-300 mt-7 mb-7"></div>
-            </div>
-
-            <!-- Таблица -->
-            <div class="overflow-x-auto w-full border border-gray-200 rounded-lg shadow-sm">
+            <!-- Десктопная таблица (lg и выше) -->
+            <div class="hidden lg:block overflow-x-auto w-full border border-gray-200 rounded-lg shadow-sm">
                 <table class="table w-full text-sm text-left divide-x divide-gray-200">
                     <thead class="bg-gray-100 text-xs text-gray-500 uppercase">
                     <tr class="divide-x divide-gray-200">
                         <th class="px-3 py-2 w-28">№</th>
                         <th class="px-3 py-2 w-28">Дата</th>
-                        <th class="px-3 py-2">Плательщик названия</th>
+                        <th class="px-3 py-2">Плательщик</th>
                         <th class="px-3 py-2">Плательщик банк</th>
-                        <th class="px-3 py-2">Получатель название</th>
+                        <th class="px-3 py-2">Получатель</th>
                         <th class="px-3 py-2">Получатель банк</th>
                         <th class="px-3 py-2">Сумма</th>
                     </tr>
@@ -79,29 +71,43 @@
                             <td class="px-3 py-2 bg-yellow-100">{{ transaction.transaction_amount }}</td>
                         </tr>
                     {% endfor %}
-
-                    <tr class="hover:bg-gray-50 divide-x divide-gray-200">
-                        <td class="px-3 py-2">Сумма</td>
-                        <td class="px-3 py-2"></td>
-                        <td class="px-3 py-2"></td>
-                        <td class="px-3 py-2"></td>
-                        <td class="px-3 py-2"></td>
-                        <td class="px-3 py-2"></td>
-                        <td class="px-3 py-2 bg-yellow-100">{{ transactions_sum.sum_amount }}</td>
-                    </tr>
                     </tbody>
                     <tfoot class="bg-gray-100 text-xs text-gray-500 uppercase">
                     <tr class="divide-x divide-gray-200">
-                        <th class="px-3 py-2 w-28">№</th>
-                        <th class="px-3 py-2 w-28">Дата</th>
-                        <th class="px-3 py-2">Плательщик названия</th>
-                        <th class="px-3 py-2">Плательщик банк</th>
-                        <th class="px-3 py-2">Получатель название</th>
-                        <th class="px-3 py-2">Получатель банк</th>
-                        <th class="px-3 py-2">Сумма</th>
+                        <th class="px-3 py-2 w-28">Итого</th>
+                        <th colspan="5"></th>
+                        <th class="px-3 py-2 bg-yellow-100">{{ transactions_sum.sum_amount }}</th>
                     </tr>
                     </tfoot>
                 </table>
+            </div>
+
+            <!-- Мобильные карточки (lg:hidden) -->
+            <div class="lg:hidden space-y-4 mt-4">
+                {% for transaction in transactions %}
+                    <div class="border border-gray-200 rounded-lg p-3 shadow-sm bg-white text-[13px] space-y-2">
+
+                        <div><div class="text-gray-500 text-xs">Дата:</div><div class="font-medium">{{ transaction.date }}</div></div>
+                        <div><div class="text-gray-500 text-xs">Плательщик:</div><div class="text-[11px] break-all">{{ transaction.sender_company_name }}</div></div>
+                        <div><div class="text-gray-500 text-xs">Плательщик банк:</div><div class="text-[11px] break-all">{{ transaction.sender_bank_name }}</div></div>
+                        <div><div class="text-gray-500 text-xs">Получатель:</div><div class="text-[11px] break-all">{{ transaction.recipient_company_name }}</div></div>
+                        <div><div class="text-gray-500 text-xs">Получатель банк:</div><div class="text-[11px] break-all">{{ transaction.recipient_bank_name }}</div></div>
+
+                        <div class="bg-yellow-50 px-2 py-1 rounded">
+                            <div class="text-gray-600 text-xs">Сумма:</div>
+                            <div class="font-semibold">{{ transaction.transaction_amount }}</div>
+                        </div>
+
+                    </div>
+                {% endfor %}
+
+                <!-- Итоги мобильные -->
+                <div class="border border-gray-300 rounded-lg p-3 bg-gray-50 shadow-sm space-y-2">
+                    <div class="bg-yellow-100 px-2 py-1 rounded">
+                        <div class="font-semibold text-xs text-gray-700">Общая сумма:</div>
+                        <div>{{ transactions_sum.sum_amount }}</div>
+                    </div>
+                </div>
             </div>
         {% endif %}
     </div>

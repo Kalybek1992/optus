@@ -1,0 +1,43 @@
+{% block content %}
+
+
+    <!-- Выбор фильтра дата -->
+    <div class="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
+        <!-- Дата "от" -->
+        <div class="flex items-center w-full sm:w-auto gap-2 text-xs sm:text-sm">
+            <span class="font-medium text-gray-600">ОТ-</span>
+            <input type="text"
+                   placeholder="Дата начала"
+                   autocomplete="off"
+                   readonly
+                   class="datepicker_from w-full sm:w-[12rem] h-12 sm:h-[56px] p-2 sm:p-4 bg-white rounded-xl shadow-sm text-xs sm:text-base font-semibold text-gray-700 uppercase border border-gray-200 cursor-pointer"/>
+        </div>
+
+        <!-- Дата "до" -->
+        <div class="flex items-center w-full sm:w-auto gap-2 text-xs sm:text-sm">
+            <span class="font-medium text-gray-600">ДО-</span>
+            <input type="text"
+                   placeholder="Дата окончания"
+                   autocomplete="off"
+                   readonly
+                   class="datepicker_to w-full sm:w-[12rem] h-12 sm:h-[56px] p-2 sm:p-4 bg-white rounded-xl shadow-sm text-xs sm:text-base font-semibold text-gray-700 uppercase border border-gray-200 cursor-pointer"/>
+        </div>
+
+        <!-- Кнопка поиска -->
+        <div class="w-full sm:w-auto">
+            <button
+                    type="button"
+                    data-entity-client_id="{{ client.id }}"
+                    id="searchFilters"
+                    class="search-filters w-full sm:w-auto h-12 sm:h-[56px] px-4 sm:px-6 bg-blue-600 hover:bg-blue-700 text-white text-xs sm:text-sm font-semibold rounded-xl shadow-sm transition">
+                Поиск с фильтрам
+            </button>
+        </div>
+    </div>
+
+
+    <script src="https://cdn.jsdelivr.net/npm/pikaday/pikaday.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pikaday/css/pikaday.css" />
+
+
+{% endblock %}

@@ -25,47 +25,20 @@
                 </div>
 
                 <!-- Выбор фильтра дата -->
-                <div class="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
-                    <!-- Дата "от" -->
-                    <div class="flex items-center w-full sm:w-auto gap-2 text-xs sm:text-sm">
-                        <span class="font-medium text-gray-600">ОТ-</span>
-                        <input type="text"
-                               placeholder="Дата начала"
-                               autocomplete="off"
-                               class="datepicker_from w-full sm:w-[12rem] h-12 sm:h-[56px] p-2 sm:p-4 bg-white rounded-xl shadow-sm text-xs sm:text-base font-semibold text-gray-700 uppercase border border-gray-200"/>
-                    </div>
-
-                    <!-- Дата "до" -->
-                    <div class="flex items-center w-full sm:w-auto gap-2 text-xs sm:text-sm">
-                        <span class="font-medium text-gray-600">ДО-</span>
-                        <input type="text"
-                               placeholder="Дата окончания"
-                               autocomplete="off"
-                               class="datepicker_to w-full sm:w-[12rem] h-12 sm:h-[56px] p-2 sm:p-4 bg-white rounded-xl shadow-sm text-xs sm:text-base font-semibold text-gray-700 uppercase border border-gray-200"/>
-                    </div>
-
-                    <!-- Кнопка поиска -->
-                    <div class="w-full sm:w-auto">
-                        <button
-                                type="button"
-                                data-entity-client_id="{{ client.id }}"
-                                class="search-filters w-full sm:w-auto h-12 sm:h-[56px] px-4 sm:px-6 bg-blue-600 hover:bg-blue-700 text-white text-xs sm:text-sm font-semibold rounded-xl shadow-sm transition">
-                            Поиск с фильтрам
-                        </button>
-                    </div>
-                </div>
+                {% include './FilterData/DatefromDateto.twig' %}
 
                 <!-- Суммарная информация -->
-                <div class="p-3 sm:p-4 bg-white rounded-xl shadow-sm text-xs sm:text-sm uppercase border border-gray-200 space-y-2">
-                    <!-- Tоварный долг перед клиентом -->
+                <div class="p-2 sm:p-4 bg-white rounded-xl shadow-sm text-xs sm:text-sm uppercase border border-gray-200 space-y-2">
+
+                    <!-- Товарный долг перед клиентом -->
                     <div class="flex justify-between items-center">
-                        <div class="font-semibold text-gray-500">Tоварный долг перед клиентом</div>
+                        <div class="font-semibold text-gray-500 text-[11px] sm:text-sm">Tоварный долг перед клиентом</div>
                         <div class="font-semibold text-gray-600 text-sm sm:text-base">{{ client.debit_amount_sum|number_format(0, ',', ' ') }} ₽</div>
                     </div>
 
                     <!-- Конечный остаток -->
                     <div class="flex justify-between items-center">
-                        <div class="font-semibold text-gray-500">Конечный остаток</div>
+                        <div class="font-semibold text-gray-500 text-[11px] sm:text-sm">Конечный остаток</div>
                         <div class="font-semibold text-gray-600 text-sm sm:text-base {{ client.final_remainder_sum < 0 ? 'text-red-600' : 'text-green-600' }}">
                             {{ client.final_remainder_sum|number_format(0, ',', ' ') }} ₽
                         </div>
@@ -73,7 +46,7 @@
 
                     <!-- Процент -->
                     <div class="flex justify-between items-center">
-                        <div class="font-semibold text-gray-500">Процент</div>
+                        <div class="font-semibold text-gray-500 text-[11px] sm:text-sm">Процент</div>
                         <div class="flex items-center font-semibold text-gray-600 text-sm sm:text-base cursor-pointer">
                             {{ client.percentage }}%
                             <label for="change_percentage"
@@ -206,8 +179,6 @@
 
 
     <script src="/assets/js/CopyText.js?v=<?= time() ?>"></script>
-    <script src="https://cdn.jsdelivr.net/npm/pikaday/pikaday.js"></script>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pikaday/css/pikaday.css" />
 
     <script>
         // Инициализация всех полей

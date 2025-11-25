@@ -108,7 +108,8 @@ class ClientServicesLM
             ])
             ->where([
                 "user_id IN($selects)"
-            ]);
+            ])
+            ->groupBy("client_services.id, u.id, le.id",);
 
 
         $clients_array = [];
@@ -124,7 +125,6 @@ class ClientServicesLM
             $debit_amount_sum = $client->debit_amount ?? 0;
             $bank_accounts = null;
             $suppler = SuppliersLM::getSuppliersId($client->supplier_id);
-            $decoded = openssl_decrypt(base64_decode($client->password), Config::METHOD, Config::ENCRYPTION);
 
             if ($client->bank_account ?? false) {
                 $bank_accounts = [
@@ -143,7 +143,6 @@ class ClientServicesLM
                     'email' => $client->email,
                     'role' => $client->role,
                     'name' => $client->username,
-                    'password' => $decoded,
                     'suppler_name' => $suppler->username ?? '',
                     'suppler_email' => $suppler->email ?? '',
                     'balance_sum' => $balance_sum,

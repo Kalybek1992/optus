@@ -82,38 +82,7 @@
                 </div>
 
                 <!-- Выбор даты и кнопки -->
-                <div class="flex flex-wrap gap-2 sm:gap-4">
-                    <!-- Дата "от" -->
-                    <div class="flex items-center w-full sm:w-[calc(50%-0.5rem)] gap-1 sm:gap-2">
-                        <span class="text-sm sm:text-base font-medium text-gray-600">ОТ-</span>
-                        <input type="text" placeholder="Дата начала" autocomplete="off"
-                               class="datepicker_from w-full h-12 sm:h-[56px] p-2 sm:p-4 bg-white rounded-xl shadow-sm text-sm sm:text-base font-semibold text-gray-700 uppercase border border-gray-200"/>
-                    </div>
-
-                    <!-- Дата "до" -->
-                    <div class="flex items-center w-full sm:w-[calc(50%-0.5rem)] gap-1 sm:gap-2">
-                        <span class="text-sm sm:text-base font-medium text-gray-600">ДО-</span>
-                        <input type="text" placeholder="Дата окончания" autocomplete="off"
-                               class="datepicker_to w-full h-12 sm:h-[56px] p-2 sm:p-4 bg-white rounded-xl shadow-sm text-sm sm:text-base font-semibold text-gray-700 uppercase border border-gray-200"/>
-                    </div>
-
-                    <!-- Кнопки поиска -->
-                    <div class="w-full sm:w-[calc(50%-0.5rem)]">
-                        <button type="button"
-                                data-entity-supplier_id="{{ supplier.id }}"
-                                class="search-sending-to-supplier w-full h-12 sm:h-[56px] px-4 sm:px-6 bg-blue-600 hover:bg-blue-700 text-white text-sm sm:text-base font-semibold rounded-xl shadow-sm transition">
-                            Все отправки поставщику
-                        </button>
-                    </div>
-
-                    <div class="w-full sm:w-[calc(50%-0.5rem)]">
-                        <button type="button"
-                                data-entity-supplier_id="{{ supplier.id }}"
-                                class="search-list-of-closed-days w-full h-12 sm:h-[56px] px-4 sm:px-6 bg-blue-600 hover:bg-blue-700 text-white text-sm sm:text-base font-semibold rounded-xl shadow-sm transition">
-                            Список закрытых дней
-                        </button>
-                    </div>
-                </div>
+                {% include './FilterData/DatefromDatetoSuppliers.twig' %}
 
                 <!-- Баланс -->
                 <div class="p-3 sm:p-4 bg-white rounded-xl shadow-sm text-sm sm:text-base uppercase border border-gray-200 space-y-2">
@@ -199,7 +168,6 @@
                 </div>
             </details>
         </div>
-
     {% endfor %}
 
 
@@ -210,8 +178,6 @@
     {% include './ChangeUserModal.twig' %}
 
     <script src="/assets/js/CopyText.js?v=<?= time() ?>"></script>
-    <script src="https://cdn.jsdelivr.net/npm/pikaday/pikaday.js"></script>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pikaday/css/pikaday.css" />
 
     <!-- Триггер через checkbox -->
     <input type="checkbox" id="notifications" class="hidden peer"/>

@@ -4,88 +4,6 @@
 
     {% include './Breadcrumb/AddUsers.twig' %}
 
-    <dialog id="error_email" class="modal modal-bottom sm:modal-middle">
-        <div class="modal-box bg-gray-100 border border-gray-300">
-            <h3 class="text-lg font-bold text-center text-gray-700">Ошибка!</h3>
-            <p class="py-4 text-center text-gray-700">Такая почта уже зарегистрирована.</p>
-            <div class="modal-action">
-                <form method="dialog" class="w-full">
-                    <button class="btn w-full">Закрыть</button>
-                </form>
-            </div>
-        </div>
-    </dialog>
-
-    <dialog id="error" class="modal modal-bottom sm:modal-middle">
-        <div class="modal-box bg-gray-100 border border-gray-300">
-            <h3 class="text-lg font-bold text-center text-gray-700">Ошибка!</h3>
-            <p class="py-4 text-center text-gray-700">Что-то пошло не так, повторите еще раз.</p>
-            <div class="modal-action">
-                <form method="dialog" class="w-full">
-                    <button class="btn w-full">Закрыть</button>
-                </form>
-            </div>
-        </div>
-    </dialog>
-
-    <dialog id="success" class="modal modal-bottom sm:modal-middle">
-        <div class="modal-box">
-            <h3 class="text-lg font-bold text-center">Успех!</h3>
-            <p class="py-4 text-center">Пользователь добавлен с указанными данными:</p>
-
-            <div class="space-y-4">
-                <!-- Имя -->
-                <div class="flex items-center justify-between p-3 bg-gray-100 rounded-lg relative">
-                    <div class="flex items-center gap-2">
-                        <span class="font-semibold">Имя:</span>
-                        <span id="displayName" class="text-gray-700 break-all"></span>
-                    </div>
-                </div>
-                <!-- Роль -->
-                <div class="flex items-center justify-between p-3 bg-gray-100 rounded-lg relative">
-                    <div class="flex items-center gap-2">
-                        <span class="font-semibold">Роль:</span>
-                        <span id="displayRole" class="text-gray-700 break-all"></span>
-                    </div>
-                </div>
-                <!-- Пароль -->
-                <div id="password-modal" class="flex items-center justify-between p-3 bg-gray-100 rounded-lg relative">
-                    <div class="flex items-center gap-2">
-                        <span class="font-semibold">Пароль:</span>
-                        <span id="displayPassword" class="text-gray-700 break-all"></span>
-                    </div>
-                    <button type="button" id="copyPassword" class="text-gray-500 hover:text-gray-800 transition">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round"
-                                  d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8l6 6v4"></path>
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M14 2v6h6"></path>
-                        </svg>
-                    </button>
-                </div>
-                <!-- Почта -->
-                <div id="email-modal" class="flex items-center justify-between p-3 bg-gray-100 rounded-lg relative">
-                    <div class="flex items-center gap-2">
-                        <span class="font-semibold">Почта:</span>
-                        <span id="displayEmail" class="text-gray-700 break-all"></span>
-                    </div>
-                    <button type="button" id="copyEmail" class="text-gray-500 hover:text-gray-800 transition">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round"
-                                  d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8l6 6v4"></path>
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M14 2v6h6"></path>
-                        </svg>
-                    </button>
-                </div>
-            </div>
-
-            <div class="modal-action">
-                <form method="dialog" class="w-full">
-                    <button id="success-modal-btn" class="btn w-full">Закрыть</button>
-                </form>
-            </div>
-        </div>
-    </dialog>
-
 
     <div class="w-full max-w-md p-8 bg-white rounded-lg shadow-md mx-auto mt-[50px]">
         <!-- Заголовок с иконкой -->
@@ -230,6 +148,89 @@
         </form>
     </div>
 
+
+    <dialog id="error_email" class="modal modal-bottom sm:modal-middle">
+        <div class="modal-box bg-gray-100 border border-gray-300">
+            <h3 class="text-lg font-bold text-center text-gray-700">Ошибка!</h3>
+            <p class="py-4 text-center text-gray-700">Такая почта уже зарегистрирована.</p>
+            <div class="modal-action">
+                <form method="dialog" class="w-full">
+                    <button class="btn w-full">Закрыть</button>
+                </form>
+            </div>
+        </div>
+    </dialog>
+
+    <dialog id="error" class="modal modal-bottom sm:modal-middle">
+        <div class="modal-box bg-gray-100 border border-gray-300">
+            <h3 class="text-lg font-bold text-center text-gray-700">Ошибка!</h3>
+            <p class="py-4 text-center text-gray-700">Что-то пошло не так, повторите еще раз.</p>
+            <div class="modal-action">
+                <form method="dialog" class="w-full">
+                    <button class="btn w-full">Закрыть</button>
+                </form>
+            </div>
+        </div>
+    </dialog>
+
+    <dialog id="success" class="modal modal-bottom sm:modal-middle">
+        <div class="modal-box">
+            <h3 class="text-lg font-bold text-center">Успех!</h3>
+            <p class="py-4 text-center">Пользователь добавлен с указанными данными:</p>
+
+            <div class="space-y-4">
+                <!-- Имя -->
+                <div class="flex items-center justify-between p-3 bg-gray-100 rounded-lg relative">
+                    <div class="flex items-center gap-2">
+                        <span class="font-semibold">Имя:</span>
+                        <span id="displayName" class="text-gray-700 break-all"></span>
+                    </div>
+                </div>
+                <!-- Роль -->
+                <div class="flex items-center justify-between p-3 bg-gray-100 rounded-lg relative">
+                    <div class="flex items-center gap-2">
+                        <span class="font-semibold">Роль:</span>
+                        <span id="displayRole" class="text-gray-700 break-all"></span>
+                    </div>
+                </div>
+                <!-- Пароль -->
+                <div id="password-modal" class="flex items-center justify-between p-3 bg-gray-100 rounded-lg relative">
+                    <div class="flex items-center gap-2">
+                        <span class="font-semibold">Пароль:</span>
+                        <span id="displayPassword" class="text-gray-700 break-all"></span>
+                    </div>
+                    <button type="button" id="copyPassword" class="text-gray-500 hover:text-gray-800 transition">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                  d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8l6 6v4"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M14 2v6h6"></path>
+                        </svg>
+                    </button>
+                </div>
+                <!-- Почта -->
+                <div id="email-modal" class="flex items-center justify-between p-3 bg-gray-100 rounded-lg relative">
+                    <div class="flex items-center gap-2">
+                        <span class="font-semibold">Почта:</span>
+                        <span id="displayEmail" class="text-gray-700 break-all"></span>
+                    </div>
+                    <button type="button" id="copyEmail" class="text-gray-500 hover:text-gray-800 transition">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                  d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8l6 6v4"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M14 2v6h6"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <div class="modal-action">
+                <form method="dialog" class="w-full">
+                    <button id="success-modal-btn" class="btn w-full">Закрыть</button>
+                </form>
+            </div>
+        </div>
+    </dialog>
+
     <script>
 
         // при закрытии модалки успеха — перезагрузим страницу
@@ -300,8 +301,11 @@
                 const passwordModal = document.getElementById('password-modal');
                 const emailModal = document.getElementById('email-modal');
 
-                if (this.value === 'client') {
-                    if (percent) percent.classList.remove('hidden');
+                if (this.value === 'client' || this.value === 'client_services') {
+                    if(this.value === 'client'){
+                        if (percent) percent.classList.remove('hidden');
+                    }
+
                     if (emailInput) emailInput.classList.add('hidden');
                     if (passwordInput) passwordInput.classList.add('hidden');
 

@@ -32,14 +32,14 @@ final class NewUserRoleCheckMiddleware extends Middleware
 
 
 
-        if ($role == 'client' && !$repeat) {
+        if (($role == 'client' || $role == 'client_services') && !$repeat) {
             $result_insert = UsersLM::insertNewUser([
                 'name' => $name,
                 'role' => $role,
                 'token' => $token
             ]);
 
-        }elseif ($role != 'client' && !$repeat) {
+        }elseif (($role != 'client' || $role != 'client_services') && !$repeat) {
 
             $encrypted = openssl_encrypt($password, Config::METHOD, Config::ENCRYPTION);
             $encoded = base64_encode($encrypted);

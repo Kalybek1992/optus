@@ -26,35 +26,7 @@
 
 
                 <!-- Выбор фильтра дата -->
-                <div class="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
-                    <!-- Дата "от" -->
-                    <div class="flex items-center w-full sm:w-auto gap-2 text-xs sm:text-sm">
-                        <span class="font-medium text-gray-600">ОТ-</span>
-                        <input type="text"
-                               placeholder="Дата начала"
-                               autocomplete="off"
-                               class="datepicker_from w-full sm:w-[12rem] h-12 sm:h-[56px] p-2 sm:p-4 bg-white rounded-xl shadow-sm text-xs sm:text-base font-semibold text-gray-700 uppercase border border-gray-200"/>
-                    </div>
-
-                    <!-- Дата "до" -->
-                    <div class="flex items-center w-full sm:w-auto gap-2 text-xs sm:text-sm">
-                        <span class="font-medium text-gray-600">ДО-</span>
-                        <input type="text"
-                               placeholder="Дата окончания"
-                               autocomplete="off"
-                               class="datepicker_to w-full sm:w-[12rem] h-12 sm:h-[56px] p-2 sm:p-4 bg-white rounded-xl shadow-sm text-xs sm:text-base font-semibold text-gray-700 uppercase border border-gray-200"/>
-                    </div>
-
-                    <!-- Кнопка поиска -->
-                    <div class="w-full sm:w-auto">
-                        <button
-                                type="button"
-                                data-entity-client_id="{{ client.id }}"
-                                class="search-filters w-full sm:w-auto h-12 sm:h-[56px] px-4 sm:px-6 bg-blue-600 hover:bg-blue-700 text-white text-xs sm:text-sm font-semibold rounded-xl shadow-sm transition">
-                            Поиск с фильтрам
-                        </button>
-                    </div>
-                </div>
+                {% include './FilterData/DatefromDateto.twig' %}
 
                 <!-- Баланс и прочее -->
                 <div class="p-3 sm:p-4 bg-white rounded-xl shadow-sm text-xs sm:text-sm uppercase border border-gray-200 space-y-2">
@@ -244,19 +216,17 @@
             });
         });
 
-        // 2. Вешаем обработчики на все кнопки .search-filters
         document.querySelectorAll('.search-filters').forEach(btn => {
             btn.addEventListener('click', () => {
-                const wrapper = btn.closest('.filter-block'); // находим блок фильтра
+                const container = btn.closest('.flex'); // ищем ближайший контейнер фильтра
 
-                const dateFrom = wrapper.querySelector('.datepicker_from');
-                const dateTo   = wrapper.querySelector('.datepicker_to');
+                const dateFrom = container.querySelector('.datepicker_from');
+                const dateTo   = container.querySelector('.datepicker_to');
 
                 if (!dateFrom.value && !dateTo.value) {
                     showCornerModal('Выберите фильтр');
                     return;
                 }
-
                 if (!dateFrom.value && dateTo.value) {
                     showCornerModal('Выберите начало даты!');
                     return;

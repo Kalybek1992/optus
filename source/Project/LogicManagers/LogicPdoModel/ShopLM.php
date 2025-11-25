@@ -91,7 +91,8 @@ class ShopLM
             ])
             ->where([
                 "user_id IN($selects)"
-            ]);
+            ])
+            ->groupBy("shop.id, u.id, le.id",);
 
 
         $shops_array = [];

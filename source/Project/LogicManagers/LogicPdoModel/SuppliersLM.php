@@ -96,7 +96,8 @@ class SuppliersLM
             ])
             ->where([
                 "user_id IN($selects)"
-            ]);
+            ])
+            ->groupBy("suppliers.id, u.id, le.id",);
 
 
         $suppliers_array = [];

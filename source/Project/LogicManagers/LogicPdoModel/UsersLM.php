@@ -283,38 +283,39 @@ class UsersLM
     {
         $builder = Users::newQueryBuilder()
             ->select([
-                'id',
-                'name',
-                'email',
-                'role',
+                'users.id',
+                'users.name',
+                'users.email',
+                'users.role',
                 's.id as suppliers_id',
                 'c.id as clients_id',
                 'cs.id as client_services_id',
                 'sp.id as shop_id',
                 'cr.id as courier_id',
             ])
+            ->from('users')
             ->leftJoin('suppliers s')
             ->on([
-                's.user_id = id',
+                's.user_id = users.id',
             ])
             ->leftJoin('clients c')
             ->on([
-                'c.user_id = id',
+                'c.user_id = users.id',
             ])
             ->leftJoin('client_services cs')
             ->on([
-                'c.user_id = id',
+                'cs.user_id = users.id',
             ])
             ->leftJoin('shop sp')
             ->on([
-                'sp.user_id = id',
+                'sp.user_id = users.id',
             ])
             ->leftJoin('couriers cr')
             ->on([
-                'cr.user_id = id',
+                'cr.user_id = users.id',
             ])
             ->where([
-                'id =' . "'" . $user_id . "'",
+                'users.id =' . "'" . $user_id . "'",
             ])
             ->limit(1);
 
