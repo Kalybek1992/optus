@@ -7,7 +7,7 @@
     <div class="max-w-8xl mx-auto bg-white rounded-2xl shadow-lg p-6 space-y-4 relative mt-4">
         <!-- Категории дата искать  -->
         <div class="w-full max-w-8xl mx-auto space-y-4">
-            <div class="flex flex-col md:flex-row md:items-center gap-4 p-4 bg-white rounded-xl shadow-sm border border-gray-200">
+            <div class="flex flex-col md:flex-row md:items-center gap-4 p-4 bg-white rounded-xl shadow-none focus:outline-none">
                 <!-- Категория расхода -->
                 <div x-data="{ open: false, level: 0, path: [] }" class="relative w-full md:w-[28rem]">
                     <button @click="open = !open"
@@ -71,18 +71,18 @@
                 <span>Ничего не найдено</span>
             </div>
         {% else %}
-            <!-- Таблица -->
-            <div class="overflow-x-auto w-full border border-gray-200 rounded-lg shadow-sm">
+            <!-- Таблица для десктопа -->
+            <div class="overflow-x-auto w-full border border-gray-200 rounded-lg shadow-sm hidden sm:block">
                 <table class="table w-full text-sm text-left divide-x divide-gray-200">
                     <thead class="bg-gray-100 text-xs text-gray-500 uppercase">
                     <tr class="divide-x divide-gray-200">
                         <th class="px-3 py-2 w-28">Дата</th>
                         <th class="px-3 py-2 min-w-[250px] max-w-[500px]">Описание</th>
                         <th class="px-3 py-2 w-20">Сумма</th>
-                        <th class="px-3 py-2 min-w-[100px] max-w-[300px]">Отправитель:Название компании</th>
-                        <th class="px-3 py-2 min-w-[100px] max-w-[300px]">Отправитель:Название банка</th>
-                        <th class="px-3 py-2 min-w-[100px] max-w-[300px]">Получатель:Название компании</th>
-                        <th class="px-3 py-2 min-w-[100px] max-w-[300px]">Получатель:Название банка</th>
+                        <th class="px-3 py-2 min-w-[100px] max-w-[300px]">Отправитель:Компания</th>
+                        <th class="px-3 py-2 min-w-[100px] max-w-[300px]">Отправитель:Банк</th>
+                        <th class="px-3 py-2 min-w-[100px] max-w-[300px]">Получатель:Компания</th>
+                        <th class="px-3 py-2 min-w-[100px] max-w-[300px]">Получатель:Банк</th>
                         <th class="px-3 py-2 min-w-[250px] max-w-[500px]">Комментарии</th>
                         <th class="px-3 py-2 min-w-[250px] max-w-[500px]">Категории</th>
                         <th class="px-3 py-2">Возврат</th>
@@ -103,11 +103,11 @@
                             <td class="px-3 py-2 text-center">
                                 {% if expense.return_account == 1 %}
                                     <label for="unlink_account"
-                                            class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium px-3 py-1 rounded-lg transition cursor-pointer"
-                                            data-order-id="{{ expense.bank_order_id }}"
-                                            data-company-name="{{ expense.company_name }}"
-                                            data-description="{{ expense.description }}"
-                                            data-bank-name="{{ expense.bank_name }}">
+                                           class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium px-3 py-1 rounded-lg transition cursor-pointer"
+                                           data-order-id="{{ expense.bank_order_id }}"
+                                           data-company-name="{{ expense.company_name }}"
+                                           data-description="{{ expense.description }}"
+                                           data-bank-name="{{ expense.bank_name }}">
                                         Возврат
                                     </label>
                                 {% else %}
@@ -117,21 +117,65 @@
                         </tr>
                     {% endfor %}
                     </tbody>
-                    <tfoot class="bg-gray-100 text-xs text-gray-500 uppercase">
-                    <tr class="divide-x divide-gray-200">
-                        <th class="px-3 py-2">Дата</th>
-                        <th class="px-3 py-2">Описание</th>
-                        <th class="px-3 py-2 w-20">Сумма</th>
-                        <th class="px-3 py-2">Отправитель:Название компании</th>
-                        <th class="px-3 py-2">Отправитель:Название банка</th>
-                        <th class="px-3 py-2">Получатель:Название компании</th>
-                        <th class="px-3 py-2">Получатель:Название банка</th>
-                        <th class="px-3 py-2">Комментарии</th>
-                        <th class="px-3 py-2">Категории</th>
-                        <th class="px-3 py-2">Возврат</th>
-                    </tr>
-                    </tfoot>
                 </table>
+            </div>
+            <!-- Вертикальная таблица для мобильного -->
+            <div class="sm:hidden w-full space-y-4">
+                {% for expense in expenses %}
+                    <div class="border border-gray-200 rounded-lg shadow-sm p-3 bg-white space-y-2">
+                        <div>
+                            <div class="text-xs font-semibold text-gray-500">Дата</div>
+                            <div class="text-[10px] text-gray-700 mt-1">{{ expense.date }}</div>
+                        </div>
+                        <div>
+                            <div class="text-xs font-semibold text-gray-500">Описание</div>
+                            <div class="text-[10px] text-gray-700 mt-1">{{ expense.description }}</div>
+                        </div>
+                        <div>
+                            <div class="text-xs font-semibold text-gray-500">Сумма</div>
+                            <div class="text-[10px] text-gray-700 mt-1">{{ expense.amount }}</div>
+                        </div>
+                        <div>
+                            <div class="text-xs font-semibold text-gray-500">Отправитель: (Компания)</div>
+                            <div class="text-[10px] text-gray-700 mt-1">{{ expense.sender_company_name }}</div>
+                        </div>
+                        <div>
+                            <div class="text-xs font-semibold text-gray-500">Отправитель: (Банк)</div>
+                            <div class="text-[10px] text-gray-700 mt-1">{{ expense.sender_bank_name }}</div>
+                        </div>
+                        <div>
+                            <div class="text-xs font-semibold text-gray-500">Получатель: (Компания)</div>
+                            <div class="text-[10px] text-gray-700 mt-1">{{ expense.company_name }}</div>
+                        </div>
+                        <div>
+                            <div class="text-xs font-semibold text-gray-500">Получатель: (Банк)</div>
+                            <div class="text-[10px] text-gray-700 mt-1">{{ expense.bank_name }}</div>
+                        </div>
+                        <div>
+                            <div class="text-xs font-semibold text-gray-500">Комментарии</div>
+                            <div class="text-[10px] text-gray-700 mt-1">{{ expense.comments }}</div>
+                        </div>
+                        <div>
+                            <div class="text-xs font-semibold text-gray-500">Категории</div>
+                            <div class="text-[10px] text-gray-700 mt-1">{{ expense.category }}</div>
+                        </div>
+                        <div>
+                            <div class="text-xs font-semibold text-gray-500">Возврат</div>
+                            {% if expense.return_account == 1 %}
+                                <label for="unlink_account"
+                                       class="bg-blue-600 hover:bg-blue-700 text-white text-[10px] font-medium px-3 py-1 rounded-lg transition cursor-pointer block mt-1"
+                                       data-order-id="{{ expense.bank_order_id }}"
+                                       data-company-name="{{ expense.company_name }}"
+                                       data-description="{{ expense.description }}"
+                                       data-bank-name="{{ expense.bank_name }}">
+                                    Возврат
+                                </label>
+                            {% else %}
+                                <div class="text-[10px] text-gray-700 mt-1">—</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% endfor %}
             </div>
         {% endif %}
     </div>
@@ -150,7 +194,9 @@
     <!-- type="unlink_account" -->
     <input type="checkbox" id="unlink_account" class="modal-toggle" />
     <div class="modal" role="dialog">
-        <div class="modal-box max-w-md">
+        <div class="modal-box bg-gray-100
+                w-full max-w-md sm:max-w-lg md:max-w-xl
+                mx-2 sm:mx-auto">
             <h1 class="text-lg font-bold text-gray-800 mb-4">Вы действительно хотите отменить расход?</h1>
 
             <div class="space-y-3">

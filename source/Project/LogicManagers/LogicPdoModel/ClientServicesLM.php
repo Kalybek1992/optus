@@ -109,7 +109,7 @@ class ClientServicesLM
             ->where([
                 "user_id IN($selects)"
             ])
-            ->groupBy("client_services.id, u.id, le.id",);
+            ->groupBy("client_services.id, u.id, le.id, d.amount");
 
 
         $clients_array = [];
@@ -119,47 +119,67 @@ class ClientServicesLM
             return [];
         }
 
+
         foreach ($clients as $client) {
-            $existing_index = array_search($client->id, array_column($clients_array, 'id'));
-            $balance_sum = $client->balance ?? 0;
-            $debit_amount_sum = $client->debit_amount ?? 0;
-            $bank_accounts = null;
+            $client_id = $client->id;
             $suppler = SuppliersLM::getSuppliersId($client->supplier_id);
 
-            if ($client->bank_account ?? false) {
-                $bank_accounts = [
-                    'account' => $client->bank_account,
-                    'inn' => $client->inn,
-                    'company_name' => $client->company_name,
-                    'balance' => $balance_sum,
-                    'debit_amount' => $debit_amount_sum,
-                    'le_id' => $client->le_id,
-                ];
-            }
-
-            if ($existing_index === false) {
-                $clients_array[] = [
+            if (!isset($clients_array[$client_id])) {
+                $clients_array[$client_id] = [
                     'id' => $client->id,
                     'email' => $client->email,
                     'role' => $client->role,
                     'name' => $client->username,
                     'suppler_name' => $suppler->username ?? '',
                     'suppler_email' => $suppler->email ?? '',
-                    'balance_sum' => $balance_sum,
-                    'debit_amount_sum' => $debit_amount_sum,
+                    'balance_sum' => 0.0,
+                    'debit_amount_sum' => 0.0,
                     'user_id' => $client->user_id,
                     'created_at' => $client->created_at,
-                    'bank_accounts' => $bank_accounts ? [$bank_accounts] : [],
+                    'bank_accounts' => [],
                 ];
-            } else {
-                $clients_array[$existing_index]['balance_sum'] += $balance_sum;
-                $clients_array[$existing_index]['debit_amount_sum'] += $debit_amount_sum;
+            }
 
-                if ($bank_accounts) {
-                    $clients_array[$existing_index]['bank_accounts'][] = $bank_accounts;
+            $balance_sum = (float) ($client->balance ?? 0);
+            $debit_amount_sum = (float) ($client->debit_amount ?? 0);
+
+            $clients_array[$client_id]['balance_sum'] += $balance_sum;
+            $clients_array[$client_id]['debit_amount_sum'] += $debit_amount_sum;
+
+            $account_raw = $client->bank_account ?? null;
+            $account = is_null($account_raw) ? '' : trim((string) $account_raw);
+
+            if ($account !== '') {
+                if (!isset($clients_array[$client_id]['bank_accounts'][$account])) {
+                    $clients_array[$client_id]['bank_accounts'][$account] = [
+                        'account' => $account,
+                        'inn' => $client->inn ?? null,
+                        'company_name' => $client->company_name ?? null,
+                        'balance' => $balance_sum,
+                        'debit_amount' => $debit_amount_sum,
+                        'le_id' => $client->le_id ?? null,
+                    ];
+                } else {
+                    $clients_array[$client_id]['bank_accounts'][$account]['balance'] += $balance_sum;
+                    $clients_array[$client_id]['bank_accounts'][$account]['debit_amount'] += $debit_amount_sum;
+
+                    if (empty($clients_array[$client_id]['bank_accounts'][$account]['inn']) && !empty($client->inn)) {
+                        $clients_array[$client_id]['bank_accounts'][$account]['inn'] = $client->inn;
+                    }
+                    if (empty($clients_array[$client_id]['bank_accounts'][$account]['company_name']) && !empty($client->company_name)) {
+                        $clients_array[$client_id]['bank_accounts'][$account]['company_name'] = $client->company_name;
+                    }
+                    if (empty($clients_array[$client_id]['bank_accounts'][$account]['le_id']) && !empty($client->le_id)) {
+                        $clients_array[$client_id]['bank_accounts'][$account]['le_id'] = $client->le_id;
+                    }
                 }
             }
         }
+
+        $clients_array = array_values(array_map(function ($c) {
+            $c['bank_accounts'] = array_values($c['bank_accounts']);
+            return $c;
+        }, $clients_array));
 
 
         return $clients_array;

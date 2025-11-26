@@ -759,15 +759,13 @@ class LegalEntitiesLM
         }
 
         $builder
-            ->groupBy('id')
+            ->groupBy('t.id')
             ->orderBy('t.date', 'DESC')
             ->limit($limit)
             ->offset($offset);
 
         $transactions = PdoConnector::execute($builder) ?? null;
         $transactions_arr = [];
-
-        //Logger::log(print_r($transactions, true), 'transactions');
 
         if (!$transactions) {
             return [];
@@ -783,8 +781,6 @@ class LegalEntitiesLM
                     $date_of_issue = date('d.m.Y', strtotime($company_finances->date));
                 }
             }
-
-            Logger::log(print_r($company_finances, true), 'company_finances');
 
             $transactions_arr[] = [
                 'transaction_id' => $transaction->transaction_id,

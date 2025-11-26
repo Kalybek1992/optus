@@ -1,30 +1,30 @@
 {% block content %}
 
     {% if page_count > 0 %}
-        <div class="join">
+        <div class="join flex flex-wrap justify-center gap-1">
             {% set range = 2 %}
             {% if page_count <= 7 %}
                 {# Если страниц мало — просто показываем все #}
                 {% for i in 1..page_count %}
                     <a href="?page={{ i - 1 }}"
-                       class="join-item btn btn-square {% if i == page %}btn-active{% endif %}">
+                       class="join-item btn btn-square text-sm sm:text-base {% if i == page %}btn-active{% endif %} px-2 sm:px-3 py-1 sm:py-2">
                         {{ i }}
                     </a>
                 {% endfor %}
             {% else %}
                 {# Всегда первая страница #}
-                <a href="?page=0" class="join-item btn btn-square {% if page == 1 %}btn-active{% endif %}">1</a>
+                <a href="?page=0" class="join-item btn btn-square text-sm sm:text-base px-2 sm:px-3 py-1 sm:py-2 {% if page == 1 %}btn-active{% endif %}">1</a>
 
                 {# Левая троеточие #}
                 {% if page - range > 3 %}
-                    <span class="join-item btn btn-square pointer-events-none">...</span>
+                    <span class="join-item btn btn-square pointer-events-none text-sm sm:text-base px-2 sm:px-3 py-1 sm:py-2">...</span>
                 {% endif %}
 
                 {# Диапазон вокруг активной страницы #}
                 {% for i in (page - range)..(page + range) %}
                     {% if i > 1 and i < page_count %}
                         <a href="?page={{ i - 1 }}"
-                           class="join-item btn btn-square {% if i == page %}btn-active{% endif %}">
+                           class="join-item btn btn-square text-sm sm:text-base px-2 sm:px-3 py-1 sm:py-2 {% if i == page %}btn-active{% endif %}">
                             {{ i }}
                         </a>
                     {% endif %}
@@ -32,21 +32,18 @@
 
                 {# Правая троеточие #}
                 {% if page + range < page_count - 2 %}
-                    <span class="join-item btn btn-square pointer-events-none">...</span>
+                    <span class="join-item btn btn-square pointer-events-none text-sm sm:text-base px-2 sm:px-3 py-1 sm:py-2">...</span>
                 {% endif %}
 
                 {# Всегда последняя страница #}
                 <a href="?page={{ page_count - 1 }}"
-                   class="join-item btn btn-square {% if page == page_count %}btn-active{% endif %}">
+                   class="join-item btn btn-square text-sm sm:text-base px-2 sm:px-3 py-1 sm:py-2 {% if page == page_count %}btn-active{% endif %}">
                     {{ page_count }}
                 </a>
             {% endif %}
         </div>
 
-
         <script src="/assets/js/Pagination.js?v=<?= time() ?>"></script>
-
-
     {% endif %}
 
 {% endblock %}

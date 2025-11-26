@@ -30,9 +30,7 @@ class UsersLM
                 'role !=' . "'admin'",
                 'role !=' . "'manager'",
             ])
-            ->orderBy('role')
-            ->limit($limit)
-            ->offset($offset);
+            ->orderBy('role');
 
         return PdoConnector::execute($builder);
     }

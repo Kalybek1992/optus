@@ -97,7 +97,7 @@ class SuppliersLM
             ->where([
                 "user_id IN($selects)"
             ])
-            ->groupBy("suppliers.id, u.id, le.id",);
+            ->groupBy("suppliers.id, u.id, le.id, d.amount");
 
 
         $suppliers_array = [];
@@ -108,47 +108,72 @@ class SuppliersLM
             return [];
         }
 
-
         foreach ($suppliers as $supplier) {
-            $existing_index = array_search($supplier->id, array_column($suppliers_array, 'id'));
-            $balance_sum = $supplier->balance ?? 0;
-            $bank_accounts = null;
-            $debit_amount_sum = $supplier->debit_amount ?? 0;
-            $decoded = openssl_decrypt(base64_decode($supplier->password), Config::METHOD, Config::ENCRYPTION);
+            $supplier_id = $supplier->id;
 
-            if ($supplier->bank_account ?? false) {
-                $bank_accounts = [
-                    'account' => $supplier->bank_account,
-                    'inn' => $supplier->inn,
-                    'company_name' => $supplier->company_name,
-                    'debit_amount' => $debit_amount_sum,
-                    'balance' => $balance_sum,
-                    'le_id' => $supplier->le_id,
-                ];
-            }
+            if (!isset($suppliers_array[$supplier_id])) {
+                $decoded_password = openssl_decrypt(
+                    base64_decode($supplier->password),
+                    Config::METHOD,
+                    Config::ENCRYPTION
+                );
 
-            if ($existing_index === false) {
-                $suppliers_array[] = [
+                $suppliers_array[$supplier_id] = [
                     'id' => $supplier->id,
                     'email' => $supplier->email,
                     'role' => $supplier->role,
                     'name' => $supplier->username,
-                    'password' => $decoded,
+                    'password' => $decoded_password,
                     'percentage' => $supplier->percentage,
-                    'balance_sum' => $balance_sum,
-                    'debit_amount_sum' => $debit_amount_sum,
+                    'balance_sum' => 0.0,
+                    'debit_amount_sum' => 0.0,
                     'user_id' => $supplier->user_id,
                     'created_at' => $supplier->created_at,
-                    'bank_accounts' => $bank_accounts ? [$bank_accounts] : [],
+                    'bank_accounts' => [],
                 ];
-            } else {
-                $suppliers_array[$existing_index]['balance_sum'] += $balance_sum;
-                $suppliers_array[$existing_index]['debit_amount_sum'] += $debit_amount_sum;
-                if ($bank_accounts) {
-                    $suppliers_array[$existing_index]['bank_accounts'][] = $bank_accounts;
+            }
+
+            $balance_sum = (float) ($supplier->balance ?? 0);
+            $debit_amount_sum = (float) ($supplier->debit_amount ?? 0);
+
+            $suppliers_array[$supplier_id]['balance_sum'] += $balance_sum;
+            $suppliers_array[$supplier_id]['debit_amount_sum'] += $debit_amount_sum;
+
+            $account_raw = $supplier->bank_account ?? null;
+            $account = is_null($account_raw) ? '' : trim((string) $account_raw);
+
+            if ($account !== '') {
+                if (!isset($suppliers_array[$supplier_id]['bank_accounts'][$account])) {
+                    $suppliers_array[$supplier_id]['bank_accounts'][$account] = [
+                        'account' => $account,
+                        'inn' => $supplier->inn ?? null,
+                        'company_name' => $supplier->company_name ?? null,
+                        'debit_amount' => $debit_amount_sum,
+                        'balance' => $balance_sum,
+                        'le_id' => $supplier->le_id ?? null,
+                    ];
+                } else {
+                    $suppliers_array[$supplier_id]['bank_accounts'][$account]['debit_amount'] += $debit_amount_sum;
+                    $suppliers_array[$supplier_id]['bank_accounts'][$account]['balance'] += $balance_sum;
+
+                    if (empty($suppliers_array[$supplier_id]['bank_accounts'][$account]['inn']) && !empty($supplier->inn)) {
+                        $suppliers_array[$supplier_id]['bank_accounts'][$account]['inn'] = $supplier->inn;
+                    }
+                    if (empty($suppliers_array[$supplier_id]['bank_accounts'][$account]['company_name']) && !empty($supplier->company_name)) {
+                        $suppliers_array[$supplier_id]['bank_accounts'][$account]['company_name'] = $supplier->company_name;
+                    }
+                    if (empty($suppliers_array[$supplier_id]['bank_accounts'][$account]['le_id']) && !empty($supplier->le_id)) {
+                        $suppliers_array[$supplier_id]['bank_accounts'][$account]['le_id'] = $supplier->le_id;
+                    }
                 }
             }
         }
+
+        $suppliers_array = array_values(array_map(function ($s) {
+            $s['bank_accounts'] = array_values($s['bank_accounts']);
+            return $s;
+        }, $suppliers_array));
+
 
 
         //Logger::log(print_r($suppliers_array, true), 'clients_array');

@@ -290,9 +290,7 @@ class TransactionController extends BaseController
         $transactions_count = LegalEntitiesLM::getEntitiesClientTransactionsCount($client_id, $date_from, $date_to);
         $page_count = ceil($transactions_count / $limit);
 
-
         //Logger::log(print_r($transactions_sum, true), 'clientReceiptsDate');
-
 
         return $this->twig->render('Transaction/ClientReceiptsDate.twig', [
             'page' => $page + 1,

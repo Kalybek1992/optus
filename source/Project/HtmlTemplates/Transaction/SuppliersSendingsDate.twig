@@ -21,7 +21,7 @@
             <!-- Фактический долг -->
             <div class="flex items-center gap-2 text-gray-700">
                 <span class="text-sm font-semibold text-gray-800">Фактический долг поставщика:</span>
-                <p class="text-sm font-semibold text-gray-600">{{ supplier.debit_amount }}</p>
+                <p class="text-sm font-semibold text-gray-600">{{ supplier.debit_amount|number_format(0, ',', ' ') }}</p>
             </div>
         </div>
 
@@ -54,10 +54,10 @@
                         <th class="px-3 py-2">Получатель название</th>
                         <th class="px-3 py-2">Получатель банк</th>
                         <th class="px-3 py-2">Комиссия</th>
-                        <th class="px-3 py-2">Сумма</th>
-                        <th class="px-3 py-2">Комиссия деньгах</th>
-                        <th class="px-3 py-2">Долг поставщика</th>
-                        <th class="px-3 py-2">Назначение</th>
+                        <th class="px-3 py-2 w-[150px]">Сумма</th>
+                        <th class="px-3 py-2 w-[150px]">Комиссия деньгах</th>
+                        <th class="px-3 py-2 w-[150px]">Долг поставщика</th>
+                        <th class="px-3 py-2 w-[150px]">Назначение</th>
                     </tr>
                     </thead>
                     <tbody class="text-sm divide-y divide-gray-100">
@@ -85,9 +85,9 @@
                                     </span>
                                 {% endif %}
                             </td>
-                            <td class="px-3 py-2 bg-yellow-100">{{ transaction.transaction_amount }}</td>
-                            <td class="px-3 py-2 bg-purple-100">{{ transaction.interest_income }}</td>
-                            <td class="px-3 py-2 bg-green-100">{{ transaction.total_amount }}</td>
+                            <td class="px-3 py-2 bg-yellow-100">{{ transaction.transaction_amount|number_format(0, ',', ' ') }}</td>
+                            <td class="px-3 py-2 bg-purple-100">{{ transaction.interest_income|number_format(0, ',', ' ') }}</td>
+                            <td class="px-3 py-2 bg-green-100">{{ transaction.total_amount|number_format(0, ',', ' ') }}</td>
                             <td class="px-3 py-2">{{ transaction.description }}</td>
                         </tr>
                     {% endfor %}
@@ -98,9 +98,9 @@
                             <td class="px-3 py-2"></td>
                             <td class="px-3 py-2"></td>
                             <td class="px-3 py-2"></td>
-                            <td class="px-3 py-2 bg-yellow-100">{{ transactions_sum.sum_amount }}</td>
-                            <td class="px-3 py-2 bg-purple-100">{{ transactions_sum.sum_interest_income }}</td>
-                            <td class="px-3 py-2 bg-green-100">{{ transactions_sum.debts_amount }}</td>
+                            <td class="px-3 py-2 bg-yellow-100">{{ transactions_sum.sum_amount|number_format(0, ',', ' ') }}</td>
+                            <td class="px-3 py-2 bg-purple-100">{{ transactions_sum.sum_interest_income|number_format(0, ',', ' ') }}</td>
+                            <td class="px-3 py-2 bg-green-100">{{ transactions_sum.debts_amount|number_format(0, ',', ' ') }}</td>
                             <td class="px-3 py-2"></td>
                         </tr>
                     </tbody>
@@ -154,22 +154,21 @@
 
                         <div class="bg-yellow-50 px-2 py-1 rounded">
                             <div class="text-gray-600 text-xs">Сумма:</div>
-                            <div class="font-semibold">{{ transaction.transaction_amount }}</div>
+                            <div class="font-semibold">{{ transaction.transaction_amount|number_format(0, ',', ' ') }}</div>
                         </div>
 
                         <div class="bg-purple-50 px-2 py-1 rounded">
                             <div class="text-gray-600 text-xs">Комиссия ₽:</div>
-                            <div class="font-semibold">{{ transaction.interest_income }}</div>
+                            <div class="font-semibold">{{ transaction.interest_income|number_format(0, ',', ' ') }}</div>
                         </div>
 
                         <div class="bg-green-50 px-2 py-1 rounded">
                             <div class="text-gray-600 text-xs">Долг поставщика:</div>
-                            <div class="font-semibold">{{ transaction.total_amount }}</div>
+                            <div class="font-semibold">{{ transaction.total_amount|number_format(0, ',', ' ') }}</div>
                         </div>
 
                         <div class="text-gray-500 text-xs">Назначение:</div>
                         <div class="text-[11px] break-all">{{ transaction.description }}</div>
-
                     </div>
                 {% endfor %}
 

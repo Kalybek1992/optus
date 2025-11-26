@@ -6,159 +6,105 @@
 
     <div class="w-full max-w-5xl mx-auto px-4 pb-96 my-8">
         <ul class="list bg-base-100 rounded-lg shadow-md space-y-4">
-            <li class="relative p-4 hover:bg-base-200 transition rounded-lg border border-gray-300">
-                {% for entitie in entities %}
-                    <div class="space-y-2">
+            {% for entitie in entities %}
+                <li class="relative p-4 bg-base-200 rounded-lg border border-gray-300">
+                    <div class="flex flex-col gap-3 w-full mx-auto p-4">
                         <!-- ИНН -->
-                        <div class="flex items-center text-sm text-base-content opacity-80">
-                            <span id="legal_entities"
-                                  data-entity-le_id="{{ entitie.id }}"
-                                  data-entity-bank_account="{{ entitie.bank_account }}"
-                                  data-entity-company_name="{{ entitie.company_name }}"
-                                  data-entity-transaction_data="{{ entitie.transaction_data }}"
-                                  data-entity-inn="{{ entitie.inn }}"
-                                  data-entity-description="{{ entitie.description }}"
-                                  class="mr-2 font-semibold text-gray-600">ИНН:</span>
-                            <span class="italic font-mono text-gray-800"
-                                  id="inn-{{ loop.index }}">{{ entitie.inn }}</span>
-                            <button type="button" class="ml-2 text-gray-600 hover:text-gray-900"
+                        <div id="legal_entities"
+                             data-entity-le_id="{{ entitie.id }}"
+                             data-entity-bank_account="{{ entitie.bank_account }}"
+                             data-entity-company_name="{{ entitie.company_name }}"
+                             data-entity-transaction_data="{{ entitie.transaction_data }}"
+                             data-entity-inn="{{ entitie.inn }}"
+                             data-entity-description="{{ entitie.description }}"
+                             class="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 text-sm opacity-80">
+                            <span class="font-semibold text-gray-600">ИНН:</span>
+                            <span class="italic font-mono text-gray-800">{{ entitie.inn }}</span>
+                            <button type="button"
+                                    class="text-gray-600 hover:text-gray-900 self-start sm:self-auto"
                                     onclick="copyText('{{ entitie.inn }}')">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2"
-                                     viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                          d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8l6 6v4"/>
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8l6 6v4"/>
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M14 2v6h6"/>
                                 </svg>
                             </button>
                         </div>
-
-                        <!-- Счёт -->
-                        <div class="flex items-center text-sm text-base-content opacity-80">
-                            <span class="mr-2 font-semibold text-gray-600">Счёт:</span>
-                            <span class="italic font-mono text-gray-800"
-                                  id="account-{{ loop.index }}">{{ entitie.bank_account }}</span>
-                            <button type="button" class="ml-2 text-gray-600 hover:text-gray-900"
-                                    onclick="copyText('{{ entitie.bank_account }}')">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2"
-                                     viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                          d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8l6 6v4"/>
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M14 2v6h6"/>
-                                </svg>
-                            </button>
-                        </div>
-
-                        <!-- Компания -->
-                        <div class="flex items-center text-sm text-base-content opacity-80">
-                            <span class="mr-2 font-semibold text-gray-600">Компания:</span>
+                        <!-- КОМПАНИЯ -->
+                        <div class="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 text-sm opacity-80">
+                            <span class="font-semibold text-gray-600">Компания:</span>
                             <span class="italic font-serif text-gray-800">{{ entitie.company_name }}</span>
-                            <button type="button" class="ml-2 text-gray-600 hover:text-gray-900"
+                            <button type="button"
+                                    class="text-gray-600 hover:text-gray-900 self-start sm:self-auto"
                                     onclick="copyText('{{ entitie.company_name }}')">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2"
-                                     viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                          d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8l6 6v4"/>
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8l6 6v4"/>
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M14 2v6h6"/>
                                 </svg>
                             </button>
                         </div>
-
-                        <!-- Дата -->
-                        <div class="flex items-center text-sm text-base-content opacity-80">
-                            <span class="mr-2 font-semibold text-gray-600">Дата транзакции:</span>
-                            <span class="italic font-serif text-gray-800">{{ entitie.transaction_data }}</span>
+                        <!-- ДАТА -->
+                        <div class="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 text-sm opacity-80">
+                            <span class="font-semibold text-gray-600">Дата транзакции:</span>
+                            <span class="italic font-serif text-gray-800">
+                                {{ entitie.transaction_data }}
+                            </span>
                         </div>
 
-                        <!-- От кого / Кому -->
                         {% if entitie.from_whom %}
-                            <div class="flex items-center text-sm text-base-content opacity-80">
-                                <span class="mr-2 font-semibold text-gray-600">От кого компания:</span>
+                            <div class="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 text-sm opacity-80">
+                                <span class="font-semibold text-gray-600">От кого компания:</span>
                                 <span class="italic font-serif text-gray-800">{{ entitie.from_whom }}</span>
-                                <button type="button" class="ml-2 text-gray-600 hover:text-gray-900"
-                                        onclick="copyText('{{ entitie.from_whom }}')">
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2"
-                                         viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round"
-                                              d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8l6 6v4"/>
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M14 2v6h6"/>
-                                    </svg>
-                                </button>
                             </div>
-                        {% elseif entitie.to_whom %}
-                            <div class="flex items-center text-sm text-base-content opacity-80">
-                                <span class="mr-2 font-semibold text-gray-600">Кому компания:</span>
+                        {% endif %}
+
+                        {% if entitie.to_whom %}
+                            <div class="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 text-sm opacity-80">
+                                <span class="font-semibold text-gray-600">Кому компания:</span>
                                 <span class="italic font-serif text-gray-800">{{ entitie.to_whom }}</span>
-                                <button type="button" class="ml-2 text-gray-600 hover:text-gray-900"
-                                        onclick="copyText('{{ entitie.to_whom }}')">
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2"
-                                         viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round"
-                                              d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8l6 6v4"/>
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M14 2v6h6"/>
-                                    </svg>
-                                </button>
                             </div>
                         {% endif %}
 
-                        <!-- hhhhhhh -->
                         {% if entitie.from_whom_bank %}
-                            <div class="flex items-center text-sm text-base-content opacity-80">
-                                <span class="mr-2 font-semibold text-gray-600">От кого банк:</span>
+                            <div class="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 text-sm opacity-80">
+                                <span class="font-semibold text-gray-600">От кого банк:</span>
                                 <span class="italic font-serif text-gray-800">{{ entitie.from_whom_bank }}</span>
-                                <button type="button" class="ml-2 text-gray-600 hover:text-gray-900"
-                                        onclick="copyText('{{ entitie.from_whom_bank }}')">
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2"
-                                         viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round"
-                                              d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8l6 6v4"/>
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M14 2v6h6"/>
-                                    </svg>
-                                </button>
-                            </div>
-                        {% elseif entitie.to_whom_bank %}
-                            <div class="flex items-center text-sm text-base-content opacity-80">
-                                <span class="mr-2 font-semibold text-gray-600">Кому банк:</span>
-                                <span class="italic font-serif text-gray-800">{{ entitie.to_whom_bank }}</span>
-                                <button type="button" class="ml-2 text-gray-600 hover:text-gray-900"
-                                        onclick="copyText('{{ entitie.to_whom_bank }}')">
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2"
-                                         viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round"
-                                              d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8l6 6v4"/>
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M14 2v6h6"/>
-                                    </svg>
-                                </button>
                             </div>
                         {% endif %}
 
-                        <!-- Баланс -->
-                        <div class="flex items-center text-sm text-gray-700 font-semibold bg-gray-100 rounded-lg px-3 py-2 w-fit">
+                        {% if entitie.to_whom_bank %}
+                            <div class="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 text-sm opacity-80">
+                                <span class="font-semibold text-gray-600">Кому банк:</span>
+                                <span class="italic font-serif text-gray-800">{{ entitie.to_whom_bank }}</span>
+                            </div>
+                        {% endif %}
+
+                        <!-- СУММА -->
+                        <div class="flex items-center text-sm font-semibold bg-gray-100 rounded-lg px-3 py-2 w-full sm:w-auto">
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                 stroke-width="1.5" stroke="currentColor" class="size-6 w-5 h-5 mr-2 text-gray-500">
+                                 stroke-width="1.5" stroke="currentColor" class="w-5 h-5 mr-2 text-gray-500">
                                 <path stroke-linecap="round" stroke-linejoin="round"
                                       d="M2.25 18.75a60.07 60.07 0 0 1 15.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 0 1 3 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 0 0-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 0 1-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 0 0 3 15h-.75M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm3 0h.008v.008H18V10.5Zm-12 0h.008v.008H6V10.5Z"/>
                             </svg>
-                            Сумма: <span class="ml-2 font-mono"
-                                         id="balance"
-                                         data-entity-balance="{{ entitie.balance }}">{{ entitie.balance }}</span>
+                            <span class="ml-2 font-mono text-gray-800">
+                                Сумма: <span id="balance" class="ml-2 font-mono"> {{ entitie.balance|number_format(0, ',', ' ') }} ₽</span>
+                            </span>
                         </div>
-
-                        <!-- Описание -->
-                        <div class="mb-4">
-                            <label for="description" class="block text-sm font-medium text-gray-700 mb-1">
+                        <!-- ОПИСАНИЕ -->
+                        <div class="flex flex-col">
+                            <label class="text-sm font-medium text-gray-700 mb-1">
                                 Описание
                             </label>
-                            <textarea id="description" name="description"
-                                      class="textarea textarea-bordered w-full text-sm text-base-content italic"
-                                      rows="4" readonly>{{ entitie.description }}</textarea>
+                            <textarea rows="4"
+                                      readonly
+                                      class="w-full text-sm italic border border-blue-300 rounded-lg p-2">{{ entitie.description }}</textarea>
                         </div>
                     </div>
 
-                    <!-- Категории и комментарий -->
-                    <div class="space-y-4 mt-4">
-                        <!-- Категории расходов -->
-                        <div class="flex items-center justify-between w-full max-w-xl mb-2">
-                            <!-- Блок выбора категории -->
+                    <!-- КАТЕГОРИЯ + КОММЕНТ -->
+                    <div class="flex flex-col w-full mx-auto p-4">
+
+                        <!-- КАТЕГОРИИ -->
+                        <div class="flex flex-col sm:flex-row items-start sm:items-center gap-2 max-w-xl">
                             <div x-data="{ open: false, level: 0, path: [] }" class="relative w-full">
                                 <!-- Кнопка выбора -->
                                 <button @click="open = !open"
@@ -171,49 +117,43 @@
                                     </template>
                                 </button>
 
-                                <!-- Выпадающее меню -->
                                 <div x-show="open"
                                      @click.outside="open = false"
-                                     class="absolute mt-2 w-full z-50 bg-white border border-gray-200 rounded-xl shadow-xl p-4 space-y-3 transition-all duration-300"
-                                     x-transition>
-                                    <!-- Назад -->
-                                    <div x-show="level > 0" class="mb-2">
-                                        <button @click="level--; path.pop()" class="text-sm text-blue-600 hover:underline">← Назад</button>
-                                    </div>
-
+                                     class="absolute mt-2 w-full z-50 bg-white border rounded-xl shadow-xl p-4 max-h-60 overflow-y-auto">
                                     {{ categories_html|raw }}
                                 </div>
                             </div>
 
-                            <!-- Ссылка "Создать категорию" -->
-                            <a href="/categories/pageCategories?return_page=/entities/linkExpenses?legal_id={{ entitie.id }}" class="ml-4 text-sm font-semibold text-blue-600 hover:underline whitespace-nowrap">
+                            <a href="/categories/pageCategories?return_page=/entities/linkExpenses?legal_id={{ entitie.id }}"
+                               class="text-sm font-semibold text-blue-600 hover:underline whitespace-nowrap">
                                 + Создать категорию
                             </a>
                         </div>
 
-                        <!-- Комментарий -->
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Комментарий</label>
+                        <!-- КОММЕНТАРИЙ -->
+                        <div >
+                            <label class="block text-sm font-medium text-gray-700 mb-1 mt-[20px]">Комментарий</label>
                             <textarea id="comments"
-                                      class="textarea textarea-bordered w-full"
-                                      rows="3" maxlength="256"
+                                      class="w-full border border-blue-400 focus:outline-none focus:ring-0 hover:border-blue-400 rounded-md p-2"
+                                      rows="3"
+                                      maxlength="256"
                                       placeholder="Введите комментарий..."></textarea>
                         </div>
                         <!-- Кнопка Сохранить -->
                         <div class="text-right">
-                            <label id="save_expense"
-                                   class="btn btn-primary btn-sm">Сохранить</label>
+                            <label id="save_expense" class="btn btn-primary btn-sm">Сохранить</label>
                         </div>
                     </div>
-                {% endfor %}
-
-            </li>
+                </li>
+            {% endfor %}
         </ul>
     </div>
 
     <input type="checkbox" id="save_expense_modal" class="modal-toggle"/>
     <div class="modal" role="dialog">
-        <div class="modal-box bg-gray-100">
+        <div class="modal-box bg-gray-100
+                w-full max-w-md sm:max-w-lg md:max-w-xl
+                mx-2 sm:mx-auto">
             <h1 class="text-lg font-bold">Подтвердить расход</h1>
 
             <!-- Данные контрагента -->
@@ -275,12 +215,19 @@
                           class="textarea textarea-bordered w-full text-xs text-base-content italic rounded-lg"
                           rows="3" readonly></textarea>
             </div>
-
-
             <!-- Кнопки -->
-            <div class="modal-action mt-4">
-                <button id="confirmExpense" class="btn text-xs">Подтвердить</button>
-                <label id="changePercentage" for="save_expense_modal" class="btn text-xs">Отменить</label>
+            <div class="modal-action mt-4 flex gap-2 justify-end">
+                <!-- Подтвердить -->
+                <button id="confirmExpense"
+                        class="btn bg-blue-500 text-white text-xs px-4 py-2 rounded">
+                    Подтвердить
+                </button>
+
+                <!-- Отменить -->
+                <label id="changePercentage" for="save_expense_modal"
+                       class="btn bg-white text-black border border-gray-300 text-xs px-4 py-2 rounded cursor-pointer">
+                    Отменить
+                </label>
             </div>
         </div>
     </div>
@@ -385,10 +332,7 @@
             } else {
                 openErrorModal('Не удалось сохранить расход!');
             }
-
         });
-
-
     </script>
 
 

@@ -4,7 +4,7 @@
 
     {% include './Breadcrumb/Categories.twig' %}
 
-    <div class="flex justify-center mt-10">
+    <div class="flex justify-center mt-10 mb-[30px]">
         <div class="w-[700px] space-y-4">
             <!-- Категории расходов -->
             <div id="categoryApp" x-data="{ open: true, level: 0, path: [] }" class="relative w-full">
@@ -18,7 +18,6 @@
                         <span id="category" x-text="path.join(' > ')"></span>
                     </template>
                 </div>
-
                 <!-- Выпадающее меню -->
                 <div class="mt-2 w-full z-50 bg-white border border-gray-200 rounded-xl shadow-xl p-4 space-y-3 transition-all duration-300">
 
@@ -45,7 +44,6 @@
             </div>
         </div>
     </div>
-
 
     <!-- Модальное окно добавления категории -->
     <input type="checkbox" id="add_categories" class="modal-toggle"/>
@@ -85,9 +83,10 @@
 
             <!-- Информационное сообщение -->
             <div class="alert alert-info rounded-xl mt-3 text-white">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 shrink-0 stroke-current text-white" fill="none" viewBox="0 0 24 24">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 shrink-0 stroke-current text-white" fill="none"
+                     viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                          d="M13 16h-1v-4h-1m1-4h.01M12 20a8 8 0 100-16 8 8 0 000 16z" />
+                          d="M13 16h-1v-4h-1m1-4h.01M12 20a8 8 0 100-16 8 8 0 000 16z"/>
                 </svg>
                 <span class="text-white">Если к этой категории привязаны расходы, после её удаления будет невозможно найти эти расходы по данной категории.</span>
             </div>
