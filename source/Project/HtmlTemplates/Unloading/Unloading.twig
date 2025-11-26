@@ -1,0 +1,90 @@
+{% block content %}
+
+
+    <input type="checkbox" id="cornerModal" class="hidden peer" />
+    <div class="fixed bottom-4 right-4 bg-white border shadow-lg rounded-lg p-4 w-80 z-50 hidden peer-checked:flex peer-checked:flex-col">
+        <div class="flex items-start justify-between">
+            <div>
+                <h3 class="text-lg font-semibold">Уведомление</h3>
+                <p id="txtModal" class="text-sm text-gray-600">Пользователь успешно добавлен.</p>
+            </div>
+            <label for="cornerModal" class="ml-4 text-gray-400 hover:text-gray-600 cursor-pointer">✕</label>
+        </div>
+    </div>
+
+
+    <script>
+        function getUrlParams() {
+            const params = {};
+            const search = new URLSearchParams(window.location.search);
+            for (const [key, value] of search.entries()) {
+                params[key] = value;
+            }
+            return params;
+        }
+
+        async function downloadTableUniversal() {
+            const btn = document.getElementById('receipt-button');
+            const loader = document.getElementById('loader');
+            const textSpan = btn.querySelector('.button-text');
+
+            // Делаем кнопку не кликабельной и включаем лоадер
+            btn.disabled = true;
+            btn.classList.add('bg-blue-500', 'opacity-80');
+            loader.classList.remove('opacity-0');
+            loader.classList.add('opacity-100', 'pointer-events-auto');
+            textSpan.classList.add('opacity-0');
+
+            // Получаем параметры из URL
+            const params = Object.fromEntries(new URLSearchParams(window.location.search));
+
+            // Автоматически определяем метод контроллера из URL
+            // Берём последний сегмент после последнего "/"
+            let pathname = window.location.pathname;
+            let pathParts = pathname.split('/');
+            let methodName = pathParts.pop() || pathParts.pop(); // на случай, если путь заканчивается на "/"
+
+            // Отправляем запрос на контроллер /unloading/{methodName}
+            const result = await postData(`/unloading/${methodName}`, params);
+
+            // Восстанавливаем кнопку в исходное состояние
+            btn.disabled = false;
+            btn.classList.remove('bg-blue-500', 'opacity-80');
+            loader.classList.remove('opacity-100', 'pointer-events-auto');
+            loader.classList.add('opacity-0');
+            textSpan.classList.remove('opacity-0');
+
+            if (!result || result.error || result.status === 'error') {
+                showCornerModal('Не удалось образовать файл!');
+                return;
+            }
+
+            if (result.file) {
+                const originalName = result.file.split('/').pop();
+
+                        btn.innerHTML = `
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+                         stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                              d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5m0 0l5-5m-5 5V4"/>
+                    </svg>
+                    Скачать таблицу
+                `;
+
+                btn.onclick = function () {
+                    const link = document.createElement('a');
+                    link.href = '/unloading/downloadFile?file=' + encodeURIComponent(result.file);
+                    link.download = originalName;
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                };
+            } else {
+                showCornerModal('Не найден файл для скачивания!');
+            }
+        }
+
+    </script>
+
+
+{% endblock %}

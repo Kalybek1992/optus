@@ -672,7 +672,6 @@ class EntitiesController extends BaseController
 
 
         CompanyFinancesLM::insertTransactionsExpenses($insert_company_finances);
-
         return ApiViewer::getOkBody(['success' => 'ok']);
     }
 

@@ -65,7 +65,6 @@ final class ApiKeySupplierMiddleware extends Middleware
 
         InformationDC::set('suplier', $user_arr);
 
-
         return $next();
     }
 }

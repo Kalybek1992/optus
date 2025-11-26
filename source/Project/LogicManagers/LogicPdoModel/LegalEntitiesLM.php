@@ -790,7 +790,7 @@ class LegalEntitiesLM
                 'percent' => $transaction->transaction_percent,
                 'interest_income' => $transaction->transaction_interest_income,
                 'total_amount' => $transaction->transaction_amount - $transaction->transaction_interest_income,
-                'debit_amount' => $transaction->debit_amount,
+                'debit_amount' => $transaction->debit_status == 'active' ? $transaction->debit_amount : 0,
                 'transaction_amount' => $transaction->transaction_amount,
                 'sender_bank_name' => $transaction->sender_bank_name,
                 'sender_company_name' => $transaction->sender_company_name,
@@ -883,7 +883,9 @@ class LegalEntitiesLM
             ->select([
                 'SUM(t.amount) as sum_amount',
                 'SUM(t.interest_income) as sum_interest_income',
-            ]);
+                'SUM(d.amount) as debt_amount',
+            ])
+            ->from('legal_entities le');
 
         if ($date_from) {
             $date_from = DateTime::createFromFormat('d.m.Y', $date_from);
@@ -895,11 +897,12 @@ class LegalEntitiesLM
             $date_to = $date_to->format('Y-m-d');
         }
 
+
         if ($date_from && !$date_to) {
             $builder
                 ->innerJoin('transactions t')
                 ->on([
-                    "t.from_account_id = id",
+                    "t.from_account_id = le.id",
                     "t.date >='" . $date_from . "'",
                 ]);
         }
@@ -908,7 +911,7 @@ class LegalEntitiesLM
             $builder
                 ->innerJoin('transactions t')
                 ->on([
-                    "t.from_account_id = id",
+                    "t.from_account_id = le.id",
                 ]);
         }
 
@@ -916,38 +919,45 @@ class LegalEntitiesLM
             $builder
                 ->innerJoin('transactions t')
                 ->on([
-                    "t.from_account_id = id",
+                    "t.from_account_id = le.id",
                     "t.date BETWEEN '" . $date_from . "'" . "AND '" . $date_to . "'",
                 ]);
         }
+
+        $builder
+            ->leftJoin('debts d')
+            ->on([
+                "d.transaction_id = t.id",
+                "d.status = 'active'",
+            ]);
 
 
         if ($supplier_client_id) {
             $builder
                 ->where([
-                    'supplier_client_id =' . $supplier_client_id
+                    'le.supplier_client_id =' . $supplier_client_id
                 ]);
         } else {
             $builder
                 ->where([
-                    'client_id =' . $client_id
+                    'le.client_id =' . $client_id
                 ]);
         }
 
         $builder
-            ->groupBy('client_id');
+            ->groupBy('le.client_id');
 
         $transactions = PdoConnector::execute($builder)[0] ?? [];
 
         $sum_amount = $transactions->sum_amount ?? 0;
         $sum_interest_income = $transactions->sum_interest_income ?? 0;
+        $debt_amounts = $transactions->debt_amount ?? 0;
 
         $transactions_sum = [
             'sum_amount' => $sum_amount,
             'sum_interest_income' => $sum_interest_income,
-            'debts_amount' => $sum_amount - $sum_interest_income,
+            'debts_amount' => $debt_amounts,
         ];
-
 
         //Logger::log(print_r($builder->build(), true), 'clientReceiptsDate');
 

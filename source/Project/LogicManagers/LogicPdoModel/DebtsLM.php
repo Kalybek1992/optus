@@ -595,12 +595,12 @@ class DebtsLM
             ])
             ->groupBy('ms_client.id_mutual_settlement');
 
-        Logger::log(print_r($builder->build(), true), 'getDebtsClientServicesGroupDat');
+        //Logger::log(print_r($builder->build(), true), 'getDebtsClientServicesGroupDat');
 
         $client_services = PdoConnector::execute($builder) ?? [];
 
 
-        Logger::log(print_r($client_services, true), 'getDebtsClientServicesGroupDat');
+        //Logger::log(print_r($client_services, true), 'getDebtsClientServicesGroupDat');
 
         return $client_services;
     }
@@ -643,12 +643,12 @@ class DebtsLM
             // 💰 Если денег хватает, чтобы закрыть весь долг
             if ($amount >= $debt_amount) {
                 self::updateDebtsId([
-                    'status = "paid"',
+                    'status = paid',
                     'writing_transaction_id = ' . $transaction_id,
                 ], $debt->id);
 
                 // уменьшаем сумму на величину долга
-                $amount -= $debt_amount;
+                $amount = $amount - $debt_amount;
 
                 //Получаемой id ишки для остатка
                 $from_account_id = $debt->to_account_id;
@@ -720,7 +720,7 @@ class DebtsLM
             // 💰 Если денег хватает, чтобы закрыть весь долг
             if ($amount >= $debt_amount) {
                 self::updateDebtsId([
-                    'status = "paid"',
+                    'status = paid',
                     'writing_transaction_id = ' . $transaction_id,
                 ], $debt->id);
 
@@ -797,7 +797,7 @@ class DebtsLM
             // 💰 Если денег хватает, чтобы закрыть весь долг
             if ($amount >= $debt_amount) {
                 self::updateDebtsId([
-                    'status = "paid"',
+                    'status = paid',
                     'writing_transaction_id = ' . $transaction_id,
                 ], $debt->id);
 

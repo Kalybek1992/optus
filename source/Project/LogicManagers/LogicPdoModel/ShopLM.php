@@ -139,11 +139,9 @@ class ShopLM
         }
 
 
-        Logger::log(print_r($shops_array, true), 'clients_array');
 
         return $shops_array;
     }
-
 
     public static function getShopId(int $id): ?array
     {
@@ -181,6 +179,7 @@ class ShopLM
             'legal_id' => $shop->legal_id,
         ];
     }
+
     public static function ShopIdDelete(int $shop_id)
     {
         $builder = Shop::newQueryBuilder()

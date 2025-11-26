@@ -231,6 +231,42 @@
         </div>
     </dialog>
 
+    <dialog id="error_email_no" class="modal modal-bottom sm:modal-middle">
+        <div class="modal-box bg-gray-100 border border-gray-300">
+            <h3 class="text-lg font-bold text-center text-gray-700">Ошибка!</h3>
+            <p class="py-4 text-center text-gray-700">Укажите почту!</p>
+            <div class="modal-action">
+                <form method="dialog" class="w-full">
+                    <button class="btn w-full">Закрыть</button>
+                </form>
+            </div>
+        </div>
+    </dialog>
+
+    <dialog id="error_password_no" class="modal modal-bottom sm:modal-middle">
+        <div class="modal-box bg-gray-100 border border-gray-300">
+            <h3 class="text-lg font-bold text-center text-gray-700">Ошибка!</h3>
+            <p class="py-4 text-center text-gray-700">Укажите пароль!</p>
+            <div class="modal-action">
+                <form method="dialog" class="w-full">
+                    <button class="btn w-full">Закрыть</button>
+                </form>
+            </div>
+        </div>
+    </dialog>
+
+    <dialog id="error_name_no" class="modal modal-bottom sm:modal-middle">
+        <div class="modal-box bg-gray-100 border border-gray-300">
+            <h3 class="text-lg font-bold text-center text-gray-700">Ошибка!</h3>
+            <p class="py-4 text-center text-gray-700">Укажите имя!</p>
+            <div class="modal-action">
+                <form method="dialog" class="w-full">
+                    <button class="btn w-full">Закрыть</button>
+                </form>
+            </div>
+        </div>
+    </dialog>
+
     <script>
 
         // при закрытии модалки успеха — перезагрузим страницу
@@ -358,6 +394,12 @@
 
                 let result = 'error';
 
+                if (!name){
+                    const modalEmail = document.getElementById('error_name_no');
+                    if (modalEmail && typeof modalEmail.showModal === 'function') modalEmail.showModal();
+                    return;
+                }
+
                 if (role === 'client') {
                     // клиент — только имя, роль и проценты
                     result = await postData('/user/addUserRole', {
@@ -369,13 +411,22 @@
                     // клиент услуги — имя, почта, пароль, поставщик
                     result = await postData('/user/addUserRole', {
                         name: name,
-                        email: email,
                         role: role,
-                        password: password,
                         supplier_id: selectedValue,
                     });
                 } else if (role === 'supplier' || role === 'courier' || role === 'shop') {
-                    // поставщик, курьер и магазин — имя, почта, пароль
+                    if (!email){
+                        const modalEmail = document.getElementById('error_email_no');
+                        if (modalEmail && typeof modalEmail.showModal === 'function') modalEmail.showModal();
+                        return;
+                    }
+
+                    if (!password){
+                        const modalEmail = document.getElementById('error_password_no');
+                        if (modalEmail && typeof modalEmail.showModal === 'function') modalEmail.showModal();
+                        return;
+                    }
+
                     result = await postData('/user/addUserRole', {
                         name: name,
                         email: email,

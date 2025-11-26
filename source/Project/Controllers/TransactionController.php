@@ -291,6 +291,7 @@ class TransactionController extends BaseController
         $page_count = ceil($transactions_count / $limit);
 
         //Logger::log(print_r($transactions_sum, true), 'clientReceiptsDate');
+        //Logger::log(print_r($transactions, true), 'clientReceiptsDate');
 
         return $this->twig->render('Transaction/ClientReceiptsDate.twig', [
             'page' => $page + 1,
@@ -972,6 +973,5 @@ class TransactionController extends BaseController
         LegalEntitiesLM::deleteLegalEntitiesId($legal_id);
         return ApiViewer::getOkBody(['success' => 'ok']);
     }
-
 
 }
