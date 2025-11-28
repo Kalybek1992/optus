@@ -45,7 +45,7 @@
             let methodName = pathParts.pop() || pathParts.pop(); // на случай, если путь заканчивается на "/"
 
             // Отправляем запрос на контроллер /unloading/{methodName}
-            const result = await postData(`/unloading/${methodName}`, params);
+            const result = await postDataNoLoud(`/unloading/${methodName}`, params);
 
             // Восстанавливаем кнопку в исходное состояние
             btn.disabled = false;
@@ -64,6 +64,7 @@
                 return;
             }
 
+            console.log(result);
             if (result.file) {
                 const originalName = result.file.split('/').pop();
 

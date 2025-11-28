@@ -325,7 +325,7 @@ class UsersLM
         $builder = Users::newQueryBuilder()
             ->delete()
             ->where([
-                'id =' . "'" . $user_id . "'",
+                'id =' . $user_id,
             ])
             ->limit(1);
 

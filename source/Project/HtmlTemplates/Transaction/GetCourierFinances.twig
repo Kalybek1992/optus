@@ -130,8 +130,8 @@
                         <th class="px-3 py-2 w-28">Дата</th>
                         <th class="px-3 py-2">День</th>
                         <th class="px-3 py-2 min-w-200">Сумма</th>
-                        <th class="px-3 py-2">Проект</th>
                         <th class="px-3 py-2">Категории</th>
+                        <th class="px-3 py-2">От поставщика</th>
                         <th class="px-3 py-2">Комментарии</th>
                         <th class="px-3 py-2">Возврат</th>
                         <th class="px-3 py-2">Статус</th>
@@ -144,7 +144,7 @@
                             <td class="px-3 py-2">{{ finances.dey }}</td>
                             <td class="px-3 py-2 min-w-200">{{ finances.amount|number_format(0, ',', ' ') }}</td>
                             <td class="px-3 py-2">{{ finances.category }}</td>
-                            <td class="px-3 py-2">{{ finances.category }}</td>
+                            <td class="px-3 py-2">{{ finances.supplier_name }}</td>
                             <td class="px-3 py-2">{{ finances.comments }}</td>
                             <td class="px-3 py-2 text-center">
                                 {% if finances.return_account == 1 %}
@@ -179,8 +179,8 @@
                         <th class="px-3 py-2 w-28">Дата</th>
                         <th class="px-3 py-2">День</th>
                         <th class="px-3 py-2 min-w-200">Сумма</th>
-                        <th class="px-3 py-2">Проект</th>
                         <th class="px-3 py-2">Категории</th>
+                        <th class="px-3 py-2">От поставщика</th>
                         <th class="px-3 py-2">Комментарии</th>
                         <th class="px-3 py-2">Возврат</th>
                         <th class="px-3 py-2">Статус</th>
@@ -193,14 +193,12 @@
         <div class="lg:hidden space-y-4 mt-4">
             {% for finances in get_courier_finances %}
                 <div class="border border-gray-200 rounded-lg p-3 shadow-sm bg-white text-[13px] space-y-2">
-
                     <div><div class="text-gray-500 text-xs">Дата:</div><div class="font-medium">{{ finances.date }}</div></div>
                     <div><div class="text-gray-500 text-xs">День:</div><div class="font-medium">{{ finances.dey }}</div></div>
                     <div><div class="text-gray-500 text-xs">Сумма:</div><div class="font-semibold">{{ finances.amount }}</div></div>
-                    <div><div class="text-gray-500 text-xs">Проект:</div><div class="text-[11px] break-all">{{ finances.category }}</div></div>
                     <div><div class="text-gray-500 text-xs">Категории:</div><div class="text-[11px] break-all">{{ finances.category }}</div></div>
+                    <div><div class="text-gray-500 text-xs">От поставщика:</div><div class="text-[11px] break-all">{{ finances.supplier_name }}</div></div>
                     <div><div class="text-gray-500 text-xs">Комментарии:</div><div class="text-[11px] break-all">{{ finances.comments }}</div></div>
-
                     <div>
                         <div class="text-gray-500 text-xs">Возврат:</div>
                         {% if finances.return_account == 1 %}
@@ -231,7 +229,6 @@
                             {% endif %}
                         </div>
                     </div>
-
                 </div>
             {% endfor %}
         </div>

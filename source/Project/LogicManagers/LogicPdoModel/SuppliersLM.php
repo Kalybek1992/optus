@@ -320,7 +320,6 @@ class SuppliersLM
                 '*',
                 'u.name as username',
                 'SUM(d.amount) as debit_amount',
-                'SUM(d_client.amount) as debit_client_amount',
                 'GROUP_CONCAT(le.id SEPARATOR ' . '", "' . ') as legal_id',
             ])
             ->leftJoin('users u')
@@ -344,19 +343,19 @@ class SuppliersLM
             ->groupBy('suppliers.id')
             ->limit(1);
 
-        $client = PdoConnector::execute($builder)[0] ?? [];
+        $supplier = PdoConnector::execute($builder)[0] ?? [];
 
-        if (!$client) {
+        if (!$supplier) {
             return null;
         }
 
         return [
-            'id' => $client->id,
-            'username' => $client->username,
-            'percentage' => $client->percentage,
-            'debit_amount' => $client->debit_amount ?? 0,
-            'legal_id' => $client->legal_id,
-            'stock_balance' => $client->stock_balance ?? 0,
+            'id' => $supplier->id,
+            'username' => $supplier->username,
+            'percentage' => $supplier->percentage,
+            'debit_amount' => $supplier->debit_amount ?? 0,
+            'legal_id' => $supplier->legal_id,
+            'stock_balance' => $supplier->stock_balance ?? 0,
         ];
     }
 

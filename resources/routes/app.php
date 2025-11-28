@@ -1506,7 +1506,7 @@ return [
             'validation' => [
                 'delivery_type' => [
                     'required' => true,
-                    'custom_logic' => fn($a) => $a == 'expense' || $a == 'debt' || $a == 'client'
+                    'custom_logic' => fn($a) => $a == 'expense' || $a == 'debt' || $a == 'client' || $a == 'courier'
                 ],
                 'selected_id' => [
                     'required' => false,

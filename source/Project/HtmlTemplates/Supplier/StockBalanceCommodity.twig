@@ -40,24 +40,39 @@
 
                 <!-- Выбор передачи -->
                 <div class="space-y-4" x-data="{
-                selected: null,
-                openClientList: false,
-                selectedClient: null,
-                selectedExpense: null,
-                expensePath: [],
-                select(type) {
-                        this.selected = type;
-                        this.openClientList = false;
-                        if(type === 'client') this.selectedExpense = null;
-                        if(type === 'expense') this.selectedClient = null;
-                    }
-                }">
+                            selected: null,
+                            openClientList: false,
+                            selectedClient: null,
+                            selectedCourier: null,
+                            selectedExpense: null,
+                            expensePath: [],
+                            select(type) {
+                                this.selected = type;
+                                this.openClientList = false;
+                                if(type === 'client') {
+                                    this.selectedExpense = null;
+                                    this.selectedCourier = null;
+                                }
+                                if(type === 'expense') {
+                                    this.selectedClient = null;
+                                    this.selectedCourier = null;
+                                }
+                                if(type === 'courier') {
+                                    this.selectedClient = null;
+                                    this.selectedExpense = null;
+                                }
+                                if(type === 'debt') {
+                                    this.selectedClient = null;
+                                    this.selectedExpense = null;
+                                    this.selectedCourier = null;
+                                }
+                            }
+                        }">
 
                     <!-- Клиент -->
                     <div class="flex items-center gap-2">
                         <input type="radio" id="radio_client" name="delivery_type" value="client"
                                class="hidden peer/client" x-model="selected" @change="select('client')">
-
                         <label for="radio_client"
                                class="w-48 h-12 flex items-center justify-center border rounded-xl cursor-pointer
                                   bg-white text-green-700
@@ -107,23 +122,20 @@
                                 </div>
                             {% endif %}
                         </div>
-
                     </div>
 
                     <!-- Расход -->
                     <div class="flex items-center gap-2">
                         <input type="radio" id="radio_expense" name="delivery_type" value="expense"
                                class="hidden peer/expense" x-model="selected" @change="select('expense')">
-
                         <label for="radio_expense"
                                class="w-48 h-12 flex items-center justify-center border rounded-xl cursor-pointer
-                                  bg-white text-green-700
-                                  peer-checked/expense:bg-emerald-600 peer-checked/expense:text-white
-                                  hover:peer-checked/expense:bg-emerald-700 transition">
+                      bg-white text-green-700
+                      peer-checked/expense:bg-emerald-600 peer-checked/expense:text-white
+                      hover:peer-checked/expense:bg-emerald-700 transition">
                             Определить как расход
                         </label>
 
-                        <!-- Категории расходов -->
                         <div class="relative" x-show="selected === 'expense'" x-transition>
                             <div class="flex items-center justify-between w-full max-w-xl">
                                 <div x-data="{ open: false, level: 0, path: [] }" class="relative w-full">
@@ -158,7 +170,7 @@
                         </div>
                     </div>
 
-                    <!-- Закрыть долг -->
+                    <!-- Закрыть долг компании -->
                     <div class="flex items-center gap-2">
                         <input type="radio" id="radio_debt" name="delivery_type" value="debt"
                                class="hidden peer/debt" x-model="selected" @change="select('debt')">
@@ -169,6 +181,56 @@
                                   hover:peer-checked/debt:bg-emerald-700 transition">
                             Закрыть долг компании
                         </label>
+                    </div>
+
+                    <!-- Курьер -->
+                    <div class="flex items-center gap-2">
+                        <input type="radio" id="radio_courier" name="delivery_type" value="courier"
+                               class="hidden peer/courier" x-model="selected" @change="select('courier')">
+                        <label for="radio_courier"
+                               class="w-48 h-12 flex items-center justify-center border rounded-xl cursor-pointer
+                                  bg-white text-green-700
+                                  peer-checked/courier:bg-emerald-600 peer-checked/courier:text-white
+                                  hover:peer-checked/courier:bg-emerald-700 transition">
+                            Передать курьеру
+                        </label>
+
+                        <div class="relative" x-show="selected === 'courier'" x-transition>
+                            {% if couriers is empty %}
+                                <a href="javascript:void(0)"
+                                   class="w-80 h-12 flex items-center justify-center border rounded-xl px-4 bg-white text-green-700 border-green-500 cursor-not-allowed">
+                                    Курьеры отсутствуют
+                                </a>
+                            {% else %}
+                                <button @click="openClientList = !openClientList"
+                                        class="w-80 h-12 flex items-center justify-between border rounded-xl px-4 bg-white text-green-700 border-green-500 hover:bg-green-50 transition">
+                                    <template x-if="!selectedCourier">
+                                        <span>Выберите курьера</span>
+                                    </template>
+                                    <template x-if="selectedCourier">
+                                        <span x-text="selectedCourier.name"></span>
+                                    </template>
+                                    <svg class="w-4 h-4 ml-2 text-green-600" fill="none" stroke="currentColor"
+                                         stroke-width="2" viewBox="0 0 24 24">
+                                        <path d="M19 9l-7 7-7-7"/>
+                                    </svg>
+                                </button>
+
+                                <input type="hidden" name="courier_id" :value="selectedCourier?.id">
+                                <input type="hidden" name="courier_name" :value="selectedCourier?.name">
+
+                                <div x-show="openClientList"
+                                     @click.outside="openClientList = false"
+                                     class="absolute mt-2 w-80 z-50 bg-white border border-green-200 rounded-xl shadow-sm p-2 space-y-1 transition-all duration-300">
+                                    {% for courier in couriers %}
+                                        <div @click="selectedCourier = { id: {{ courier.id }}, name: '{{ courier.name }}' }; openClientList = false"
+                                             class="cursor-pointer px-4 py-2 rounded-md hover:bg-green-50 transition text-sm flex flex-col">
+                                            <span class="font-medium text-green-700">{{ courier.name }}</span>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
                     </div>
 
                     <!-- Комментарий -->
@@ -188,6 +250,7 @@
                         </button>
                     </div>
                 </div>
+
             </li>
         </ul>
     </div>
@@ -292,7 +355,7 @@
         const modalPurpose = document.getElementById('modal-purpose');
         const modalAppointment = document.getElementById('modal-appointment');
         const modalRemainder = document.getElementById('modal-remainder');
-        let postData = null;
+        let post = null;
 
         document.getElementById('save_expense').addEventListener('click', () => {
             const selectedRadio = document.querySelector('input[name="delivery_type"]:checked');
@@ -368,7 +431,7 @@
                 debt: 'Закрытие долга компании',
             };
 
-            postData = {
+            post = {
                 delivery_type: deliveryType,
                 selected_id: selectedId,
                 category_path: categoryPath,
@@ -376,7 +439,7 @@
                 comments: commentValue,
             }
 
-            if (deliveryType === 'debt'){
+            if (deliveryType === 'debt') {
                 userName = 'Долг компании'
             }
 
@@ -390,14 +453,13 @@
 
         document.getElementById('confirmExpense').addEventListener('click', async () => {
 
-            if (!postData) {
+            if (!post) {
                 openErrorModal('Ошибка сбора данных!');
                 return;
             }
 
-            console.log(postData);
+            const result = await postDataRes('/supplier/definitionCommodityMoney', post);
 
-            const result = await postDataRes('/supplier/definitionCommodityMoney', postData);
 
             document.getElementById('save_expense_modal').checked = false;
 
@@ -409,7 +471,7 @@
             if (result.success) {
                 document.getElementById('success_modal').showModal();
             } else {
-                openErrorModal('Не удалось сохранить доход!');
+                openErrorModal('Не удалось обработать запрос!');
             }
         });
 

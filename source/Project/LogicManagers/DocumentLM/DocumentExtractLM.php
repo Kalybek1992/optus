@@ -122,12 +122,12 @@ class DocumentExtractLM
         $this->checkingUploadedDocuments();
 
         //Logger::log(print_r($result, true), 'map_payment_order');
-
     }
 
     private function checkingUploadedDocuments(): void
     {
         $this->getSelectInOrder();
+
 
         $loaded_transactions = UploadedDocumentsLM::getBankAccounts(
             $this->document_all_inn,

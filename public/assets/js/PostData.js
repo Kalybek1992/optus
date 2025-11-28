@@ -122,3 +122,30 @@ const postDataFile = async (formData) => {
         hideLoader();
     }
 };
+
+const postDataNoLoud = async (url, data) => {
+    try {
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(data)
+        });
+
+        const text = await response.text();
+
+        // Пробуем распарсить JSON
+        try {
+            const json = JSON.parse(text);
+            return json; // валидный JSON — возвращаем
+        } catch (jsonError) {
+            // Если это не JSON → значит ошибка PHP или HTML
+            console.log('Server returned non-JSON response:', text);
+            return 'error'; // Можно вернуть текст, если нужно
+        }
+
+    } catch (error) {
+        console.log('Network error:', error);
+        return 'error';
+
+    }
+};

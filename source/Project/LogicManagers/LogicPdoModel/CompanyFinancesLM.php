@@ -387,6 +387,15 @@ class CompanyFinancesLM
                 'bo.recipient_company_name as company_name',
                 'bo.recipient_bank_name as bank_name',
                 'bo.return_account as return_account',
+                'u_supplier.name as supplier_name',
+            ])
+            ->leftJoin('suppliers s')
+            ->on([
+                's.id = supplier_id',
+            ])
+            ->leftJoin('users u_supplier')
+            ->on([
+                'u_supplier.id = s.user_id',
             ])
             ->leftJoin('bank_order bo')
             ->on([
@@ -472,6 +481,7 @@ class CompanyFinancesLM
                 'date' => date('d.m.Y', strtotime($expense->date)),
                 'dey' => $translated_date,
                 'description' => $expense->description,
+                'supplier_name' => $expense->supplier_name ?? '',
                 'status' => $expense->status,
                 'bank_order_id' => $expense->bank_order_id,
                 'company_name' => $expense->company_name,
@@ -512,10 +522,19 @@ class CompanyFinancesLM
                 't.amount as amount',
                 't.date as bo_date',
                 'сс.card_number as card_number',
+                'u_supplier.name as supplier_name',
             ])
             ->leftJoin('transactions t')
             ->on([
                 't.id = transaction_id',
+            ])
+            ->leftJoin('suppliers s')
+            ->on([
+                's.id = supplier_id',
+            ])
+            ->leftJoin('users u_supplier')
+            ->on([
+                'u_supplier.id = s.user_id',
             ])
             ->leftJoin('credit_cards сс')
             ->on([
@@ -539,6 +558,7 @@ class CompanyFinancesLM
                 'status' => $r->status,
                 'amount' => $r->amount,
                 'card_number' => $r->card_number,
+                'supplier_name' => $r->supplier_name ?? '',
                 'date' => $r->bo_date ? date('d.m.Y', strtotime($r->bo_date)) : '',
             ];
         }

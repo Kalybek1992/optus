@@ -152,7 +152,6 @@ class CouriersLM
         ];
 
         //Logger::log(print_r($couriers_array, true), 'clients_array');
-
         return $couriers_array;
     }
 

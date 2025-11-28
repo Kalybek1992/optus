@@ -310,8 +310,8 @@ class XlsxLM extends LogicManager
             'Дата',
             'День',
             'Сумма',
-            'Проект',
             'Категории',
+            'От поставщика',
             'Комментарии',
             'Статус',
         ];
@@ -330,7 +330,7 @@ class XlsxLM extends LogicManager
             $sheet->setCellValue('B' . $row, $f['dey'] ?? '');
             $sheet->setCellValue('C' . $row, $f['amount'] ?? 0);
             $sheet->setCellValue('D' . $row, $f['category'] ?? '');
-            $sheet->setCellValue('E' . $row, $f['category'] ?? '');
+            $sheet->setCellValue('E' . $row, $f['supplier_name'] ?? '');
             $sheet->setCellValue('F' . $row, $f['comments'] ?? '');
 
             // Статус в читаемом виде

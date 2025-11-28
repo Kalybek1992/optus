@@ -26,7 +26,10 @@ class ClientsLM
     public static function getClientsCount()
     {
         $builder = Clients::newQueryBuilder()
-            ->select(['COUNT(clients.id) as count']);
+            ->select(['COUNT(clients.id) as count'])
+            ->where([
+                "supplier_id IS NULL",
+            ]);
 
         return PdoConnector::execute($builder)[0] ?? [];
     }

@@ -8,6 +8,7 @@ use Source\Project\LogicManagers\HtmlLM\HtmlLM;
 use Source\Project\LogicManagers\LogicPdoModel\BankAccountsLM;
 use Source\Project\LogicManagers\LogicPdoModel\ClientsLM;
 use Source\Project\LogicManagers\LogicPdoModel\CompanyFinancesLM;
+use Source\Project\LogicManagers\LogicPdoModel\CouriersLM;
 use Source\Project\LogicManagers\LogicPdoModel\DebtsLM;
 use Source\Project\LogicManagers\LogicPdoModel\EndOfDaySettlementLM;
 use Source\Project\LogicManagers\LogicPdoModel\ExpenseCategoriesLM;
@@ -553,6 +554,7 @@ class SupplierController extends BaseController
 
         $clients = ClientsLM::getClientsAll($supplier_id);
         $get_categories = ExpenseCategoriesLM::getExpenseCategories($supplier_id);
+        $couriers = CouriersLM::getCouriersAll();
 
 
         if ($get_categories) {
@@ -566,6 +568,7 @@ class SupplierController extends BaseController
             'clients' => $clients,
             'categories_html' => $categories_html,
             'stock_balances' => $stock_balance,
+            'couriers' => $couriers,
         ]);
     }
 
@@ -695,6 +698,42 @@ class SupplierController extends BaseController
             );
         }
 
+        if ($delivery_type == 'courier') {
+            $supplier = SuppliersLM::getSupplierIdLegal($supplier_id);
+            $courier = CouriersLM::getCourierCourierId($selected_id);
+
+            if (!$supplier || !$supplier['legal_id']) {
+                return ApiViewer::getErrorBody(['value' => 'bad_supplier']);
+            }
+
+            if (!$courier) {
+                return ApiViewer::getErrorBody(['value' => 'not_courier']);
+            }
+
+            TransactionsLM::insertNewTransactions([
+                'id' => $translation_max_id + 1,
+                'type' => 'internal_transfer',
+                'amount' => $amount,
+                'date' => date('Y-m-d H:i:s'),
+                'description' => 'Закрытие долга компании поставщиком передав курьеру.' . $courier['name'],
+                'status' => 'processed'
+            ]);
+
+            CompanyFinancesLM::insertTransactionsExpenses([
+                'transaction_id' => $translation_max_id + 1,
+                'supplier_id' => $supplier_id,
+                'courier_id' => $courier['id'],
+                'comments' => $comments,
+                'type' => 'debt_repayment_сompanies_supplier',
+                'status' => 'confirm_courier'
+            ]);
+
+            DebtsLM::payOffCompaniesDebt(
+                $supplier['legal_id'],
+                $amount,
+                $translation_max_id + 1
+            );
+        }
 
         SuppliersLM::updateSuppliers([
             'stock_balance =' . $stock_balance - $amount,
@@ -1081,5 +1120,4 @@ class SupplierController extends BaseController
 
         return ApiViewer::getOkBody(['success' => 'ok']);
     }
-    
 }
