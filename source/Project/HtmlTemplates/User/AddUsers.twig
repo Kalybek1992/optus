@@ -148,31 +148,6 @@
         </form>
     </div>
 
-
-    <dialog id="error_email" class="modal modal-bottom sm:modal-middle">
-        <div class="modal-box bg-gray-100 border border-gray-300">
-            <h3 class="text-lg font-bold text-center text-gray-700">Ошибка!</h3>
-            <p class="py-4 text-center text-gray-700">Такая почта уже зарегистрирована.</p>
-            <div class="modal-action">
-                <form method="dialog" class="w-full">
-                    <button class="btn w-full">Закрыть</button>
-                </form>
-            </div>
-        </div>
-    </dialog>
-
-    <dialog id="error" class="modal modal-bottom sm:modal-middle">
-        <div class="modal-box bg-gray-100 border border-gray-300">
-            <h3 class="text-lg font-bold text-center text-gray-700">Ошибка!</h3>
-            <p class="py-4 text-center text-gray-700">Что-то пошло не так, повторите еще раз.</p>
-            <div class="modal-action">
-                <form method="dialog" class="w-full">
-                    <button class="btn w-full">Закрыть</button>
-                </form>
-            </div>
-        </div>
-    </dialog>
-
     <dialog id="success" class="modal modal-bottom sm:modal-middle">
         <div class="modal-box">
             <h3 class="text-lg font-bold text-center">Успех!</h3>
@@ -231,43 +206,25 @@
         </div>
     </dialog>
 
-    <dialog id="error_email_no" class="modal modal-bottom sm:modal-middle">
-        <div class="modal-box bg-gray-100 border border-gray-300">
-            <h3 class="text-lg font-bold text-center text-gray-700">Ошибка!</h3>
-            <p class="py-4 text-center text-gray-700">Укажите почту!</p>
+    <!-- Error Modal -->
+    <dialog id="errorModal" class="modal">
+        <div class="modal-box max-w-sm sm:max-w-md p-4 sm:p-6 text-sm sm:text-base">
+            <h3 class="text-base sm:text-lg font-bold">Ошибка!</h3>
+            <p id="errorText" class="py-2 sm:py-4 text-xs sm:text-sm"></p>
             <div class="modal-action">
-                <form method="dialog" class="w-full">
-                    <button class="btn w-full">Закрыть</button>
-                </form>
-            </div>
-        </div>
-    </dialog>
-
-    <dialog id="error_password_no" class="modal modal-bottom sm:modal-middle">
-        <div class="modal-box bg-gray-100 border border-gray-300">
-            <h3 class="text-lg font-bold text-center text-gray-700">Ошибка!</h3>
-            <p class="py-4 text-center text-gray-700">Укажите пароль!</p>
-            <div class="modal-action">
-                <form method="dialog" class="w-full">
-                    <button class="btn w-full">Закрыть</button>
-                </form>
-            </div>
-        </div>
-    </dialog>
-
-    <dialog id="error_name_no" class="modal modal-bottom sm:modal-middle">
-        <div class="modal-box bg-gray-100 border border-gray-300">
-            <h3 class="text-lg font-bold text-center text-gray-700">Ошибка!</h3>
-            <p class="py-4 text-center text-gray-700">Укажите имя!</p>
-            <div class="modal-action">
-                <form method="dialog" class="w-full">
-                    <button class="btn w-full">Закрыть</button>
+                <form method="dialog">
+                    <button class="btn px-4 py-1 sm:px-6 sm:py-2 text-xs sm:text-sm">Закрыть</button>
                 </form>
             </div>
         </div>
     </dialog>
 
     <script>
+
+        const openErrorModal = (message) => {
+            document.getElementById('errorText').textContent = message;
+            document.getElementById('errorModal').showModal();
+        };
 
         // при закрытии модалки успеха — перезагрузим страницу
         const successModalBtn = document.getElementById('success-modal-btn');
@@ -326,6 +283,7 @@
 
         // логика показа/скрытия полей при смене роли
         const roleSelectGlobal = document.getElementById('role');
+
         if (roleSelectGlobal) {
             roleSelectGlobal.addEventListener('change', function () {
                 const percent = document.getElementById('percent');
@@ -379,6 +337,9 @@
 
         // обработка отправки формы
         const form = document.getElementById('addUserForm');
+
+
+
         if (form) {
             form.addEventListener('submit', async function (e) {
                 e.preventDefault();
@@ -391,50 +352,38 @@
                 const percent = percentEl ? (parseFloat(percentEl.value) || 0) : 0;
                 const selectEl = document.querySelector('select[name="suppler"]');
                 const selectedValue = selectEl ? selectEl.value || 0 : 0;
-
                 let result = 'error';
 
                 if (!name){
-                    const modalEmail = document.getElementById('error_name_no');
-                    if (modalEmail && typeof modalEmail.showModal === 'function') modalEmail.showModal();
+                    openErrorModal('Укажите имя!');
                     return;
                 }
 
                 if (role === 'client') {
-                    // клиент — только имя, роль и проценты
                     result = await postData('/user/addUserRole', {
                         name: name,
                         role: role,
                         percent: percent,
                     });
                 } else if (role === 'client_services') {
-                    // клиент услуги — имя, почта, пароль, поставщик
+                    if (!selectedValue){
+                        openErrorModal('Выберите поставщика !');
+                        return;
+                    }
                     result = await postData('/user/addUserRole', {
                         name: name,
                         role: role,
                         supplier_id: selectedValue,
                     });
-                } else if (role === 'supplier' || role === 'courier' || role === 'shop') {
+                } else if (role === 'supplier' || role === 'courier' || role === 'shop' || role === 'admin') {
                     if (!email){
-                        const modalEmail = document.getElementById('error_email_no');
-                        if (modalEmail && typeof modalEmail.showModal === 'function') modalEmail.showModal();
+                        openErrorModal('Укажите почту для входа!');
                         return;
                     }
-
                     if (!password){
-                        const modalEmail = document.getElementById('error_password_no');
-                        if (modalEmail && typeof modalEmail.showModal === 'function') modalEmail.showModal();
+                        openErrorModal('Укажите пароль для входа!');
                         return;
                     }
-
-                    result = await postData('/user/addUserRole', {
-                        name: name,
-                        email: email,
-                        role: role,
-                        password: password,
-                    });
-                } else {
-                    // прочие роли (например admin) — отправляем базовые данные
                     result = await postData('/user/addUserRole', {
                         name: name,
                         email: email,
@@ -445,20 +394,17 @@
 
                 // обработка ошибок ответа
                 if (result && result.status === 'error' && result.value === 'repeat_email') {
-                    const modalEmail = document.getElementById('error_email');
-                    if (modalEmail && typeof modalEmail.showModal === 'function') modalEmail.showModal();
+                    openErrorModal('Эта Почта уже существует выберите другое!');
                     return;
                 }
 
                 if (result && result.status === 'error') {
-                    const modalErr = document.getElementById('error');
-                    if (modalErr && typeof modalErr.showModal === 'function') modalErr.showModal();
+                    openErrorModal('Что-то пошло не так!');
                     return;
                 }
 
                 if (result === 'error') {
-                    const modalErr = document.getElementById('error');
-                    if (modalErr && typeof modalErr.showModal === 'function') modalErr.showModal();
+                    openErrorModal('Что-то пошло не так!');
                     return;
                 }
 
@@ -509,7 +455,4 @@
             form.reset();
         }
     </script>
-
-
-
 {% endblock %}

@@ -54,6 +54,11 @@
             loader.classList.add('opacity-0');
             textSpan.classList.remove('opacity-0');
 
+            if (result.status === 'error' && result.message === 'limit_reached') {
+                showCornerModal('Слишком много записей невозможно выгрузить, попробуйте задать параметры!');
+                return;
+            }
+
             if (!result || result.error || result.status === 'error') {
                 showCornerModal('Не удалось образовать файл!');
                 return;

@@ -112,7 +112,7 @@ class TransactionController extends BaseController
             $date_from,
             $date_to,
             'company'
-        )->count ?? 0;
+        );
         $page_count = ceil($expenses_count / $limit);
 
 
@@ -191,7 +191,7 @@ class TransactionController extends BaseController
             $date_from,
             $date_to,
             'stock_balances'
-        )->count ?? 0;
+        );
         $page_count = ceil($expenses_count / $limit);
 
 
@@ -252,7 +252,7 @@ class TransactionController extends BaseController
         $get_courier_finances = CompanyFinancesLM::getCourierFinances($courier_id, $offset, $limit, $category, $date_from, $date_to);
         $get_categories = ExpenseCategoriesLM::getExpenseCategories();
 
-        $expenses_count = CompanyFinancesLM::getCourierFinancesCount($courier_id, $category, $date_from, $date_to)->count ?? 0;
+        $expenses_count = CompanyFinancesLM::getCourierFinancesCount($courier_id, $category, $date_from, $date_to);
         $page_count = ceil($expenses_count / $limit);
         $courier = CouriersLM::getCourierCourierId($courier_id);
 
@@ -340,7 +340,7 @@ class TransactionController extends BaseController
             $date_to,
             null,
             $client_id,
-        )->count ?? 0;
+        );
         $page_count = ceil($transactions_count / $limit);
 
 
@@ -373,7 +373,7 @@ class TransactionController extends BaseController
         $transactions = LegalEntitiesLM::getEntitiesSuppliersTransactions($supplier_id, $offset, $limit, $date_from, $date_to);
         $transactions_sum = LegalEntitiesLM::getEntitiesSuppliersTransactionsSum($supplier_id, $date_from, $date_to);
 
-        $transactions_count = LegalEntitiesLM::getEntitiesSuppliersTransactionsCount($supplier_id, $date_from, $date_to)->count ?? 0;
+        $transactions_count = LegalEntitiesLM::getEntitiesSuppliersTransactionsCount($supplier_id, $date_from, $date_to);
         $page_count = ceil($transactions_count / $limit);
 
 
@@ -793,7 +793,7 @@ class TransactionController extends BaseController
         $transactions_client_services = LegalEntitiesLM::getEntitiesClientServicesTransactions($supplier_id, $offset, $limit, $date_from, $date_to);
         $transactions_sum_client_services = LegalEntitiesLM::getEntitiesClientServicesTransactionsSum($supplier_id, $date_from, $date_to);
 
-        $transactions_count_client_services = LegalEntitiesLM::getEntitiesClientServicesTransactionsCount($supplier_id, $date_from, $date_to)->count ?? 0;
+        $transactions_count_client_services = LegalEntitiesLM::getEntitiesClientServicesTransactionsCount($supplier_id, $date_from, $date_to);
         $page_count_client_services = ceil($transactions_count_client_services / $limit);
 
         //Logger::log(print_r($get_transactions_by_percentage, true), 'transactions');

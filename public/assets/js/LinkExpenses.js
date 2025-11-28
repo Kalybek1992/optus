@@ -1,5 +1,5 @@
 const openErrorModal = (message) => {
-    errorText.innerHTML = message;
+    document.getElementById('errorText').textContent = message;
     document.getElementById('errorModal').showModal();
 };
 

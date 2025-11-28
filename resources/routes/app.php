@@ -1370,6 +1370,10 @@ return [
                     'required' => true,
                     'custom_logic' => fn($a) => is_numeric($a) && $a > 0
                 ],
+                'date' => [
+                    'required' => false,
+                    'custom_logic' => fn($a) => is_string($a) && DateTime::createFromFormat('d.m.Y', $a) !== false || $a == null
+                ],
                 'comments' => [
                     'required' => true
                 ],
@@ -1727,6 +1731,116 @@ return [
                 ],
                 'date_from' => [
                     'required' => true,
+                    'custom_logic' => fn($a) => is_string($a) && DateTime::createFromFormat('d.m.Y', $a) !== false || $a == null
+                ],
+                'date_to' => [
+                    'required' => false,
+                    'custom_logic' => fn($a) => is_string($a) && DateTime::createFromFormat('d.m.Y', $a) !== false || $a == null
+                ]
+            ],
+            'middlewares' => [
+                new ApiKeyAdminMiddleware
+            ]
+        ],
+        '/unloading/clientservicesreceiptsdate' => [
+            'validation' => [
+                'client_id' => [
+                    'required' => true,
+                    'custom_logic' => fn($a) => is_numeric($a) && $a > 0
+                ],
+                'date_from' => [
+                    'required' => true,
+                    'custom_logic' => fn($a) => is_string($a) && DateTime::createFromFormat('d.m.Y', $a) !== false || $a == null
+                ],
+                'date_to' => [
+                    'required' => false,
+                    'custom_logic' => fn($a) => is_string($a) && DateTime::createFromFormat('d.m.Y', $a) !== false || $a == null
+                ]
+            ],
+            'middlewares' => [
+                new ApiKeyAdminMiddleware
+            ]
+        ],
+        '/unloading/supplierssendingsdate' => [
+            'validation' => [
+                'supplier_id' => [
+                    'required' => true,
+                    'custom_logic' => fn($a) => is_numeric($a) && $a > 0
+                ],
+                'date_from' => [
+                    'required' => true,
+                    'custom_logic' => fn($a) => is_string($a) && DateTime::createFromFormat('d.m.Y', $a) !== false || $a == null
+                ],
+                'date_to' => [
+                    'required' => false,
+                    'custom_logic' => fn($a) => is_string($a) && DateTime::createFromFormat('d.m.Y', $a) !== false || $a == null
+                ]
+            ],
+            'middlewares' => [
+                new ApiKeyAdminMiddleware
+            ]
+        ],
+        '/unloading/getcourierfinances' => [
+            'validation' => [
+                'courier_id' => [
+                    'required' => true,
+                    'custom_logic' => fn($a) => is_numeric($a) && $a > 0
+                ],
+                'category' => [
+                    'required' => false,
+                    'custom_logic' => fn($a) => is_string($a) || $a == null
+                ],
+                'date_from' => [
+                    'required' => false,
+                    'custom_logic' => fn($a) => is_string($a) && DateTime::createFromFormat('d.m.Y', $a) !== false || $a == null
+                ],
+                'date_to' => [
+                    'required' => false,
+                    'custom_logic' => fn($a) => is_string($a) && DateTime::createFromFormat('d.m.Y', $a) !== false || $a == null
+                ]
+            ],
+            'middlewares' => [
+                new ApiKeyAdminMiddleware
+            ]
+        ],
+        '/unloading/getexpenses' => [
+            'validation' => [
+                'category' => [
+                    'required' => false,
+                    'custom_logic' => fn($a) => is_string($a) || $a == null
+                ],
+                'date_from' => [
+                    'required' => false,
+                    'custom_logic' => fn($a) => is_string($a) && DateTime::createFromFormat('d.m.Y', $a) !== false || $a == null
+                ],
+                'date_to' => [
+                    'required' => false,
+                    'custom_logic' => fn($a) => is_string($a) && DateTime::createFromFormat('d.m.Y', $a) !== false || $a == null
+                ]
+            ],
+            'middlewares' => [
+                new ApiKeyAdminMiddleware
+            ]
+        ],
+        '/unloading/gettransferyourself' => [
+            'validation' => [
+                'date_from' => [
+                    'required' => false,
+                    'custom_logic' => fn($a) => is_string($a) && DateTime::createFromFormat('d.m.Y', $a) !== false || $a == null
+                ],
+                'date_to' => [
+                    'required' => false,
+                    'custom_logic' => fn($a) => is_string($a) && DateTime::createFromFormat('d.m.Y', $a) !== false || $a == null
+                ]
+            ],
+            'middlewares' => [
+                new ApiKeyAdminMiddleware
+            ]
+        ],
+        '/unloading/getexpensesstockbalances' => [
+            'validation' => [
+                'date_from' => [
+                    'required' => false,
                     'custom_logic' => fn($a) => is_string($a) && DateTime::createFromFormat('d.m.Y', $a) !== false || $a == null
                 ],
                 'date_to' => [

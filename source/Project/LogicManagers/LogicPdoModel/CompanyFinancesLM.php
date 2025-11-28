@@ -150,7 +150,7 @@ class CompanyFinancesLM
         }
 
 
-        return PdoConnector::execute($builder)[0] ?? [];
+        return PdoConnector::execute($builder)[0]->count ?? [];
     }
 
     public static function getExpenses($offset, $limit, $category, $date_from, $date_to, $type, $supplier_id = null): array
@@ -369,11 +369,9 @@ class CompanyFinancesLM
                 ]);
         }
 
-        $builder
-            ->orderBy("t.date", "DESC");
 
 
-        return PdoConnector::execute($builder)[0] ?? [];
+        return PdoConnector::execute($builder)[0]->count ?? 0;
     }
 
     public static function getCourierFinances($courier_id, $offset, $limit, $category, $date_from, $date_to)

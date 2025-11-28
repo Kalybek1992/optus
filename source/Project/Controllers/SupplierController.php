@@ -384,7 +384,7 @@ class SupplierController extends BaseController
             $date_from,
             $date_to,
             $manager_id
-        )->count ?? 0;
+        );
 
 
         $page_count = ceil($transactions_count / $limit);
@@ -731,7 +731,7 @@ class SupplierController extends BaseController
             $date_to,
             'supplier_expense',
             $supplier_id
-        )->count ?? 0;
+        );
         $page_count = ceil($expenses_count / $limit);
 
 
@@ -838,7 +838,7 @@ class SupplierController extends BaseController
             $date_to,
             'supplier_debit',
             $supplier_id
-        )->count ?? 0;
+        );
         $page_count = ceil($expenses_count / $limit);
 
 

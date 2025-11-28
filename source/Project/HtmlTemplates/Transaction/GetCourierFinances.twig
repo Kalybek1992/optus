@@ -22,20 +22,39 @@
                     {% endif %}
                 </div>
                 <div class="font-semibold text-gray-600 text-base">
-                    {{ courier.balance_sum }}
+                    {{ courier.balance_sum|number_format(0, ',', ' ') }}
                 </div>
             </div>
 
             <!-- Непринятый баланс -->
-            <div class="flex items-center space-x-[10px]">
+            <div class="flex items-center space-x-[10px] mb-[30px]">
                 <div class="font-semibold text-gray-500">
                     Непринятый баланс:
                 </div>
                 <div class="font-semibold text-gray-600 text-base">
-                    {{ courier.balance_unaccepted }}
+                    {{ courier.balance_unaccepted|number_format(0, ',', ' ') }}
                 </div>
             </div>
 
+            <!-- Кнопка скачать -->
+            <div>
+                <button
+                        id="receipt-button"
+                        onclick="downloadTableUniversal()"
+                        class="relative flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg shadow-sm transition">
+
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+                         stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                              d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5m0 0l5-5m-5 5V4"/>
+                    </svg>
+                    <span class="button-text">Образовать таблицу</span>
+                    <!-- Лоадер скрыт изначально -->
+                    <span id="loader" class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 opacity-0 pointer-events-none">
+                        <span class="loading loading-dots loading-lg"></span>
+                    </span>
+                </button>
+            </div>
             <!-- Категории дата искать  -->
             <div class="w-full max-w-8xl mx-auto space-y-4">
                 <div class="flex flex-col md:flex-row md:items-center gap-4 p-4 bg-white rounded-xl shadow-sm">
@@ -110,7 +129,7 @@
                     <tr class="divide-x divide-gray-200">
                         <th class="px-3 py-2 w-28">Дата</th>
                         <th class="px-3 py-2">День</th>
-                        <th class="px-3 py-2 w-20">Сумма</th>
+                        <th class="px-3 py-2 min-w-200">Сумма</th>
                         <th class="px-3 py-2">Проект</th>
                         <th class="px-3 py-2">Категории</th>
                         <th class="px-3 py-2">Комментарии</th>
@@ -123,7 +142,7 @@
                         <tr class="hover:bg-gray-50 divide-x divide-gray-200">
                             <td class="px-3 py-2">{{ finances.date }}</td>
                             <td class="px-3 py-2">{{ finances.dey }}</td>
-                            <td class="px-3 py-2">{{ finances.amount }}</td>
+                            <td class="px-3 py-2 min-w-200">{{ finances.amount|number_format(0, ',', ' ') }}</td>
                             <td class="px-3 py-2">{{ finances.category }}</td>
                             <td class="px-3 py-2">{{ finances.category }}</td>
                             <td class="px-3 py-2">{{ finances.comments }}</td>
@@ -159,7 +178,7 @@
                     <tr class="divide-x divide-gray-200">
                         <th class="px-3 py-2 w-28">Дата</th>
                         <th class="px-3 py-2">День</th>
-                        <th class="px-3 py-2 w-20">Сумма</th>
+                        <th class="px-3 py-2 min-w-200">Сумма</th>
                         <th class="px-3 py-2">Проект</th>
                         <th class="px-3 py-2">Категории</th>
                         <th class="px-3 py-2">Комментарии</th>
@@ -304,6 +323,8 @@
 
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pikaday/css/pikaday.css">
     <script src="https://cdn.jsdelivr.net/npm/pikaday/pikaday.js"></script>
+    {% include './Unloading/Unloading.twig' %}
+
 
     <!-- Инициализация -->
     <script>
@@ -412,7 +433,7 @@
         };
 
         const openErrorModal = (message) => {
-            errorText.innerHTML = message;
+            document.getElementById('errorText').textContent = message;
             document.getElementById('errorModal').showModal();
         };
 

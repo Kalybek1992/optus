@@ -24,7 +24,8 @@ final class CreateCompanyFinancesTable extends AbstractMigration
         }
 
         $table = $this->table('company_finances');
-        $table->addColumn('order_id', 'integer', ['null' => true])
+        $table
+            ->addColumn('order_id', 'integer', ['null' => true])
             ->addColumn('transaction_id', 'integer', ['null' => true])
             ->addColumn('card_id', 'integer', ['null' => true])
             ->addColumn('courier_id', 'integer', ['null' => true])
@@ -33,6 +34,8 @@ final class CreateCompanyFinancesTable extends AbstractMigration
             ->addColumn('manager_id', 'integer', ['null' => true])
             ->addColumn('category', 'string', ['limit' => 255, 'null' => true])
             ->addColumn('comments', 'string', ['limit' => 255, 'null' => true])
+            ->addColumn('issue_date', 'date', ['null' => true])
+
             ->addColumn('type', 'enum', [
                 'values' => [
                     'stock_balances','courier_balances','expense','expense_stock_balances',
@@ -42,8 +45,15 @@ final class CreateCompanyFinancesTable extends AbstractMigration
                 ],
                 'null' => false
             ])
-            ->addColumn('return_type', 'enum', ['values' => ['cash','wheel','return_wheel'], 'null' => true])
-            ->addColumn('status', 'enum', ['values' => ['processed','pending','confirm_courier','confirm_admin'], 'default' => 'pending', 'null' => false])
+            ->addColumn('return_type', 'enum', [
+                'values' => ['cash','wheel','return_wheel'],
+                'null' => true
+            ])
+            ->addColumn('status', 'enum', [
+                'values' => ['processed','pending','confirm_courier','confirm_admin'],
+                'default' => 'pending',
+                'null' => false
+            ])
             ->create();
     }
 

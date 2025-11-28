@@ -777,8 +777,8 @@ class LegalEntitiesLM
 
             if ($transaction->writing_transaction_id) {
                 $company_finances = CompanyFinancesLM::getWritingTransactionById($transaction->writing_transaction_id);
-                if ($company_finances->date ?? null) {
-                    $date_of_issue = date('d.m.Y', strtotime($company_finances->date));
+                if ($company_finances->issue_date ?? null) {
+                    $date_of_issue = date('d.m.Y', strtotime($company_finances->issue_date));
                 }
             }
 
@@ -802,7 +802,6 @@ class LegalEntitiesLM
                 'comments' => $company_finances->comments ?? '',
             ];
         }
-
 
         //Logger::log(print_r($transactions_arr, true), 'transactions_arr');
 
@@ -1700,7 +1699,7 @@ class LegalEntitiesLM
             $builder
                 ->innerJoin('transactions t')
                 ->on([
-                    "t.from_account_id = id",
+                    "t.to_account_id = id",
                     "t.date >='" . $date_from . "'",
                 ]);
         }
@@ -1709,7 +1708,7 @@ class LegalEntitiesLM
             $builder
                 ->innerJoin('transactions t')
                 ->on([
-                    "t.from_account_id = id",
+                    "t.to_account_id = id",
                     "t.date BETWEEN '" . $date_from . "'" . "AND '" . $date_to . "'",
                 ]);
         }
@@ -1718,15 +1717,10 @@ class LegalEntitiesLM
             $builder
                 ->innerJoin('transactions t')
                 ->on([
-                    "t.from_account_id = id",
+                    "t.to_account_id = id",
                 ]);
         }
 
-        $builder
-            ->innerJoin('legal_entities le')
-            ->on([
-                "le.id = t.to_account_id",
-            ]);
 
         if ($client_services == 0) {
             $builder
@@ -1742,7 +1736,6 @@ class LegalEntitiesLM
         }
 
         $builder
-            ->groupBy('id')
             ->limit(1);
 
         return PdoConnector::execute($builder)[0]->transactions_count ?? 0;

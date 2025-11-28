@@ -550,6 +550,7 @@ class EntitiesController extends BaseController
         $amount = InformationDC::get('amount');
         $comments = InformationDC::get('comments');
         $category_path = InformationDC::get('category_path');
+        $date = InformationDC::get('date');
         $insert_company_finances = [];
         $translation_max_id = TransactionsLM::getTranslationMaxId();
         $user = InformationDC::get('user');
@@ -644,8 +645,11 @@ class EntitiesController extends BaseController
 
 
             if ($courier_id) {
-                CouriersLM::adjustCurrentBalance($courier_id, $courier_balance);
+                $dt = DateTime::createFromFormat('d.m.Y', $date);
+                $issue_date = $dt->format('Y-m-d');
                 $insert_company_finances['courier_id'] = $courier_id;
+                $insert_company_finances['issue_date'] = $issue_date;
+                CouriersLM::adjustCurrentBalance($courier_id, $courier_balance);
             }
 
             DebtsLM::payOffClientsDebt(
@@ -654,7 +658,6 @@ class EntitiesController extends BaseController
                 $translation_max_id + 1
             );
         }
-
 
         if (!$insert_company_finances) {
             return ApiViewer::getErrorBody(['value' => 'bad_add_stock_balances']);

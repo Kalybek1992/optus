@@ -42,7 +42,7 @@
                            id="date_input"
                            placeholder="Введите дату"
                            autocomplete="off"
-                           class="datepicker_from w-full h-12 sm:h-[56px] px-4 bg-white rounded-xl shadow-sm text-base font-semibold text-gray-700 border border-gray-200"/>
+                           class="datepicker_from w-full max-w-[220px] sm:h-[56px] h-12 px-4 bg-white rounded-xl shadow-sm text-base font-semibold text-gray-700 border border-gray-200"/>
                 </div>
 
                 <!-- Категории расходов -->
@@ -145,7 +145,9 @@
             <p id="errorText" class="py-4"></p>
             <div class="modal-action">
                 <form method="dialog" class="w-full">
-                    <button class="btn w-full sm:w-auto">Закрыть</button>
+                    <button class="btn w-full sm:w-auto px-6">
+                        Закрыть
+                    </button>
                 </form>
             </div>
         </div>
@@ -158,7 +160,7 @@
             <div class="modal-action w-full">
                 <form method="dialog" class="w-full">
                     <a href="/courier/expenseform"
-                       class="btn w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white">
+                       class="btn w-full sm:w-auto px-6 bg-blue-600 hover:bg-blue-700 text-white">
                         Готово
                     </a>
                 </form>
