@@ -34,7 +34,8 @@ class FileController extends BaseController
         $file = RequestDC::get('file');
         $filename = basename($file['name']);
         $upload_dir = Path::RESOURCES_DIR . '/uploads/';
-        $destination = $upload_dir . bin2hex(random_bytes(16)) . '.txt';
+        $new_file_name = bin2hex(random_bytes(16)) . '.txt';
+        $destination = $upload_dir . $new_file_name;
         $get_bank_accounts = [];
         $transactions_account = [];
 
@@ -81,7 +82,7 @@ class FileController extends BaseController
             ->makePurchasesServices()
             ->setNewTransactionsBankOrder()
             ->setLoadedTransactions()
-            ->updateKnownLegalEntitiesTotals();
+            ->updateKnownLegalEntitiesTotals($new_file_name);
 
 
         //Logger::log(print_r($inset_loaded_transactions, true), 'inset_loaded_transactions');

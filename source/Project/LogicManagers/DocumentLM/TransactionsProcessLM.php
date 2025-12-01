@@ -13,6 +13,7 @@ use Source\Project\LogicManagers\LogicPdoModel\EndOfDaySettlementLM;
 use Source\Project\LogicManagers\LogicPdoModel\LegalEntitiesLM;
 use Source\Project\LogicManagers\LogicPdoModel\TransactionsLM;
 use Source\Project\LogicManagers\LogicPdoModel\UploadedDocumentsLM;
+use Source\Project\LogicManagers\LogicPdoModel\UploadedLogLM;
 use Source\Project\Models\LegalEntities;
 
 
@@ -776,7 +777,6 @@ class TransactionsProcessLM extends DocumentExtractLM
                     unset($this->bank_order[$key]);
                 }
             }
-
         }
 
         if ($this->new_bank_order) {
@@ -801,7 +801,6 @@ class TransactionsProcessLM extends DocumentExtractLM
 
 
         foreach ($data as $bank_order) {
-
             $loaded_transactions[] = [
                 'inn' => $bank_order['inn'],
                 'document_number' => $bank_order['document_number'],
@@ -883,9 +882,10 @@ class TransactionsProcessLM extends DocumentExtractLM
         return 'unknown';
     }
 
-    public function updateKnownLegalEntitiesTotals(): void
+    public function updateKnownLegalEntitiesTotals($file_name): void
     {
         // bank_exchange всегда массив с ключами total_received, total_written_off, final_remainder, bank_account
+        $insert_uploaded_log = [];
 
         if (!empty($this->bank_exchange['bank_account'])) {
             foreach ($this->db_bank_accounts as $entity) {
@@ -914,8 +914,21 @@ class TransactionsProcessLM extends DocumentExtractLM
                             'final_remainder =' . floatval($this->bank_exchange['final_remainder'] ?? 0)
                         ], $entity->id);
                     }
+
+                    $insert_uploaded_log = [
+                        'legal_id' => $entity->id,
+                        'transactions_count' => $this->transactions_count ?? 0,
+                        'new_accounts_count' => $this->new_bank_accounts_count ?? 0,
+                        'bank_accounts_updated' => $this->bank_accounts_updated_count ?? 0,
+                        'file_name' => $file_name,
+                        'date' => date('Y-m-d H:i:s'),
+                    ];
                 }
             }
+        }
+
+        if ($insert_uploaded_log) {
+            UploadedLogLM::insertUploadedLog($insert_uploaded_log);
         }
     }
 }

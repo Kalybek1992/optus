@@ -545,5 +545,72 @@ class XlsxLM extends LogicManager
         return $file_name;
     }
 
+    public static function archiveOfExtracts(array $our_accounts): string
+    {
+        $spreadsheet = new Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+
+        // Заголовки, как в таблице
+        $headers = [
+            'Название компании',
+            'Название банка',
+            'Конечный остаток',
+            'Дата остатка',
+            'Количество транзакций',
+            'Количество новых аккаунтов',
+            'Количество обновленных аккаунтов',
+            'Загрузка',
+        ];
+
+        // Запись заголовков
+        $col = 'A';
+        foreach ($headers as $header) {
+            $sheet->setCellValue($col . '1', $header);
+            $col++;
+        }
+
+        // Данные
+        $row = 2;
+        foreach ($our_accounts as $account) {
+
+            $sheet->setCellValue('A' . $row, $account['company_name'] ?? '');
+            $sheet->setCellValue('B' . $row, $account['bank_name'] ?? '');
+            $sheet->setCellValue('C' . $row, $account['final_remainder'] ?? 0);
+            $sheet->setCellValue('D' . $row, $account['date_created'] ?? '');
+            $sheet->setCellValue('E' . $row, $account['transactions_count'] ?? 0);
+            $sheet->setCellValue('F' . $row, $account['new_accounts_count'] ?? 0);
+            $sheet->setCellValue('G' . $row, $account['bank_accounts_updated'] ?? 0);
+
+            // Статус загрузки
+            $status = !empty($account['is_expired']) ? 'Просрочено' : 'Загружено';
+            $sheet->setCellValue('H' . $row, $status);
+
+            $row++;
+        }
+
+        // Автоширина колонок
+        foreach (range('A', 'H') as $columnID) {
+            $sheet->getColumnDimension($columnID)->setAutoSize(true);
+        }
+
+        // Сохранение
+        $uploadDir = Path::RESOURCES_DIR . 'unloading/';
+        if (!is_dir($uploadDir)) {
+            mkdir($uploadDir, 0777, true);
+        }
+
+        $fileName = 'ArchiveOfExtracts.xlsx';
+        $destination = $uploadDir . $fileName;
+
+        if (file_exists($destination)) {
+            unlink($destination);
+        }
+
+        $writer = new Xlsx($spreadsheet);
+        $writer->save($destination);
+
+        return $fileName;
+    }
+
 }
 

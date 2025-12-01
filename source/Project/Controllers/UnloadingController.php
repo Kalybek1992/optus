@@ -44,6 +44,42 @@ class UnloadingController extends BaseController
         exit;
     }
 
+    public function downloadExtract()
+    {
+        $file_name = (string) (InformationDC::get('file') ?? '');
+        if ($file_name === '') {
+            return ApiViewer::getErrorBody(['message' => 'File name is empty']);
+        }
+
+        // защита от ../
+        $safeName = basename($file_name);
+        $file_path = Path::RESOURCES_DIR . 'uploads/' . $safeName;
+
+        if (!is_file($file_path)) {
+            return ApiViewer::getErrorBody(['message' => 'File not found']);
+        }
+
+        // очищаем буферы
+        while (ob_get_level()) {
+            ob_end_clean();
+        }
+
+        header('Content-Description: File Transfer');
+        header('Content-Type: text/plain; charset=utf-8');
+        header('Content-Disposition: attachment; filename="' . $safeName . '"');
+        header('Content-Length: ' . filesize($file_path));
+        header('Cache-Control: private, no-cache, no-store, must-revalidate');
+        header('Pragma: no-cache');
+        header('Expires: 0');
+
+        readfile($file_path);
+
+        // удаляем после успешной отдачи
+        unlink($file_path);
+        exit;
+    }
+
+
     public function shopReceiptsDate(): array
     {
         $shop_id = InformationDC::get('shop_id');
@@ -427,6 +463,21 @@ class UnloadingController extends BaseController
 
 
         $file_path = XlsxLM::getExpensesStockBalances($all_transactions);
+
+        return ApiViewer::getOkBody(['file' => $file_path]);
+    }
+
+    public function archiveOfExtracts(): array
+    {
+        $date = InformationDC::get('date');
+
+        $our_accounts = LegalEntitiesLM::getEntitiesOurAccountDate();
+
+        if (!$our_accounts) {
+            return ApiViewer::getErrorBody(['message' => 'File not found']);
+        }
+
+        $file_path = XlsxLM::archiveOfExtracts($our_accounts);
 
         return ApiViewer::getOkBody(['file' => $file_path]);
     }

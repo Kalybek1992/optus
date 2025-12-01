@@ -528,11 +528,20 @@ class LegalEntitiesLM
             ->select([
                 'le.*',
                 'MAX(ud.date) as max_uploaded_date',
+                'ul.transactions_count as transactions_count',
+                'ul.new_accounts_count as new_accounts_count',
+                'ul.bank_accounts_updated as bank_accounts_updated',
+                'ul.file_name as file_name',
+                'ul.date as uploaded_date',
             ])
             ->from('legal_entities as le')
             ->leftJoin('uploaded_documents ud')
             ->on([
                 'ud.inn = le.inn',
+            ])
+            ->leftJoin('uploaded_log ul')
+            ->on([
+                'ul.id = le.id',
             ])
             ->where([
                 'le.our_account =' . 1,
@@ -585,6 +594,10 @@ class LegalEntitiesLM
                 'total_written_off' => $account->total_written_off,
                 'final_remainder' => $account->final_remainder,
                 'total_received_interest' => $total_received_interest,
+                'transactions_count' => $account->transactions_count ?? 0,
+                'new_accounts_count' => $account->new_accounts_count ?? 0,
+                'bank_accounts_updated' => $account->bank_accounts_updated ?? 0,
+                'file_name' => $account->file_name ?? null,
                 'date_created' => $date,
                 'is_expired' => $is_expired,
             ];
@@ -605,6 +618,101 @@ class LegalEntitiesLM
                 }
             }
         }
+        usort($our_account_arr, function ($a, $b) {
+            $a_no_date = empty($a['date_created']);
+            $b_no_date = empty($b['date_created']);
+
+            $a_zero = empty($a['final_remainder']);
+            $b_zero = empty($b['final_remainder']);
+
+            if ($a_no_date !== $b_no_date) {
+                return $a_no_date <=> $b_no_date;
+            }
+            return $a_zero <=> $b_zero;
+        });
+
+        //Logger::log(print_r($our_account_arr, true), 'our_account_arr');
+        return $our_account_arr;
+    }
+
+    public static function getEntitiesOurAccountDate(): array
+    {
+        $builder = LegalEntities::newQueryBuilder()
+            ->select([
+                'le.*',
+                'MAX(ud.date) as max_uploaded_date',
+                'ul.transactions_count as transactions_count',
+                'ul.new_accounts_count as new_accounts_count',
+                'ul.bank_accounts_updated as bank_accounts_updated',
+                'ul.file_name as file_name',
+                'ul.date as uploaded_date',
+            ])
+            ->from('legal_entities as le')
+            ->leftJoin('uploaded_documents ud')
+            ->on([
+                'ud.inn = le.inn',
+            ])
+            ->leftJoin('uploaded_log ul')
+            ->on([
+                'ul.id = le.id',
+            ])
+            ->where([
+                'le.our_account =' . 1,
+            ])
+            ->groupBy('le.id');
+
+        $our_account = PdoConnector::execute($builder);
+        $our_account_arr = [];
+
+        if (!$our_account) {
+            return [];
+        }
+
+        foreach ($our_account as $account) {
+            $date = '';
+            $is_expired = false;
+
+            if ($account->date_created ?? false) {
+                $date = DateTime::createFromFormat('Y-m-d', $account->date_created);
+                $date = $date->format('d.m.Y');
+            }
+
+            if ($account->max_uploaded_date ?? false) {
+
+                $last_upload = (new DateTime())->setTimestamp($account->max_uploaded_date);
+                $today = new DateTime('today');
+                $today_11 = new DateTime('today 11:00');
+
+                // Проверяем, что день сегодня > день последней загрузки
+                if ($today->format('Y-m-d') > $last_upload->format('Y-m-d') && new DateTime() >= $today_11) {
+                    $is_expired = true;
+                }
+            }
+
+            $total_received_interest = $account->total_received ?? 0;
+            if ($total_received_interest > 0) {
+                $total_received_interest -= $total_received_interest * 0.29;
+                $total_received_interest = round($total_received_interest, 2); // ограничение до 2 знаков
+            }
+
+            $our_account_arr[] = [
+                'id' => $account->id,
+                'company_name' => $account->company_name,
+                'bank_name' => $account->bank_name,
+                'inn' => $account->inn,
+                'total_received' => $account->total_received,
+                'total_written_off' => $account->total_written_off,
+                'final_remainder' => $account->final_remainder,
+                'total_received_interest' => $total_received_interest,
+                'transactions_count' => $account->transactions_count ?? 0,
+                'new_accounts_count' => $account->new_accounts_count ?? 0,
+                'bank_accounts_updated' => $account->bank_accounts_updated ?? 0,
+                'file_name' => $account->file_name ?? null,
+                'date_created' => $date,
+                'is_expired' => $is_expired,
+            ];
+        }
+
         usort($our_account_arr, function ($a, $b) {
             $a_no_date = empty($a['date_created']);
             $b_no_date = empty($b['date_created']);

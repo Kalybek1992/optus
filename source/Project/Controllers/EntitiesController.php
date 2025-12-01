@@ -543,6 +543,17 @@ class EntitiesController extends BaseController
         ]);
     }
 
+    public function archiveOfExtracts(): string
+    {
+        $our_accounts = LegalEntitiesLM::getEntitiesOurAccountDate();
+
+        //Logger::log(print_r($companies, true), 'getOurEntities');
+
+        return $this->twig->render('Entities/OurAccounts.twig', [
+            'our_accounts' => $our_accounts,
+        ]);
+    }
+
     public function definitionCommodityMoney(): array
     {
         $delivery_type = InformationDC::get('delivery_type');

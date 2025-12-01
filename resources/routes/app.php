@@ -852,6 +852,31 @@ return [
                 new ApiKeySupplierMiddleware
             ]
         ],
+        '/entities/archiveofextracts' => [
+            'validation' => [
+                'page' => [
+                    'required' => false,
+                    'custom_logic' => fn($a) => is_numeric($a) || $a == null
+                ],
+                'date' => [
+                    'required' => false,
+                    'custom_logic' => fn($a) => is_string($a) && DateTime::createFromFormat('d.m.Y', $a) !== false || $a == null
+                ],
+            ],
+            'middlewares' => [
+                new ApiKeyAdminMiddleware
+            ]
+        ],
+        '/unloading/downloadextract' => [
+            'validation' => [
+                'file' => [
+                    'required' => true,
+                ]
+            ],
+            'middlewares' => [
+                new ApiKeyShopreceiptsDateMiddleware
+            ]
+        ],
     ],
     'POST' => [
         '/user/auth' => [
@@ -1847,6 +1872,17 @@ return [
                     'required' => false,
                     'custom_logic' => fn($a) => is_string($a) && DateTime::createFromFormat('d.m.Y', $a) !== false || $a == null
                 ]
+            ],
+            'middlewares' => [
+                new ApiKeyAdminMiddleware
+            ]
+        ],
+        '/unloading/archiveofextracts' => [
+            'validation' => [
+                'date' => [
+                    'required' => false,
+                    'custom_logic' => fn($a) => is_string($a) && DateTime::createFromFormat('d.m.Y', $a) !== false || $a == null
+                ],
             ],
             'middlewares' => [
                 new ApiKeyAdminMiddleware
