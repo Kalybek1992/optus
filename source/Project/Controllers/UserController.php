@@ -46,14 +46,9 @@ class UserController extends BaseController
     {
 
         $token = InformationDC::get('token');
-        $redirect = InformationDC::get('redirect');
 
         if (!$token) {
             return ApiViewer::getErrorBody(['value' => 'Bad email or password']);
-        }
-
-        if ($redirect){
-            UsersLM::updateUserTokenRedirect($token);
         }
 
         setcookie("AuthToken", $token, time() + (86400 * 30), "/", "", false, false);
@@ -547,11 +542,8 @@ class UserController extends BaseController
     {
         $page = InformationDC::get('page') ?? 0;
         $limit = 8;
-
         $offset = $page * $limit;
-
         $suppliers = SuppliersLM::getSuppliers($offset, $limit);
-
 
         if (!$suppliers) {
             return $this->twig->render('NoClients.twig');
@@ -710,6 +702,26 @@ class UserController extends BaseController
                 ]);
 
             PdoConnector::execute($builder);
+        }
+
+
+        return ApiViewer::getOkBody(['success' => 'ok']);
+    }
+
+    public function changeRestrictedAccess(): array
+    {
+        $user_id = InformationDC::get('user_id');
+        $restricted_access = VariablesDC::get('restricted_access');
+
+        $restricted_access = [
+            'unlimited' => 0,
+            'limitation' => 1,
+        ][$restricted_access];
+
+        $result_update = UsersLM::updateUserEstrictedAccess($user_id, $restricted_access);
+
+        if (!$result_update) {
+            return ApiViewer::getErrorBody(['value' => 'bad_update']);
         }
 
 

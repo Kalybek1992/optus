@@ -224,26 +224,36 @@ class UsersLM
         return PdoConnector::execute($builder)[0] ?? [];
     }
 
-    public static function updateUserTokenRedirect(string $token)
+    public static function updateUserTokenRedirect(): string
     {
-        $builder = Users::newQueryBuilder()
-            ->update([
-                'redirect =' . 0
-            ])
-            ->where([
-                'token =' . "'" . $token . "'"
-            ])
-            ->limit(1);
+        $correct = true;
+        $token = '';
 
-        return PdoConnector::execute($builder)[0] ?? [];
+        while ($correct){
+            $token = bin2hex(random_bytes(32 / 2));
+            $query_builder = Users::newQueryBuilder()
+                ->select()
+                ->where([
+                    'token = "' . $token . '"',
+                ])
+                ->limit(1);
+            $user = PdoConnector::execute($query_builder)[0] ?? null;
+            if (!$user) {
+                $correct = false;
+            }
+        }
+
+        return $token;
     }
 
     public static function updateUserEmail(int $id, string $new_email)
     {
+        $token = self::updateUserTokenRedirect();
+
         $builder = Users::newQueryBuilder()
             ->update([
                 'email =' . $new_email,
-                'redirect =' . 1
+                'token =' . "'" . $token . "'"
             ])
             ->where([
                 'id =' . $id
@@ -255,10 +265,29 @@ class UsersLM
 
     public static function updateUserPassword(int $id, string $new_password)
     {
+        $token = self::updateUserTokenRedirect();
+
         $builder = Users::newQueryBuilder()
             ->update([
                 'password =' . $new_password,
-                'redirect =' . 1
+                'token =' . "'" . $token . "'"
+            ])
+            ->where([
+                'id =' . $id
+            ])
+            ->limit(1);
+
+        return PdoConnector::execute($builder);
+    }
+
+    public static function updateUserEstrictedAccess(int $id, int $restricted_access)
+    {
+        $token = self::updateUserTokenRedirect();
+
+        $builder = Users::newQueryBuilder()
+            ->update([
+                'restricted_access =' . $restricted_access,
+                'token =' . "'" . $token . "'"
             ])
             ->where([
                 'id =' . $id

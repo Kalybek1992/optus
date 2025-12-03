@@ -524,6 +524,8 @@ class LegalEntitiesLM
 
     public static function getEntitiesOurAccount(): array
     {
+        $check_date = date('Y-m-d');
+
         $builder = LegalEntities::newQueryBuilder()
             ->select([
                 'le.*',
@@ -537,6 +539,7 @@ class LegalEntitiesLM
             ->leftJoin('uploaded_log ul')
             ->on([
                 'ul.id = le.id',
+                "DATE(ul.date) = '{$check_date}'",
             ])
             ->where([
                 'le.our_account =' . 1,

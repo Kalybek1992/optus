@@ -1076,7 +1076,7 @@ class SupplierController extends BaseController
             return $this->twig->render('NoClients.twig');
         }
 
-        //Logger::log(print_r($users, true), 'getUsersByRole');
+        Logger::log(print_r($users, true), 'getUsersByRole');
         $suppliers_count = 3;
         $page_count = ceil($suppliers_count / $limit);
 

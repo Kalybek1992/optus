@@ -84,6 +84,20 @@
                 <!-- Выбор даты и кнопки -->
                 {% include './FilterData/DatefromDatetoSuppliers.twig' %}
 
+                <fieldset class="fieldset bg-base-100 border-base-300 rounded-box w-full border p-4">
+                    <legend class="fieldset-legend">Выберите версию кабинета</legend>
+
+                    <label class="label cursor-pointer">
+                        <input
+                                type="checkbox"
+                                class="checkbox js-restricted-access"
+                                data-user-id="{{ supplier.user_id }}"
+                                {% if supplier.restricted_access == 1 %}checked{% endif %}
+                        />
+                        Ограниченная версия кабинета для поставщиков роли "Откуп"
+                    </label>
+                </fieldset>
+
                 <!-- Баланс -->
                 <div class="p-3 sm:p-4 bg-white rounded-xl shadow-sm text-sm sm:text-base uppercase border border-gray-200 space-y-2">
                     <div class="flex justify-between items-center">
@@ -206,7 +220,6 @@
         </div>
     </div>
 
-
     <script>
 
         document.querySelectorAll('.datepicker_from, .datepicker_to').forEach(field => {
@@ -299,6 +312,31 @@
 
                 window.location.href = `/debts/getMutualSettlements?${params.toString()}`;
             });
+        });
+
+        document.addEventListener('change', async function (e) {
+            if (!e.target.classList.contains('js-restricted-access')) return;
+
+            const checkbox = e.target;
+            const userId = checkbox.dataset.userId;
+            const isChecked = checkbox.checked ? 'limitation' : 'unlimited';
+
+            const result = await postData('/user/changeRestrictedAccess', {
+                user_id: userId,
+                restricted_access: isChecked
+            });
+
+            if (result === 'error') {
+                showCornerModal('Не удалось совершить операцию!');
+                return;
+            }
+
+            if (result.success) {
+                showCornerModal('Удачно назначили кабинет!');
+            } else {
+                showCornerModal('Не удалось совершить операцию!');
+            }
+
         });
 
     </script>

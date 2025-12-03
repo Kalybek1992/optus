@@ -1911,5 +1911,20 @@ return [
                 new ApiKeySupplierMiddleware
             ]
         ],
+        '/user/changerestrictedaccess' => [
+            'validation' => [
+                'user_id' => [
+                    'required' => true,
+                    'custom_logic' => fn($a) => is_numeric($a) && $a > 0
+                ],
+                'restricted_access' => [
+                    'required' => true,
+                    'custom_logic' => fn($a) => $a == 'limitation' || $a == 'unlimited'
+                ],
+            ],
+            'middlewares' => [
+                new ApiKeyAdminMiddleware,
+            ]
+        ],
     ]
 ];

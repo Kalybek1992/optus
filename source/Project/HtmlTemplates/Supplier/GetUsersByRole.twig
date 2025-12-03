@@ -26,6 +26,7 @@
 
                 <div class="p-4 bg-white rounded-xl shadow-sm text-sm uppercase space-y-2">
 
+
                     {# Товарный долг перед клиентом #}
                     {% if role == 'client' %}
                         <div class="flex justify-between items-center">
@@ -61,7 +62,66 @@
                                 </label>
                             </div>
                         </div>
+
+                        <!-- Общий контейнер -->
+                        <div class="w-full flex justify-center">
+                            <!-- Блок кнопок -->
+                            <div class="w-full max-w-[320px] flex flex-col gap-3 items-center">
+
+                                <!-- Отчет по клиентам -->
+                                <a href="/supplier/supplierClientReceiptsDate?client_id={{ client.id }}"
+                                   class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2 px-4
+                                    rounded-lg transition-colors duration-200 text-center shadow-sm">
+                                    Отчет по клиентам
+                                </a>
+                            </div>
+                        </div>
                     {% endif %}
+
+                    {% if role == 'manager' %}
+                        <!-- Общий контейнер -->
+                        <div class="w-full flex justify-center">
+                            <!-- Блок кнопок -->
+                            <div class="w-full max-w-[320px] flex flex-col gap-3 items-center">
+
+                                <!-- Клиент услуги -->
+                                <a href="/supplier/clientServicesManager?manager_id={{ client.id }}"
+                                   class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2 px-4
+                                    rounded-lg transition-colors duration-200 text-center shadow-sm">
+                                    Клиент услуги
+                                </a>
+
+                                <!-- Отчет по отгрузкам -->
+                                <a href="/supplier/deliveredGoods?manager_id={{ client.id }}"
+                                   class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2 px-4
+                                    rounded-lg transition-colors duration-200 text-center shadow-sm">
+                                    Отчет по отгрузкам
+                                </a>
+
+                                <!-- Возврат отгрузки -->
+                                <a href="/supplier/returnGood?manager_id={{ client.id }}"
+                                   class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2 px-4
+                                    rounded-lg transition-colors duration-200 text-center shadow-sm">
+                                    Возврат отгрузки
+                                </a>
+
+                                <!-- Взаиморасчет -->
+                                <a href="/supplier/managerDailyReports?manager_id={{ client.id }}"
+                                   class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2 px-4
+                                    rounded-lg transition-colors duration-200 text-center shadow-sm">
+                                    Взаиморасчет
+                                </a>
+
+                                <!-- Отчет по кеш -->
+                                <a href="/supplier/getMovedCash?manager_id={{ client.id }}"
+                                   class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2 px-4
+                                    rounded-lg transition-colors duration-200 text-center shadow-sm">
+                                    Отчет по кеш
+                                </a>
+                            </div>
+                        </div>
+                    {% endif %}
+
                 </div>
 
                 <details class="group">

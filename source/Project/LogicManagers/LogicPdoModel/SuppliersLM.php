@@ -66,6 +66,7 @@ class SuppliersLM
                 'u.email as email',
                 'u.password as password',
                 'u.id as user_id',
+                'u.restricted_access as restricted_access',
                 'u.created_at as created_at',
                 'le.bank_account as bank_account',
                 'le.inn as inn',
@@ -125,6 +126,7 @@ class SuppliersLM
                     'name' => $supplier->username,
                     'password' => $decoded_password,
                     'percentage' => $supplier->percentage,
+                    'restricted_access' => $supplier->restricted_access,
                     'balance_sum' => 0.0,
                     'debit_amount_sum' => 0.0,
                     'user_id' => $supplier->user_id,
@@ -173,8 +175,6 @@ class SuppliersLM
             $s['bank_accounts'] = array_values($s['bank_accounts']);
             return $s;
         }, $suppliers_array));
-
-
 
         //Logger::log(print_r($suppliers_array, true), 'clients_array');
 

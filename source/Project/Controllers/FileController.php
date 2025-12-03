@@ -99,5 +99,4 @@ class FileController extends BaseController
             'bank_accounts_updated' => $bank_accounts_updated,
         ]);
     }
-
 }

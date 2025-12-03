@@ -24,15 +24,43 @@ final class CreateUsersTable extends AbstractMigration
         }
 
         $table = $this->table('users', ['id' => false, 'primary_key' => ['id']]);
-        $table->addColumn('id', 'integer', ['identity' => true])
-            ->addColumn('role', 'enum', ['values' => ['admin','client','supplier','courier','client_services','manager','shop'], 'null' => false])
+        $table
+            ->addColumn('id', 'integer', ['identity' => true])
+
+            ->addColumn('role', 'enum', [
+                'values' => [
+                    'admin',
+                    'client',
+                    'supplier',
+                    'courier',
+                    'client_services',
+                    'manager',
+                    'shop'
+                ],
+                'null' => false
+            ])
+
             ->addColumn('name', 'string', ['limit' => 100, 'null' => false])
             ->addColumn('email', 'string', ['limit' => 100, 'null' => true])
             ->addColumn('password', 'string', ['limit' => 255, 'null' => true])
             ->addColumn('token', 'string', ['limit' => 255, 'null' => true])
-            ->addColumn('created_at', 'timestamp', ['default' => 'CURRENT_TIMESTAMP', 'null' => true])
-            ->addColumn('updated_at', 'timestamp', ['default' => 'CURRENT_TIMESTAMP', 'update' => 'CURRENT_TIMESTAMP', 'null' => true])
-            ->addColumn('redirect', 'boolean', ['default' => false, 'null' => false])
+            ->addColumn('created_at', 'timestamp', [
+                'default' => 'CURRENT_TIMESTAMP',
+                'null' => true
+            ])
+            ->addColumn('updated_at', 'timestamp', [
+                'default' => 'CURRENT_TIMESTAMP',
+                'update'  => 'CURRENT_TIMESTAMP',
+                'null' => true
+            ])
+            ->addColumn('redirect', 'boolean', [
+                'default' => false,
+                'null' => false
+            ])
+            ->addColumn('restricted_access', 'boolean', [
+                'default' => false,
+                'null' => false
+            ])
             ->create();
     }
 

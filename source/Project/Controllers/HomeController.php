@@ -111,6 +111,7 @@ class HomeController extends BaseController
             'companies' => $supplier_companies,
             'debts' => $supplier_debts,
             'stock_balance' => $supplier->stock_balance ?? 0,
+            'role' => 'supplier'
         ]);
     }
 

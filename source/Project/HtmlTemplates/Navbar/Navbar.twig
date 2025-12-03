@@ -48,7 +48,12 @@
 
 
 {% if role == 'admin' %}
-    {% include 'BurgerMenu.twig' %}
+    {% include './Menu/BurgerMenu.twig' %}
+    {% include 'AddCardModal.twig' %}
+{% endif %}
+
+{% if role == 'supplier' %}
+    {% include './Menu/SupplierMenu.twig' %}
     {% include 'AddCardModal.twig' %}
 {% endif %}
 

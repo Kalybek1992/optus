@@ -14,160 +14,6 @@
             </div>
         </div>
 
-        <!-- === Блок: Отчёты менеджеров === -->
-        <div class="bg-white shadow-sm rounded-2xl p-6 border border-gray-100 mt-8">
-            <h2 class="text-2xl font-semibold text-gray-800 mb-6 flex items-center gap-2">
-                <svg xmlns="http://www.w3.org/2000/svg"
-                     viewBox="0 0 24 24"
-                     fill="none"
-                     stroke="currentColor"
-                     stroke-width="2.25"
-                     stroke-linecap="round"
-                     stroke-linejoin="round"
-                     class="w-6 h-6 text-emerald-600"
-                     aria-hidden="true">
-                    <path d="M18 18.72a9.094 9.094 0 0 0 3.741-.479 3 3 0 0 0-4.682-2.72m.94 3.198.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0 1 12 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 0 1 6 18.719m12 0a5.971 5.971 0 0 0-.941-3.197m0 0A5.995 5.995 0 0 0 12 12.75a5.995 5.995 0 0 0-5.058 2.772m0 0a3 3 0 0 0-4.681 2.72 8.986 8.986 0 0 0 3.74.477m.94-3.197a5.971 5.971 0 0 0-.94 3.197M15 6.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm6 3a2.25 2.25 0 1 1-4.5 0 2.25 2.25 0 0 1 4.5 0Zm-13.5 0a2.25 2.25 0 1 1-4.5 0 2.25 2.25 0 0 1 4.5 0Z" />
-                </svg>
-                Отчёты менеджеров
-            </h2>
-
-            <!-- Панель отчетов -->
-            <div class="flex flex-wrap justify-center gap-6" x-data="reportPanel()">
-                <!-- Клиент услуги -->
-                <div class="flex flex-col items-center w-52">
-                    <a href="#"
-                       @click.prevent="submitReport('/supplier/clientServicesManager', selectedManager1)"
-                       class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2 px-6 rounded-lg transition-colors duration-200 w-full text-center shadow-sm">
-                        Клиент услуги
-                    </a>
-                    <select x-model="selectedManager1" class="select select-sm w-full border border-gray-300 mt-2 pl-1">
-                        <option value="" selected>Не выбран</option>
-                        {% for manager in supplier_users %}
-                            {% if manager.role == 'manager' %}
-                                <option value="{{ manager.role_id }}">{{ manager.username }}</option>
-                            {% endif %}
-                        {% endfor %}
-                    </select>
-                </div>
-
-                <!-- Отгрузка товара -->
-                <div class="flex flex-col items-center w-52">
-                    <a href="#"
-                       @click.prevent="submitReport('/supplier/deliveredGoods', selectedManager2)"
-                       class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2 px-6 rounded-lg transition-colors duration-200 w-full text-center shadow-sm">
-                        Отчет по отгрузкам
-                    </a>
-                    <select x-model="selectedManager2" class="select select-sm w-full border border-gray-300 mt-2 pl-1">
-                        <option value="" selected>Не выбран</option>
-                        {% for manager in supplier_users %}
-                            {% if manager.role == 'manager' %}
-                                <option value="{{ manager.role_id }}">{{ manager.username }}</option>
-                            {% endif %}
-                        {% endfor %}
-                    </select>
-                </div>
-
-                <!-- Возврат отгрузки -->
-                <div class="flex flex-col items-center w-52">
-                    <a href="#"
-                       @click.prevent="submitReport('/supplier/returnGoods', selectedManager3)"
-                       class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2 px-6 rounded-lg transition-colors duration-200 w-full text-center shadow-sm">
-                        Возврат отгрузки
-                    </a>
-                    <select x-model="selectedManager3" class="select select-sm w-full border border-gray-300 mt-2 pl-1">
-                        <option value="" selected>Не выбран</option>
-                        {% for manager in supplier_users %}
-                            {% if manager.role == 'manager' %}
-                                <option value="{{ manager.role_id }}">{{ manager.username }}</option>
-                            {% endif %}
-                        {% endfor %}
-                    </select>
-                </div>
-
-                <!-- Отчет по дням -->
-                <div class="flex flex-col items-center w-52">
-                    <a href="#"
-                       @click.prevent="submitReport('/supplier/managerDailyReports', selectedManager6)"
-                       class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2 px-6 rounded-lg transition-colors duration-200 w-full text-center shadow-sm">
-                        Взаиморасчет
-                    </a>
-                    <select x-model="selectedManager6" class="select select-sm w-full border border-gray-300 mt-2 pl-1">
-                        <option value="" selected>Не выбран</option>
-                        {% for manager in supplier_users %}
-                            {% if manager.role == 'manager' %}
-                                <option value="{{ manager.role_id }}">{{ manager.username }}</option>
-                            {% endif %}
-                        {% endfor %}
-                    </select>
-                </div>
-
-                <!-- Перенести кэш -->
-                <div class="flex flex-col items-center w-52">
-                    <a href="#"
-                       id="openMovedCashModal"
-                       class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2 px-6 rounded-lg transition-colors duration-200 w-full text-center shadow-sm">
-                        Создать кеш
-                    </a>
-
-                    <select id="movedCashManager" class="select select-sm w-full border border-gray-300 mt-2 pl-1">
-                        <option value="" selected>Не выбран</option>
-                        {% for manager in supplier_users %}
-                            {% if manager.role == 'manager' %}
-                                <option value="{{ manager.role_id }}">{{ manager.username }}</option>
-                            {% endif %}
-                        {% endfor %}
-                    </select>
-                </div>
-
-                <!-- Отчет по кеш -->
-                <div class="flex flex-col items-center w-52">
-                    <a href="#"
-                       @click.prevent="submitReport('/supplier/getMovedCash', selectedManager7)"
-                       class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2 px-6 rounded-lg transition-colors duration-200 w-full text-center shadow-sm">
-                        Отчет по кеш
-                    </a>
-                    <select x-model="selectedManager7" class="select select-sm w-full border border-gray-300 mt-2 pl-1">
-                        <option value="" selected>Не выбран</option>
-                        {% for manager in supplier_users %}
-                            {% if manager.role == 'manager' %}
-                                <option value="{{ manager.role_id }}">{{ manager.username }}</option>
-                            {% endif %}
-                        {% endfor %}
-                    </select>
-                </div>
-
-                <div class="flex flex-col items-center w-52">
-                    <a href="#"
-                       @click.prevent="submitReport('/supplier/supplierClientReceiptsDate', selectedManager5, selectedManager5)"
-                       class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2 px-6 rounded-lg transition-colors duration-200 w-full text-center shadow-sm">
-                        Отчет по клиентам
-                    </a>
-                    <select x-model="selectedManager5" class="select select-sm w-full border border-gray-300 mt-2 pl-1">
-                        <option value="" selected>Не выбран</option>
-                        {% for manager in supplier_users %}
-                            {% if manager.role == 'client' %}
-                                <option value="{{ manager.role_id }}">{{ manager.username }}</option>
-                            {% endif %}
-                        {% endfor %}
-                    </select>
-                </div>
-
-                <!-- Восьмой блок: Выбор роли -->
-                <div class="flex flex-col items-center w-52">
-                    <a href="#"
-                       @click.prevent="submitReport('/supplier/getUsersByRole', selectedManager8, selectedManager8, selectedManager8)"
-                       class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2 px-6 rounded-lg transition-colors duration-200 w-full text-center shadow-sm">
-                        Пользователи
-                    </a>
-                    <select x-model="selectedManager8" class="select select-sm w-full border border-gray-300 mt-2 pl-1">
-                        <option value="" selected>Выберите роль</option>
-                        <option value="manager">Менеджер</option>
-                        <option value="client">Клиент</option>
-                    </select>
-                </div>
-            </div>
-        </div>
-
         <!-- === Новый блок: Управление поставщиком === -->
         <div class="bg-white shadow-sm rounded-2xl p-6 border border-gray-100 mt-8">
             <h2 class="text-2xl font-semibold text-gray-800 mb-6 flex items-center gap-2">
@@ -182,7 +28,7 @@
                      aria-hidden="true">
                     <path d="M8.25 18.75a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 0 1-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m3 0h1.125c.621 0 1.129-.504 1.09-1.124a17.902 17.902 0 0 0-3.213-9.193 2.056 2.056 0 0 0-1.58-.86H14.25M16.5 18.75h-2.25m0-11.177v-.958c0-.568-.422-1.048-.987-1.106a48.554 48.554 0 0 0-10.026 0 1.106 1.106 0 0 0-.987 1.106v7.635m12-6.677v6.677m0 4.5v-4.5m0 0h-12" />
                 </svg>
-                Управление поставщиком
+                Финансы поставщика
             </h2>
 
             <!-- Суммы долгов -->
@@ -203,53 +49,25 @@
                     <div class="text-sm text-gray-500">Долг клиентам</div>
                     <div class="text-lg font-bold text-emerald-600">{{ debts.client_debt_supplier|number_format(0, ',', ' ') }} ₽</div>
                 </div>
-            </div>
 
-            <!-- Кнопки управления -->
-            <div class="flex flex-wrap justify-center gap-6">
-                <!-- Категории расходов -->
-                <div class="flex flex-col items-center w-52">
-                    <a href="/categories/supplierCategories"
-                       class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2 px-6 rounded-lg transition-colors duration-200 w-full text-center shadow-sm">
-                        Категории расходов
-                    </a>
-                    <div class="text-xs text-gray-500 mt-2 text-center">Просмотр и редактирование</div>
-                </div>
 
-                <!-- Расходы товарных денег отчет -->
-                <div class="flex flex-col items-center w-52">
-                    <a href="/supplier/getExpenses"
-                       class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2 px-6 rounded-lg transition-colors duration-200 w-full text-center shadow-sm">
-                        Расходы
-                    </a>
-                    <div class="text-xs text-gray-500 mt-2 text-center">Расходы товарных денег</div>
-                </div>
+                <div class="flex flex-wrap justify-center gap-6" x-data="reportPanel()">
+                    <div class="flex flex-col items-center w-52">
+                        <a href="#"
+                           id="openMovedCashModal"
+                           class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2 px-6 rounded-lg transition-colors duration-200 w-full text-center shadow-sm">
+                            Создать кеш
+                        </a>
 
-                <!-- Все транзакции  -->
-                <div class="flex flex-col items-center w-52">
-                    <a href="/supplier/getTransactionDate"
-                       class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2 px-6 rounded-lg transition-colors duration-200 w-full text-center shadow-sm">
-                        Транзакции
-                    </a>
-                    <div class="text-xs text-gray-500 mt-2 text-center">Все транзакции связанные с поставщиком</div>
-                </div>
-
-                <!-- Расходы на долги -->
-                <div class="flex flex-col items-center w-52">
-                    <a href="/supplier/debtExpenses"
-                       class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2 px-6 rounded-lg transition-colors duration-200 w-full text-center shadow-sm">
-                        Расходы на долги
-                    </a>
-                    <div class="text-xs text-gray-500 mt-2 text-center">Оплата долгов товарными деньгами</div>
-                </div>
-
-                <!-- Создать пользователя -->
-                <div class="flex flex-col items-center w-52">
-                    <a href="/supplier/addUserPage"
-                       class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2 px-6 rounded-lg transition-colors duration-200 w-full text-center shadow-sm">
-                        Создать
-                    </a>
-                    <div class="text-xs text-gray-500 mt-2 text-center">Добавление нового сотрудника</div>
+                        <select id="movedCashManager" class="select select-sm w-full border border-gray-300 mt-2 pl-1">
+                            <option value="" selected>Не выбран</option>
+                            {% for manager in supplier_users %}
+                                {% if manager.role == 'manager' %}
+                                    <option value="{{ manager.role_id }}">{{ manager.username }}</option>
+                                {% endif %}
+                            {% endfor %}
+                        </select>
+                    </div>
                 </div>
             </div>
         </div>
