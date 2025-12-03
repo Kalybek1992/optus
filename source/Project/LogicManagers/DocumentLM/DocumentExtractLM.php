@@ -228,24 +228,29 @@ class DocumentExtractLM
 
     private function mapBankExchange(): void
     {
+        $result = [];
         foreach ($this->bank_exchange as $block) {
-            $data = [];
             foreach ($block as $bl) {
-                $key_meaning = explode('=', $bl);
-                foreach ($this->map_bank_exchange as $key => $map) {
-                    if ($map == $key_meaning[0]) {
-                        $data[$key] = $key_meaning[1] ?? null;
+                $parts = explode('=', $bl, 2);
+                if (count($parts) !== 2) {
+                    continue;
+                }
+                [$sourceKey, $value] = $parts;
+
+                foreach ($this->map_bank_exchange as $targetKey => $mappedKey) {
+                    if ($mappedKey !== $sourceKey) {
+                        continue;
+                    }
+
+                    if (!array_key_exists($targetKey, $result) || empty($result[$targetKey])) {
+                        $result[$targetKey] = $value ?: null;
                     }
                 }
-
-            }
-
-            if ($data) {
-                $this->bank_exchange = $data;
-            }else{
-                $this->bank_exchange = [];
             }
         }
+
+        $this->bank_exchange = $result;
     }
+
 
 }

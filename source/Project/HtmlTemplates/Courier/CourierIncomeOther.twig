@@ -46,7 +46,7 @@
                 </div>
 
                 <!-- Категории расходов -->
-                <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between w-full gap-3 sm:gap-4 mb-4">
+                <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between w-full gap-3 sm:gap-4 mb-4 max-w-[520px]">
 
                     <div x-data="{ open: false, level: 0, path: [] }" class="relative w-full">
                         <button @click="open = !open"
@@ -159,7 +159,7 @@
             <p id="successText" class="py-4">Данные успешно сохранены.</p>
             <div class="modal-action w-full">
                 <form method="dialog" class="w-full">
-                    <a href="/courier/expenseform"
+                    <a href="/courier/incomeotherform"
                        class="btn w-full sm:w-auto px-6 bg-blue-600 hover:bg-blue-700 text-white">
                         Готово
                     </a>

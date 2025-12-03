@@ -11,9 +11,9 @@ use Source\Project\LogicManagers\LogicPdoModel\CouriersLM;
 use Source\Project\LogicManagers\LogicPdoModel\DebtsLM;
 use Source\Project\LogicManagers\LogicPdoModel\ExpenseCategoriesLM;
 use Source\Project\LogicManagers\HtmlLM\HtmlLM;
-use Source\Project\LogicManagers\LogicPdoModel\StockBalancesLM;
 use Source\Project\LogicManagers\LogicPdoModel\TransactionsLM;
 use Source\Project\Viewer\ApiViewer;
+use DateTime;
 
 class CourierController extends BaseController
 {
@@ -90,11 +90,12 @@ class CourierController extends BaseController
         $receipt_date = InformationDC::get('date');
         $comments = InformationDC::get('comments');
         $translation_max_id = TransactionsLM::getTranslationMaxId();
+        $dt = DateTime::createFromFormat('d.m.Y', $receipt_date);
+        $issue_date = $dt->format('Y-m-d');
 
         if (!$courier) {
             return ApiViewer::getErrorBody(['value' => 'invalid_parameters']);
         }
-
 
         $balance = $courier['balance_sum'] ?? 0;
         $new_balance = $balance + $amount;
@@ -116,6 +117,7 @@ class CourierController extends BaseController
                 'courier_id' => $courier['id'],
                 'category' => $category,
                 'comments' => $comments,
+                'issue_date' => $issue_date,
                 'status' => 'confirm_admin',
             ]);
 
@@ -124,7 +126,6 @@ class CourierController extends BaseController
             return ApiViewer::getOkBody(['success' => 'ok']);
 
         } catch (\Throwable $e) {
-
             return ApiViewer::getErrorBody(['value' => 'income_other_failed']);
         }
 

@@ -269,7 +269,6 @@
             return num >= 0 && num <= 100;
         };
 
-
         const updateUI = () => {
             const ok = isValid(input.value);
             saveBtn.disabled = !ok;
@@ -392,7 +391,6 @@
             }
         });
 
-
         document.querySelectorAll('.change-percentage').forEach(element => {
             element.addEventListener('click', () => {
                 const transactionId = element.getAttribute('data-transaction-id');
@@ -409,8 +407,6 @@
                 openPercentModal(transactionId, legalId, date, amount, percent, interest_income, total_amount)
             });
         });
-
-
     </script>
 
 

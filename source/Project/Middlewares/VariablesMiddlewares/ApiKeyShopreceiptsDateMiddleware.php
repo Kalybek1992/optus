@@ -42,14 +42,6 @@ final class ApiKeyShopreceiptsDateMiddleware extends Middleware
             return false;
         }
 
-        if ($user->role == 'supplier' ||
-            $user->role == 'client_services' ||
-            $user->role == 'manager' ||
-            $user->role == 'client' ||
-            $user->role == 'courier') {
-            return false;
-        }
-
 
         return $next();
     }

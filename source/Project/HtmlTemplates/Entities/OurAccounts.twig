@@ -10,9 +10,41 @@
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                           d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
                 </svg>
-                <span>Наши компании не добавлены</span>
+                <span>Сводка загрузок не найдена!</span>
             </div>
         {% else %}
+
+            <!-- Data -->
+
+            <div class="flex flex-col md:flex-row md:items-center gap-4 p-4 mb-5">
+                <!-- Дата "до" -->
+                <div class="flex items-center w-full md:w-auto gap-2">
+                    <span class="text-sm font-medium text-blue-600">Дата-</span>
+                    <input type="text"
+                           id="datepicker_to"
+                           placeholder="Дата"
+                           autocomplete="off"
+                           class="w-full md:w-[12rem] h-[44px] px-3 bg-white
+                      border border-blue-600
+                      rounded-lg shadow-sm
+                      text-sm font-medium text-gray-700 uppercase
+                      focus:outline-none
+                      focus:ring-2 focus:ring-blue-600
+                      focus:border-blue-600
+                      transition"/>
+                </div>
+
+                <!-- Кнопка "Искать" -->
+                <div class="w-full md:w-auto">
+                    <button id="searchFilters" type="submit"
+                            class="w-full md:w-auto h-[44px] px-6
+                       bg-blue-600 hover:bg-blue-700
+                       text-white text-sm font-semibold
+                       rounded-lg shadow-sm transition">
+                        Поиск с фильтрам
+                    </button>
+                </div>
+            </div>
 
             <!-- Заголовок -->
             <div class="text-center text-sm font-semibold text-gray-700">
@@ -210,6 +242,9 @@
         {% endif %}
     </div>
 
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pikaday/css/pikaday.css">
+    <script src="https://cdn.jsdelivr.net/npm/pikaday/pikaday.js"></script>
+
     {% include './Unloading/Unloading.twig' %}
 
     <script>
@@ -226,6 +261,69 @@
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
+        });
+
+        function showCornerModal(message) {
+            const checkbox = document.getElementById('notifications');
+            const txtModal = document.getElementById('notifications-txt');
+            checkbox.checked = true;
+            txtModal.innerHTML = message;
+
+            setTimeout(() => {
+                checkbox.checked = false;
+            }, 5000);
+        }
+
+        const pickerTo = new Pikaday({
+            field: document.getElementById('datepicker_to'),
+            format: 'DD.MM.YYYY',
+            maxDate: new Date(), // 👈 запрещаем выбор будущих дат
+            firstDay: 1,
+            i18n: {
+                previousMonth: 'Предыдущий',
+                nextMonth: 'Следующий',
+                months: [
+                    'Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь',
+                    'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'
+                ],
+                weekdays: [
+                    'Воскресенье', 'Понедельник', 'Вторник', 'Среда',
+                    'Четверг', 'Пятница', 'Суббота'
+                ],
+                weekdaysShort: ['Вс', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб']
+            },
+            toString(date, format) {
+                const day = String(date.getDate()).padStart(2, '0');
+                const month = String(date.getMonth() + 1).padStart(2, '0');
+                const year = date.getFullYear();
+                return `${day}.${month}.${year}`;
+            },
+            parse(dateString, format) {
+                const parts = dateString.split('.');
+                const day = parseInt(parts[0], 10);
+                const month = parseInt(parts[1], 10) - 1;
+                const year = parseInt(parts[2], 10);
+                return new Date(year, month, day);
+            }
+        });
+
+        document.getElementById('searchFilters').addEventListener('click', () => {
+            const dateTo = document.getElementById('datepicker_to');
+
+            if (!dateTo.value) {
+                showCornerModal('Выберите фильтр');
+                return;
+            }
+
+
+            // Берём текущий URL и параметры
+            const currentUrl = new URL(window.location.href);
+            const params = new URLSearchParams(currentUrl.search);
+
+            if (dateTo.value) params.set('date', dateTo.value);
+
+            // Переход с новыми параметрами
+            window.location.href = `${currentUrl.origin}${currentUrl.pathname}?${params.toString()}`;
         });
     </script>
 

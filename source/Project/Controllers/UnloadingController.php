@@ -6,6 +6,7 @@ use Source\Base\Core\Logger;
 use Source\Project\Controllers\Base\BaseController;
 use Source\Project\DataContainers\InformationDC;
 use Source\Project\LogicManagers\LogicPdoModel\ClientServicesLM;
+use Source\Project\LogicManagers\LogicPdoModel\ClientsLM;
 use Source\Project\LogicManagers\LogicPdoModel\CompanyFinancesLM;
 use Source\Project\LogicManagers\LogicPdoModel\LegalEntitiesLM;
 use Source\Project\LogicManagers\LogicPdoModel\TransactionsLM;
@@ -78,7 +79,6 @@ class UnloadingController extends BaseController
         unlink($file_path);
         exit;
     }
-
 
     public function shopReceiptsDate(): array
     {
@@ -470,14 +470,82 @@ class UnloadingController extends BaseController
     public function archiveOfExtracts(): array
     {
         $date = InformationDC::get('date');
-
-        $our_accounts = LegalEntitiesLM::getEntitiesOurAccountDate();
+        $our_accounts = LegalEntitiesLM::getEntitiesOurAccountDate($date);
 
         if (!$our_accounts) {
             return ApiViewer::getErrorBody(['message' => 'File not found']);
         }
 
         $file_path = XlsxLM::archiveOfExtracts($our_accounts);
+
+        return ApiViewer::getOkBody(['file' => $file_path]);
+    }
+
+    public function supplierClientReceiptsDate(): array
+    {
+        $client_id = InformationDC::get('client_id') ?? 0;
+        $date_from = InformationDC::get('date_from');
+        $date_to = InformationDC::get('date_to');
+        $suplier = InformationDC::get('suplier');
+        $supplier_id = $suplier['supplier_id'] ?? 0;
+        $client = ClientsLM::getClientSupplierId($client_id, $supplier_id);
+        $limit = 120;
+        $offset = 0;
+
+        if (!$client) {
+            return ApiViewer::getErrorBody(['message' => 'supplier_id']);
+        }
+
+
+        $transactions_count = LegalEntitiesLM::getEntitiesClientTransactionsCount(
+            null,
+            $date_from,
+            $date_to,
+            $client_id,
+        );
+
+        $all_transactions = [];
+
+        $limit_count = 2500;
+        if ($transactions_count > $limit_count) {
+            return ApiViewer::getErrorBody(['message' => 'limit_reached']);
+        }
+
+        while ($offset < $transactions_count) {
+            $chunk = LegalEntitiesLM::getEntitiesClientTransactions(
+                null,
+                $offset,
+                $limit,
+                $date_from,
+                $date_to,
+                $client_id
+            );
+
+            foreach ($chunk as &$item) {
+                $percent = $client['percentage'] ?? 0;
+                $item['interest_income'] = round($item['total_amount'] * ($percent / 100), 2);
+            }
+
+            if (!empty($chunk)) {
+                $all_transactions = array_merge($all_transactions, $chunk);
+            }
+
+            $offset += $limit;
+            usleep(500);
+        }
+
+        if (!$all_transactions) {
+            return ApiViewer::getErrorBody(['message' => 'File not found']);
+        }
+
+        $transactions_sum = LegalEntitiesLM::getEntitiesClientTransactionsSum(
+            null,
+            $date_from,
+            $date_to,
+            $client_id,
+        );
+
+        $file_path = XlsxLM::supplierClientReceiptsDate($all_transactions, $transactions_sum);
 
         return ApiViewer::getOkBody(['file' => $file_path]);
     }

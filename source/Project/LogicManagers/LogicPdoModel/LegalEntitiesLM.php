@@ -527,7 +527,6 @@ class LegalEntitiesLM
         $builder = LegalEntities::newQueryBuilder()
             ->select([
                 'le.*',
-                'MAX(ud.date) as max_uploaded_date',
                 'ul.transactions_count as transactions_count',
                 'ul.new_accounts_count as new_accounts_count',
                 'ul.bank_accounts_updated as bank_accounts_updated',
@@ -535,10 +534,6 @@ class LegalEntitiesLM
                 'ul.date as uploaded_date',
             ])
             ->from('legal_entities as le')
-            ->leftJoin('uploaded_documents ud')
-            ->on([
-                'ud.inn = le.inn',
-            ])
             ->leftJoin('uploaded_log ul')
             ->on([
                 'ul.id = le.id',
@@ -557,33 +552,32 @@ class LegalEntitiesLM
         }
 
         foreach ($our_account as $account) {
-            $legal_in[] = $account->id;
-            $date = '';
-            $is_expired = false;
+            // Форматируем дату создания
 
-            if ($account->date_created ?? false) {
-                $date = DateTime::createFromFormat('Y-m-d', $account->date_created);
-                $date = $date->format('d.m.Y');
+            if (!empty($account->date_created)) {
+                $dt = DateTime::createFromFormat('Y-m-d', $account->date_created);
+                $date_created = $dt ? $dt->format('d.m.Y') : date('d.m.Y');
+            } else {
+                $date_created = date('d.m.Y');
             }
 
-            if ($account->max_uploaded_date ?? false) {
-
-                $last_upload = (new DateTime())->setTimestamp($account->max_uploaded_date);
+            $is_expired = false;
+            if (!empty($account->uploaded_date)) {
+                $upload_date = new DateTime($account->uploaded_date);
                 $today = new DateTime('today');
-                $today_11 = new DateTime('today 11:00');
+                $now = new DateTime();
 
-                // Проверяем, что день сегодня > день последней загрузки
-                if ($today->format('Y-m-d') > $last_upload->format('Y-m-d') && new DateTime() >= $today_11) {
+                if ($today->format('Y-m-d') > $upload_date->format('Y-m-d') && $now->format('H:i') >= '11:00') {
                     $is_expired = true;
                 }
             }
 
+            // Рассчитываем проценты
             $total_received_interest = $account->total_received ?? 0;
             if ($total_received_interest > 0) {
                 $total_received_interest -= $total_received_interest * 0.29;
-                $total_received_interest = round($total_received_interest, 2); // ограничение до 2 знаков
+                $total_received_interest = round($total_received_interest, 2);
             }
-
 
             $our_account_arr[] = [
                 'id' => $account->id,
@@ -598,7 +592,7 @@ class LegalEntitiesLM
                 'new_accounts_count' => $account->new_accounts_count ?? 0,
                 'bank_accounts_updated' => $account->bank_accounts_updated ?? 0,
                 'file_name' => $account->file_name ?? null,
-                'date_created' => $date,
+                'date_created' => $date_created,
                 'is_expired' => $is_expired,
             ];
         }
@@ -635,99 +629,88 @@ class LegalEntitiesLM
         return $our_account_arr;
     }
 
-    public static function getEntitiesOurAccountDate(): array
+    public static function getEntitiesOurAccountDate($date): array
     {
+        if (!empty($date)) {
+            $dt = DateTime::createFromFormat('d.m.Y', $date);
+            $check_date = $dt ? $dt->format('Y-m-d') : date('Y-m-d');
+        } else {
+            $check_date = date('Y-m-d');
+        }
+
         $builder = LegalEntities::newQueryBuilder()
             ->select([
                 'le.*',
-                'MAX(ud.date) as max_uploaded_date',
-                'ul.transactions_count as transactions_count',
-                'ul.new_accounts_count as new_accounts_count',
-                'ul.bank_accounts_updated as bank_accounts_updated',
-                'ul.file_name as file_name',
+                'ul.transactions_count',
+                'ul.new_accounts_count',
+                'ul.bank_accounts_updated',
+                'ul.file_name',
                 'ul.date as uploaded_date',
             ])
             ->from('legal_entities as le')
-            ->leftJoin('uploaded_documents ud')
-            ->on([
-                'ud.inn = le.inn',
-            ])
             ->leftJoin('uploaded_log ul')
             ->on([
-                'ul.id = le.id',
+                'ul.legal_id = le.id',
+                "DATE(ul.date) = '{$check_date}'",
             ])
             ->where([
-                'le.our_account =' . 1,
+                'le.our_account = 1',
             ])
             ->groupBy('le.id');
 
-        $our_account = PdoConnector::execute($builder);
-        $our_account_arr = [];
-
-        if (!$our_account) {
+        $rows = PdoConnector::execute($builder);
+        if (!$rows) {
             return [];
         }
 
-        foreach ($our_account as $account) {
-            $date = '';
-            $is_expired = false;
+        $result = [];
 
-            if ($account->date_created ?? false) {
-                $date = DateTime::createFromFormat('Y-m-d', $account->date_created);
-                $date = $date->format('d.m.Y');
+        foreach ($rows as $row) {
+
+            if (!empty($account->date_created)) {
+                $dt = DateTime::createFromFormat('Y-m-d', $account->date_created);
+                $date_created = $dt ? $dt->format('d.m.Y') : date('d.m.Y');
+            } else {
+                $date_created = date('d.m.Y');
             }
 
-            if ($account->max_uploaded_date ?? false) {
 
-                $last_upload = (new DateTime())->setTimestamp($account->max_uploaded_date);
-                $today = new DateTime('today');
-                $today_11 = new DateTime('today 11:00');
-
-                // Проверяем, что день сегодня > день последней загрузки
-                if ($today->format('Y-m-d') > $last_upload->format('Y-m-d') && new DateTime() >= $today_11) {
-                    $is_expired = true;
-                }
+            $is_expired = true;
+            if ($row->file_name) {
+                $is_expired = false;
             }
 
-            $total_received_interest = $account->total_received ?? 0;
-            if ($total_received_interest > 0) {
-                $total_received_interest -= $total_received_interest * 0.29;
-                $total_received_interest = round($total_received_interest, 2); // ограничение до 2 знаков
-            }
-
-            $our_account_arr[] = [
-                'id' => $account->id,
-                'company_name' => $account->company_name,
-                'bank_name' => $account->bank_name,
-                'inn' => $account->inn,
-                'total_received' => $account->total_received,
-                'total_written_off' => $account->total_written_off,
-                'final_remainder' => $account->final_remainder,
-                'total_received_interest' => $total_received_interest,
-                'transactions_count' => $account->transactions_count ?? 0,
-                'new_accounts_count' => $account->new_accounts_count ?? 0,
-                'bank_accounts_updated' => $account->bank_accounts_updated ?? 0,
-                'file_name' => $account->file_name ?? null,
-                'date_created' => $date,
+            $result[] = [
+                'id' => $row->id,
+                'company_name' => $row->company_name,
+                'bank_name' => $row->bank_name,
+                'inn' => $row->inn,
+                'total_received' => $row->total_received,
+                'total_written_off' => $row->total_written_off,
+                'final_remainder' => $row->final_remainder,
+                'transactions_count' => $row->transactions_count ?? 0,
+                'new_accounts_count' => $row->new_accounts_count ?? 0,
+                'bank_accounts_updated' => $row->bank_accounts_updated ?? 0,
+                'file_name' => $row->file_name ?? null,
+                'date_created' => $date_created,
                 'is_expired' => $is_expired,
             ];
         }
 
-        usort($our_account_arr, function ($a, $b) {
+        usort($result, function ($a, $b) {
             $a_no_date = empty($a['date_created']);
             $b_no_date = empty($b['date_created']);
-
             $a_zero = empty($a['final_remainder']);
             $b_zero = empty($b['final_remainder']);
 
             if ($a_no_date !== $b_no_date) {
                 return $a_no_date <=> $b_no_date;
             }
+
             return $a_zero <=> $b_zero;
         });
 
-        //Logger::log(print_r($our_account_arr, true), 'our_account_arr');
-        return $our_account_arr;
+        return $result;
     }
 
     public static function getEntitiesBalance()
@@ -978,7 +961,6 @@ class LegalEntitiesLM
         }
 
         $builder
-            ->groupBy('t.id')
             ->limit(1);
 
         return PdoConnector::execute($builder)[0]->transactions_count ?? 0;
@@ -1031,28 +1013,36 @@ class LegalEntitiesLM
                 ]);
         }
 
-        $builder
-            ->leftJoin('debts d')
-            ->on([
-                "d.transaction_id = t.id",
-                "d.status = 'active'",
-            ]);
 
 
         if ($supplier_client_id) {
             $builder
+                ->leftJoin('debts d')
+                ->on([
+                    "d.transaction_id = t.id",
+                    "d.status = 'active'",
+                    "d.type_of_debt = 'сlient_debt_supplier'",
+                ])
                 ->where([
                     'le.supplier_client_id =' . $supplier_client_id
-                ]);
+                ])
+                ->groupBy('le.supplier_client_id');
         } else {
             $builder
+                ->leftJoin('debts d')
+                ->on([
+                    "d.transaction_id = t.id",
+                    "d.status = 'active'",
+                    "d.type_of_debt = 'client_goods'",
+                ])
                 ->where([
                     'le.client_id =' . $client_id
-                ]);
+                ])
+                ->groupBy('le.client_id');
         }
 
         $builder
-            ->groupBy('le.client_id');
+            ->limit(1);
 
         $transactions = PdoConnector::execute($builder)[0] ?? [];
 
@@ -1070,6 +1060,78 @@ class LegalEntitiesLM
 
         return $transactions_sum;
     }
+
+    public static function getSupplierClientTransactionsSum($date_from, $date_to, int $supplier_client_id): array
+    {
+        $builder = LegalEntities::newQueryBuilder()
+            ->select([
+                'SUM(t.amount) as sum_amount',
+                'SUM(t.interest_income) as sum_interest_income',
+            ])
+            ->from('legal_entities le');
+
+        if ($date_from) {
+            $date_from = DateTime::createFromFormat('d.m.Y', $date_from);
+            $date_from = $date_from->format('Y-m-d');
+        }
+
+        if ($date_to) {
+            $date_to = DateTime::createFromFormat('d.m.Y', $date_to);
+            $date_to = $date_to->format('Y-m-d');
+        }
+
+
+        if ($date_from && !$date_to) {
+            $builder
+                ->innerJoin('transactions t')
+                ->on([
+                    "t.from_account_id = le.id",
+                    "t.date >='" . $date_from . "'",
+                ]);
+        }
+
+        if (!$date_from && !$date_to) {
+            $builder
+                ->innerJoin('transactions t')
+                ->on([
+                    "t.from_account_id = le.id",
+                ]);
+        }
+
+        if ($date_from && $date_to) {
+            $builder
+                ->innerJoin('transactions t')
+                ->on([
+                    "t.from_account_id = le.id",
+                    "t.date BETWEEN '" . $date_from . "'" . "AND '" . $date_to . "'",
+                ]);
+        }
+
+        $builder
+            ->where([
+                'le.supplier_client_id =' . $supplier_client_id
+            ]);
+
+
+        $builder
+            ->groupBy('le.supplier_client_id')
+            ->limit(1);
+
+        $transactions = PdoConnector::execute($builder)[0] ?? [];
+
+        $sum_amount = $transactions->sum_amount ?? 0;
+        $sum_interest_income = $transactions->sum_interest_income ?? 0;
+        $debt_amounts = $transactions->debt_amount ?? 0;
+
+        $transactions_sum = [
+            'sum_amount' => $sum_amount,
+            'sum_interest_income' => $sum_interest_income,
+            'debts_amount' => $debt_amounts,
+        ];
+
+        return $transactions_sum;
+    }
+
 
     public static function getEntitiesClientServicesTransactions($supplier_id, $offset, $limit, $date_from, $date_to, $manager_id = null, $client_id = null): array
     {
@@ -1488,7 +1550,6 @@ class LegalEntitiesLM
 
 
         $builder
-            ->groupBy('id')
             ->limit(1);
 
         return PdoConnector::execute($builder)[0]->transactions_count ?? 0;
@@ -1790,7 +1851,7 @@ class LegalEntitiesLM
     {
         $builder = LegalEntities::newQueryBuilder()
             ->select([
-                'COUNT(t.id) as transactions_count',
+                'COUNT(DISTINCT legal_entities.id) as transactions_count',
             ]);
 
         if ($date_from) {

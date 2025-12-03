@@ -20,7 +20,7 @@ use Source\Project\LogicManagers\LogicPdoModel\CompanyFinancesLM;
 use Source\Project\LogicManagers\LogicPdoModel\UsersLM;
 use Source\Project\DataContainers\InformationDC;
 use Source\Project\Viewer\ApiViewer;
-
+use DateTime;
 
 class EntitiesController extends BaseController
 {
@@ -545,7 +545,8 @@ class EntitiesController extends BaseController
 
     public function archiveOfExtracts(): string
     {
-        $our_accounts = LegalEntitiesLM::getEntitiesOurAccountDate();
+        $date = InformationDC::get('date');
+        $our_accounts = LegalEntitiesLM::getEntitiesOurAccountDate($date);
 
         //Logger::log(print_r($companies, true), 'getOurEntities');
 
@@ -569,6 +570,8 @@ class EntitiesController extends BaseController
         $type_company_finances = 'stock_balances';
         $courier_id = null;
         $courier_balance = 0;
+        $dt = DateTime::createFromFormat('d.m.Y', $date);
+        $issue_date = $dt->format('Y-m-d');
 
         if ($user['role'] == 'courier') {
             $status_company_finances = 'confirm_admin';
@@ -587,7 +590,8 @@ class EntitiesController extends BaseController
                 'category' => $category_path,
                 'comments' => $comments,
                 'type' => 'expense_stock_balances',
-                'status' => 'processed'
+                'status' => 'processed',
+                'issue_date' => $issue_date
             ];
 
             TransactionsLM::insertNewTransactions([
@@ -612,7 +616,8 @@ class EntitiesController extends BaseController
                 'courier_id' => $selected_id,
                 'comments' => $comments,
                 'type' => $type_company_finances,
-                'status' => 'confirm_courier'
+                'status' => 'confirm_courier',
+                'issue_date' => $issue_date
             ];
 
             TransactionsLM::insertNewTransactions([
@@ -651,15 +656,13 @@ class EntitiesController extends BaseController
                 'client_id' => $selected_id,
                 'comments' => $comments,
                 'type' => $type_company_finances,
-                'status' => $status_company_finances
+                'status' => $status_company_finances,
+                'issue_date' => $issue_date
             ];
 
 
             if ($courier_id) {
-                $dt = DateTime::createFromFormat('d.m.Y', $date);
-                $issue_date = $dt->format('Y-m-d');
                 $insert_company_finances['courier_id'] = $courier_id;
-                $insert_company_finances['issue_date'] = $issue_date;
                 CouriersLM::adjustCurrentBalance($courier_id, $courier_balance);
             }
 

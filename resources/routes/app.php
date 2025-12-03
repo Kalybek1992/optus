@@ -702,7 +702,7 @@ return [
                 new ApiKeySupplierMiddleware
             ]
         ],
-        '/supplier/clientreceiptsdate' => [
+        '/supplier/supplierclientreceiptsdate' => [
             'validation' => [
                 'client_id' => [
                     'required' => true,
@@ -1396,7 +1396,7 @@ return [
                     'custom_logic' => fn($a) => is_numeric($a) && $a > 0
                 ],
                 'date' => [
-                    'required' => false,
+                    'required' => true,
                     'custom_logic' => fn($a) => is_string($a) && DateTime::createFromFormat('d.m.Y', $a) !== false || $a == null
                 ],
                 'comments' => [
@@ -1543,6 +1543,10 @@ return [
                 'amount' => [
                     'required' => true,
                     'custom_logic' => fn($a) => is_numeric($a) && $a > 0
+                ],
+                'date' => [
+                    'required' => true,
+                    'custom_logic' => fn($a) => is_string($a) && DateTime::createFromFormat('d.m.Y', $a) !== false || $a == null
                 ],
                 'comments' => [
                     'required' => true
@@ -1886,6 +1890,25 @@ return [
             ],
             'middlewares' => [
                 new ApiKeyAdminMiddleware
+            ]
+        ],
+        '/unloading/supplierclientreceiptsdate' => [
+            'validation' => [
+                'client_id' => [
+                    'required' => true,
+                    'custom_logic' => fn($a) => is_numeric($a) && $a > 0
+                ],
+                'date_from' => [
+                    'required' => false,
+                    'custom_logic' => fn($a) => is_string($a) && DateTime::createFromFormat('d.m.Y', $a) !== false || $a == null
+                ],
+                'date_to' => [
+                    'required' => false,
+                    'custom_logic' => fn($a) => is_string($a) && DateTime::createFromFormat('d.m.Y', $a) !== false || $a == null
+                ]
+            ],
+            'middlewares' => [
+                new ApiKeySupplierMiddleware
             ]
         ],
     ]

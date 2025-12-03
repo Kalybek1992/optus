@@ -290,7 +290,7 @@ class TransactionController extends BaseController
         $transactions_count = LegalEntitiesLM::getEntitiesClientTransactionsCount($client_id, $date_from, $date_to);
         $page_count = ceil($transactions_count / $limit);
 
-        //Logger::log(print_r($transactions_sum, true), 'clientReceiptsDate');
+        //Logger::log(print_r($transactions_count, true), 'transactions_count');
         //Logger::log(print_r($transactions, true), 'clientReceiptsDate');
 
         return $this->twig->render('Transaction/ClientReceiptsDate.twig', [
@@ -312,7 +312,6 @@ class TransactionController extends BaseController
         $date_to = InformationDC::get('date_to');
         $limit = 30;
         $offset = $page * $limit;
-
         $client = ClientServicesLM::clientServicesId($client_id);
         $supplier_id = $client['supplier_id'] ?? 0;
 
@@ -344,8 +343,6 @@ class TransactionController extends BaseController
         $page_count = ceil($transactions_count / $limit);
 
 
-        //Logger::log(print_r($transactions_sum, true), 'clientServicesReceiptsDate');
-
 
         return $this->twig->render('Transaction/ClientServicesReceiptsDate.twig', [
             'page' => $page + 1,
@@ -376,8 +373,6 @@ class TransactionController extends BaseController
         $transactions_count = LegalEntitiesLM::getEntitiesSuppliersTransactionsCount($supplier_id, $date_from, $date_to);
         $page_count = ceil($transactions_count / $limit);
 
-
-        //Logger::log(print_r($client, true), 'clientReceiptsDate');
 
 
         return $this->twig->render('Transaction/SuppliersSendingsDate.twig', [

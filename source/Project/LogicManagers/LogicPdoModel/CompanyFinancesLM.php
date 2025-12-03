@@ -558,7 +558,7 @@ class CompanyFinancesLM
                 'status' => $r->status,
                 'amount' => $r->amount,
                 'card_number' => $r->card_number,
-                'supplier_name' => $r->supplier_name ?? '',
+                'supplier_name' => $r->supplier_name ?? 'Администратор',
                 'date' => $r->bo_date ? date('d.m.Y', strtotime($r->bo_date)) : '',
             ];
         }

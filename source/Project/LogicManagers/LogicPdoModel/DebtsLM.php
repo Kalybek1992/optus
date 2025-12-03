@@ -946,4 +946,9 @@ class DebtsLM
 
         return true;
     }
+
+    public static function getDebts()
+    {
+
+    }
 }

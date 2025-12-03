@@ -24,7 +24,6 @@ use Source\Project\Viewer\ApiViewer;
 
 class FileController extends BaseController
 {
-
     /**
      * @return array
      * @throws \Exception
@@ -100,6 +99,5 @@ class FileController extends BaseController
             'bank_accounts_updated' => $bank_accounts_updated,
         ]);
     }
-
 
 }

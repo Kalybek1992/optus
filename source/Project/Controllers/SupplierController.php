@@ -21,6 +21,7 @@ use Source\Project\LogicManagers\LogicPdoModel\TransactionsLM;
 use Source\Project\LogicManagers\LogicPdoModel\UsersLM;
 use Source\Project\Viewer\ApiViewer;
 use DateTime;
+use Source\Base\Core\Logger;
 
 class SupplierController extends BaseController
 {
@@ -609,11 +610,15 @@ class SupplierController extends BaseController
         $amount = InformationDC::get('amount');
         $comments = InformationDC::get('comments');
         $category_path = InformationDC::get('category_path');
+        $date = InformationDC::get('date');
         $translation_max_id = TransactionsLM::getTranslationMaxId();
 
         $suplier = InformationDC::get('suplier');
         $supplier_id = $suplier['supplier_id'] ?? 0;
         $stock_balance = $suplier['stock_balance'] ?? 0;
+
+        $dt = DateTime::createFromFormat('d.m.Y', $date);
+        $issue_date = $dt->format('Y-m-d');
 
         if ($delivery_type == 'expense') {
             TransactionsLM::insertNewTransactions([
@@ -631,6 +636,7 @@ class SupplierController extends BaseController
                 'comments' => $comments,
                 'type' => 'expense_stock_balances_supplier',
                 'supplier_id' => $supplier_id,
+                'issue_date' => $issue_date,
                 'status' => 'processed'
             ]);
         }
@@ -656,6 +662,7 @@ class SupplierController extends BaseController
                 'client_id' => $selected_id,
                 'supplier_id' => $supplier_id,
                 'comments' => $comments,
+                'issue_date' => $issue_date,
                 'type' => 'debt_repayment_client_supplier',
                 'status' => 'processed'
             ]);
@@ -687,6 +694,7 @@ class SupplierController extends BaseController
                 'transaction_id' => $translation_max_id + 1,
                 'supplier_id' => $supplier_id,
                 'comments' => $comments,
+                'issue_date' => $issue_date,
                 'type' => 'debt_repayment_сompanies_supplier',
                 'status' => 'confirm_admin'
             ]);
@@ -724,6 +732,7 @@ class SupplierController extends BaseController
                 'supplier_id' => $supplier_id,
                 'courier_id' => $courier['id'],
                 'comments' => $comments,
+                'issue_date' => $issue_date,
                 'type' => 'debt_repayment_сompanies_supplier',
                 'status' => 'confirm_courier'
             ]);
@@ -789,7 +798,7 @@ class SupplierController extends BaseController
         ]);
     }
 
-    public function clientReceiptsDate(): string
+    public function supplierClientReceiptsDate(): string
     {
         $client_id = InformationDC::get('client_id') ?? 0;
         $page = InformationDC::get('page') ?? 0;
@@ -835,8 +844,7 @@ class SupplierController extends BaseController
         $page_count = ceil($transactions_count / $limit);
 
 
-        //Logger::log(print_r($transactions, true), 'clientReceiptsDate');
-
+        //Logger::log(print_r($transactions_count, true), 'clientReceiptsDate');
 
         return $this->twig->render('Supplier/ClientReceiptsDate.twig', [
             'page' => $page + 1,

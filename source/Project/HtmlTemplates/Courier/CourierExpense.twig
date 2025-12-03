@@ -12,14 +12,14 @@
 
                     <!-- Баланс -->
                     <div x-data="{
-                    total: {{ courier.balance_sum|default(0) }},
-                    entered: '',
-                    get status() {
-                        if (!this.entered || isNaN(this.entered) || Number(this.entered) <= 0) return 'invalid';
-                        if (Number(this.entered) > this.total) return 'exceed';
-                        return 'ok';
-                    }
-                }" class="flex flex-col sm:flex-row sm:items-center gap-3">
+                                total: {{ courier.balance_sum|default(0) }},
+                                entered: '',
+                                get status() {
+                                    if (!this.entered || isNaN(this.entered) || Number(this.entered) <= 0) return 'invalid';
+                                    if (Number(this.entered) > this.total) return 'exceed';
+                                    return 'ok';
+                                }
+                            }" class="flex flex-col sm:flex-row sm:items-center gap-3">
 
                         <!-- Доступный баланс -->
                         <div class="flex items-center text-sm text-gray-700 font-semibold bg-gray-100 rounded-md px-3 py-2 sm:h-12">
@@ -33,10 +33,10 @@
 
                         <!-- Input -->
                         <input id="balance" type="text" x-model="entered"
-                               :class="{
-                           'border border-blue-500': status === 'ok',
-                           'border border-red-500': status === 'exceed' || status === 'invalid'
-                       }"
+                                           :class="{
+                                       'border border-blue-500': status === 'ok',
+                                       'border border-red-500': status === 'exceed' || status === 'invalid'
+                                   }"
                                class="h-12 w-full sm:w-32 px-3 rounded-md focus:outline-none"
                                placeholder="Введите сумму!">
 
@@ -44,11 +44,22 @@
                         <div class="text-sm text-red-500 mt-1" x-text="status === 'exceed' ? 'Сумма превышает доступную!' : (status === 'invalid' ? 'Введите число!' : '')"></div>
                     </div>
 
+                    <!-- Дата -->
+                    <div class="flex flex-col gap-2 mb-4">
+                        <span class="text-sm sm:text-lg font-bold text-gray-700 uppercase tracking-wide">Дата</span>
+
+                        <input type="text"
+                               id="date_input"
+                               placeholder="Введите дату"
+                               autocomplete="off"
+                               class="datepicker_from w-full max-w-[220px] sm:h-[56px] h-12 px-4 bg-white rounded-xl shadow-sm text-base font-semibold text-gray-700 border border-gray-200"/>
+                    </div>
+
                     <!-- Категории и комментарий -->
                     <div class="space-y-4">
 
                         <!-- Категории расходов -->
-                        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between w-full gap-2">
+                        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between w-full gap-2 max-w-[520px]">
                             <div x-data="{ open: false, level: 0, path: [] }" class="relative w-full">
                                 <button @click="open = !open"
                                         class="w-full text-left bg-white border border-gray-300 px-4 py-3 rounded-md shadow-sm hover:shadow-md transition font-medium text-sm sm:text-base">
@@ -166,7 +177,8 @@
             </div>
         </div>
     </dialog>
-
+    <script src="https://cdn.jsdelivr.net/npm/pikaday/pikaday.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pikaday/css/pikaday.css" />
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
@@ -175,6 +187,33 @@
                 document.getElementById('errorModal').showModal();
             };
 
+            document.querySelectorAll('.datepicker_from').forEach(field => {
+                new Pikaday({
+                    field: field,
+                    format: 'DD.MM.YYYY',
+                    firstDay: 1,
+                    i18n: {
+                        previousMonth: 'Предыдущий',
+                        nextMonth: 'Следующий',
+                        months: ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'],
+                        weekdays: ['Воскресенье', 'Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота'],
+                        weekdaysShort: ['Вс', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб']
+                    },
+                    toString(date) {
+                        const day = String(date.getDate()).padStart(2, '0');
+                        const month = String(date.getMonth() + 1).padStart(2, '0');
+                        const year = date.getFullYear();
+                        return `${day}.${month}.${year}`;
+                    },
+                    parse(dateString) {
+                        const parts = dateString.split('.');
+                        const day = parseInt(parts[0], 10);
+                        const month = parseInt(parts[1], 10) - 1;
+                        const year = parseInt(parts[2], 10);
+                        return new Date(year, month, day);
+                    }
+                });
+            });
 
             const commentsModal = document.getElementById('modal-comments');
             const modalBalance = document.getElementById('modal-balance');
@@ -187,9 +226,16 @@
                 const balanceInput = document.getElementById('balance');
                 const enteredValue = balanceInput ? balanceInput.value.trim() : '';
                 const amount = Number(enteredValue);
+                const dateInput = document.getElementById('date_input');
+                const dateValue = dateInput.value.trim();
 
                 if (!enteredValue || isNaN(amount) || amount <= 0) {
                     openErrorModal('Укажите корректную сумму!');
+                    return;
+                }
+
+                if (!dateValue) {
+                    openErrorModal('Укажите дату!');
                     return;
                 }
 
@@ -214,6 +260,7 @@
                     category_path: categoryPath,
                     amount: amount,
                     comments: commentValue,
+                    date: dateValue,
                 };
 
                 modalPurpose.textContent = 'Расход';

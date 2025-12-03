@@ -45,6 +45,30 @@
                     </div>
                 </div>
 
+                <!-- Дата -->
+                <div class="flex flex-col gap-2 mb-4 mt-4">
+                    <input
+                            type="text"
+                            id="date_input"
+                            placeholder="Выберите дату"
+                            autocomplete="off"
+                            readonly
+                            class="
+                            datepicker_from
+                            w-full max-w-[290px]
+                            h-12 sm:h-[46px]
+                            px-4
+                            rounded-xl
+                            bg-white
+                            font-semibold text-blue-700
+                            border border-blue-500
+                            shadow-sm
+                            cursor-pointer
+                            focus:outline-none
+                        "
+                    />
+                </div>
+
 
                 <!-- Выбор передачи товарных денег -->
                 <div class="space-y-4 mt-4"
@@ -264,6 +288,14 @@
                 </div>
             </div>
 
+            <!-- Дата -->
+            <div class="mt-5"> <!-- mt-5 примерно 20px -->
+                <div class="text-xs uppercase font-semibold text-gray-500 mb-1 tracking-wide">Дата</div>
+                <div id="modal-date"
+                     class="px-3 py-2 rounded-[6px] text-sm text-gray-800 border border-blue-400 bg-transparent font-medium">
+                </div>
+            </div>
+
             <!-- Остаток -->
             <div class="mt-5">
                 <div class="text-xs uppercase font-semibold text-gray-500 mb-1 tracking-wide">Остаток</div>
@@ -320,18 +352,50 @@
         </div>
     </dialog>
 
+    <script src="https://cdn.jsdelivr.net/npm/pikaday/pikaday.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pikaday/css/pikaday.css" />
+
     <script>
         const openErrorModal = (message) => {
             document.getElementById('errorText').textContent = message;
             document.getElementById('errorModal').showModal();
         };
 
+        document.querySelectorAll('.datepicker_from').forEach(field => {
+            new Pikaday({
+                field: field,
+                format: 'DD.MM.YYYY',
+                firstDay: 1,
+                i18n: {
+                    previousMonth: 'Предыдущий',
+                    nextMonth: 'Следующий',
+                    months: ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'],
+                    weekdays: ['Воскресенье', 'Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота'],
+                    weekdaysShort: ['Вс', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб']
+                },
+                toString(date) {
+                    const day = String(date.getDate()).padStart(2, '0');
+                    const month = String(date.getMonth() + 1).padStart(2, '0');
+                    const year = date.getFullYear();
+                    return `${day}.${month}.${year}`;
+                },
+                parse(dateString) {
+                    const parts = dateString.split('.');
+                    const day = parseInt(parts[0], 10);
+                    const month = parseInt(parts[1], 10) - 1;
+                    const year = parseInt(parts[2], 10);
+                    return new Date(year, month, day);
+                }
+            });
+        });
 
         const commentsModal = document.getElementById('modal-comments');
         const modalBalance = document.getElementById('modal-balance');
         const modalPurpose = document.getElementById('modal-purpose');
         const modalAppointment = document.getElementById('modal-appointment');
         const modalRemainder = document.getElementById('modal-remainder');
+        const modalDate = document.getElementById('modal-date');
+        const dateInput = document.getElementById('date_input');
         let post = null;
 
         document.getElementById('save_expense').addEventListener('click', () => {
@@ -342,9 +406,15 @@
                 : '';
             const amount = Number(enteredValue);
             let categoryPath = '';
+            const dateValue = dateInput.value.trim();
 
             if (!enteredValue || isNaN(Number(enteredValue)) || Number(enteredValue) <= 0) {
                 openErrorModal('Укажите корректную сумму!');
+                return;
+            }
+
+            if (!dateValue) {
+                openErrorModal('Укажите дату!');
                 return;
             }
 
@@ -413,6 +483,7 @@
                 category_path: categoryPath,
                 amount: amount || 0,
                 comments: commentValue,
+                date: dateValue,
             }
 
             modalPurpose.textContent = purpose[deliveryType] || 'Не известно';
@@ -420,6 +491,7 @@
             modalBalance.textContent = amount || 0;
             commentsModal.textContent = commentValue;
             modalRemainder.textContent = summ - (amount || 0);
+            modalDate.textContent = dateValue;
             document.getElementById('save_expense_modal').checked = true;
         });
 

@@ -27,8 +27,8 @@
                     <!-- Поле ввода -->
                     <input id="balance" type="text" x-model="entered"
                            :class="status === 'invalid'
-                ? 'border border-red-500 text-red-500 bg-white'
-                : 'border border-green-500 text-green-700 bg-white'"
+                            ? 'border border-red-500 text-red-500 bg-white'
+                            : 'border border-green-500 text-green-700 bg-white'"
                            class="h-12 w-32 px-3 rounded-lg focus:outline-none transition-colors duration-200"
                            placeholder="Введите сумму">
 
@@ -37,6 +37,28 @@
                          x-text="status === 'invalid' ? 'Введите число!' : ''"></div>
                 </div>
 
+                <!-- Дата -->
+                <div class="flex flex-col gap-2 mb-4">
+                    <input
+                            type="text"
+                            id="date_input"
+                            placeholder="Выберите дату"
+                            autocomplete="off"
+                            readonly
+                            class="
+                                datepicker_from
+                                w-full max-w-[280px]
+                                h-12 sm:h-[46px]
+                                px-4
+                                rounded-xl
+                                bg-white
+                                font-semibold text-green-700
+                                border border-green-500
+                                shadow-sm
+                                cursor-pointer
+                                focus:outline-none"
+                    />
+                </div>
 
                 <!-- Выбор передачи -->
                 <div class="space-y-4" x-data="{
@@ -283,6 +305,13 @@
                          class="text-black font-bold text-lg border border-green-300 rounded-lg px-3 py-2 bg-white"></div>
                 </div>
 
+                <!-- Дата -->
+                <div>
+                    <p class="text-sm font-medium text-gray-700 mb-1">Дата</p>
+                    <div id="modal-date"
+                         class="text-black font-bold text-lg border border-green-300 rounded-lg px-3 py-2 bg-white"></div>
+                </div>
+
                 <!-- Остаток -->
                 <div>
                     <p class="text-sm font-medium text-gray-700 mb-1">Остаток</p>
@@ -312,7 +341,8 @@
             </div>
         </div>
     </div>
-
+    <script src="https://cdn.jsdelivr.net/npm/pikaday/pikaday.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pikaday/css/pikaday.css" />
 
     <dialog id="errorModal" class="modal">
         <div class="modal-box border">
@@ -349,12 +379,41 @@
             document.getElementById('errorModal').showModal();
         };
 
+        document.querySelectorAll('.datepicker_from').forEach(field => {
+            new Pikaday({
+                field: field,
+                format: 'DD.MM.YYYY',
+                firstDay: 1,
+                i18n: {
+                    previousMonth: 'Предыдущий',
+                    nextMonth: 'Следующий',
+                    months: ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'],
+                    weekdays: ['Воскресенье', 'Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота'],
+                    weekdaysShort: ['Вс', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб']
+                },
+                toString(date) {
+                    const day = String(date.getDate()).padStart(2, '0');
+                    const month = String(date.getMonth() + 1).padStart(2, '0');
+                    const year = date.getFullYear();
+                    return `${day}.${month}.${year}`;
+                },
+                parse(dateString) {
+                    const parts = dateString.split('.');
+                    const day = parseInt(parts[0], 10);
+                    const month = parseInt(parts[1], 10) - 1;
+                    const year = parseInt(parts[2], 10);
+                    return new Date(year, month, day);
+                }
+            });
+        });
 
         const commentsModal = document.getElementById('modal-comments');
         const modalBalance = document.getElementById('modal-balance');
         const modalPurpose = document.getElementById('modal-purpose');
         const modalAppointment = document.getElementById('modal-appointment');
         const modalRemainder = document.getElementById('modal-remainder');
+        const modalDate = document.getElementById('modal-date');
+        const dateInput = document.getElementById('date_input');
         let post = null;
 
         document.getElementById('save_expense').addEventListener('click', () => {
@@ -365,9 +424,15 @@
                 : '';
             const amount = Number(enteredValue);
             let categoryPath = '';
+            const dateValue = dateInput.value.trim();
 
             if (!enteredValue || isNaN(Number(enteredValue)) || Number(enteredValue) <= 0) {
                 openErrorModal('Укажите корректную сумму!');
+                return;
+            }
+
+            if (!dateValue) {
+                openErrorModal('Укажите дату!');
                 return;
             }
 
@@ -375,6 +440,7 @@
                 openErrorModal('Выберите назначение!');
                 return;
             }
+
 
             const deliveryType = selectedRadio.value;
             let selectedId = null;
@@ -437,6 +503,7 @@
                 category_path: categoryPath,
                 amount: amount || 0,
                 comments: commentValue,
+                date: dateValue,
             }
 
             if (deliveryType === 'debt') {
@@ -448,6 +515,7 @@
             modalBalance.textContent = amount || 0;
             commentsModal.textContent = commentValue;
             modalRemainder.textContent = summ - (amount || 0);
+            modalDate.textContent = dateValue;
             document.getElementById('save_expense_modal').checked = true;
         });
 
