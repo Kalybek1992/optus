@@ -70,20 +70,14 @@ class ShopLM
                 'u.id as user_id',
                 'u.email as email',
                 'u.password as password',
-                'le.bank_account as bank_account',
                 'le.inn as inn',
                 'le.company_name as company_name',
                 'le.id as le_id',
-                'ba.balance as balance',
             ])
             ->from('shop')
             ->leftJoin('legal_entities le')
             ->on([
                 'le.shop_id = id',
-            ])
-            ->leftJoin('bank_accounts ba')
-            ->on([
-                'ba.legal_entity_id = le.id',
             ])
             ->leftJoin('users u')
             ->on([
@@ -108,9 +102,8 @@ class ShopLM
             $bank_accounts = null;
             $decoded = openssl_decrypt(base64_decode($shop->password), Config::METHOD, Config::ENCRYPTION);
 
-            if ($shop->bank_account ?? false) {
+            if ($shop->inn ?? false) {
                 $bank_accounts = [
-                    'account' => $shop->bank_account,
                     'inn' => $shop->inn,
                     'company_name' => $shop->company_name,
                     'balance' => $balance_sum,
@@ -137,8 +130,6 @@ class ShopLM
                 }
             }
         }
-
-
 
         return $shops_array;
     }

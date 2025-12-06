@@ -15,6 +15,7 @@ use Source\Project\LogicManagers\LogicPdoModel\LegalEntitiesLM;
 use Source\Project\LogicManagers\LogicPdoModel\ManagersLM;
 use Source\Project\LogicManagers\LogicPdoModel\ShopLM;
 use Source\Project\LogicManagers\LogicPdoModel\StockBalancesLM;
+use Source\Project\LogicManagers\LogicPdoModel\SupplierBalanceLM;
 use Source\Project\LogicManagers\LogicPdoModel\SuppliersLM;
 use Source\Project\LogicManagers\LogicPdoModel\TransactionsLM;
 use Source\Project\LogicManagers\LogicPdoModel\UsersLM;
@@ -26,6 +27,7 @@ use Source\Project\Models\Debts;
 use Source\Project\Models\LegalEntities;
 use Source\Project\Models\MutualSettlement;
 use Source\Project\Models\StockBalances;
+use Source\Project\Models\SupplierBalance;
 use Source\Project\Models\TaskPlanner;
 use Source\Project\Models\Transactions;
 use Source\Project\Models\UploadedDocuments;
@@ -182,6 +184,7 @@ class UserController extends BaseController
         $percent = VariablesDC::get('percent');
         $user = UsersLM::getUserSupplier($user_id);
         $debts = [];
+        $insert_new_balance = [];
 
 
         if (!$user) {
@@ -192,11 +195,6 @@ class UserController extends BaseController
             return ApiViewer::getErrorBody(['value' => 'bad_entity_id']);
         }
 
-
-        $balance = $legal_entities->balance;
-        $new_balance = $balance - ($balance * $percent / 100);
-
-
         $transactions = TransactionsLM::getTransactionFromOrToAccountId(
             $entity_id,
             $entity_id
@@ -205,7 +203,6 @@ class UserController extends BaseController
         if (!$transactions) {
             return ApiViewer::getErrorBody(['value' => 'not_transaction']);
         }
-
 
         foreach ($transactions as $transaction) {
             $from_account_id = $transaction->from_account_id;
@@ -216,6 +213,18 @@ class UserController extends BaseController
 
             if ($transaction->type == 'expense') {
                 $type_of_debt = 'supplier_goods';
+
+                $key = $transaction->to_account_id . '_' . $transaction->from_account_id;
+
+                if (!isset($insert_new_balance[$key])) {
+                    $insert_new_balance[$key] = [
+                        'legal_id' => $transaction->to_account_id,
+                        'sender_legal_id' => $transaction->from_account_id,
+                        'amount' => $transaction->amount,
+                    ];
+                }
+
+                $insert_new_balance[$key]['amount'] += $transaction->amount;
             }
 
             $debts[] = [
@@ -235,8 +244,7 @@ class UserController extends BaseController
             ], $transaction->id);
         }
 
-        //TODO Отключил обновление процента у баланса
-
+        //TODO Отключил обновление процента у баланса добавили новый
 
         LegalEntitiesLM::updateLegalEntities([
             'supplier_id =' . $user->suppliers_id,
@@ -244,6 +252,11 @@ class UserController extends BaseController
             'percent =' . $percent,
         ], $legal_entities->id);
 
+
+        if ($insert_new_balance) {
+            $insert_new_balance = array_values($insert_new_balance);
+            SupplierBalanceLM::setNewSupplierBalance($insert_new_balance);
+        }
 
         if ($debts) {
             DebtsLM::setNewDebts($debts);
@@ -253,7 +266,6 @@ class UserController extends BaseController
 
         return ApiViewer::getOkBody([
             'success' => 'ok',
-            'balance' => number_format($new_balance, 2),
             'percent' => $percent
         ]);
     }
@@ -274,14 +286,6 @@ class UserController extends BaseController
         if (!$legal_entities) {
             return ApiViewer::getErrorBody(['value' => 'bad_entity_id']);
         }
-
-        $balance = $legal_entities->balance;
-
-        if ($balance < 0){
-            return ApiViewer::getErrorBody(['value' => 'bad_balance']);
-        }
-
-        $new_balance = $balance - ($balance * $percent / 100);
 
 
         $transactions = TransactionsLM::getTransactionFromOrToAccountId(
@@ -339,7 +343,6 @@ class UserController extends BaseController
 
         return ApiViewer::getOkBody([
             'success' => 'ok',
-            'balance' => number_format($new_balance, 2),
             'percent' => $percent
         ]);
     }
@@ -361,15 +364,6 @@ class UserController extends BaseController
             return ApiViewer::getErrorBody(['value' => 'bad_entity_id']);
         }
 
-        $balance = $legal_entities->balance;
-
-
-        if ($balance < 0) {
-            return ApiViewer::getErrorBody(['value' => 'incorrect_amount']);
-        }
-
-
-        $new_balance = $balance - ($balance * $user->client_percentage / 100);
         $percent = $user->client_percentage;
         $transactions = TransactionsLM::getTransactionFromOrToAccountId($entity_id, $entity_id);
 
@@ -385,6 +379,7 @@ class UserController extends BaseController
             if ($transaction->our_account > 0) {
                 $from_account_id = $transaction->from_account_id;
                 $to_account_id = $transaction->to_account_id;
+
 
                 $debts[] = [
                     'from_account_id' => $from_account_id,
@@ -417,7 +412,6 @@ class UserController extends BaseController
 
         return ApiViewer::getOkBody([
             'success' => 'ok',
-            'balance' => number_format($new_balance, 2),
             'percent' => $percent
         ]);
     }
@@ -608,7 +602,7 @@ class UserController extends BaseController
             return ApiViewer::getErrorBody(['value' => 'bad_user_id']);
         }
 
-        if ($user->role == 'client'){
+        if ($user->role == 'client') {
 
             $client = ClientsLM::getClientId($user->clients_id);
 
@@ -616,17 +610,17 @@ class UserController extends BaseController
                 return ApiViewer::getErrorBody(['value' => 'bad_client_id']);
             }
 
-            $legals_id = $client['legal_id']  ? explode(',', $client['legal_id']) : [];
+            $legals_id = $client['legal_id'] ? explode(',', $client['legal_id']) : [];
 
             ClientsLM::clientIdDelete($client['id']);
         }
 
-        if ($user->role == 'client_services' || $user->role == 'supplier'){
+        if ($user->role == 'client_services' || $user->role == 'supplier') {
             $client_debt_suppliers = 0;
 
-            if ($user->role == 'supplier'){
+            if ($user->role == 'supplier') {
                 $role = SuppliersLM::getSupplierIdLegalOff($user->suppliers_id);
-            }else{
+            } else {
                 $role = ClientServicesLM::getClientServicesIdLegalOff($user->client_services_id);
             }
 
@@ -638,18 +632,18 @@ class UserController extends BaseController
                 $client_debt_suppliers = DebtsLM::getDebtsFromClientDebtSuppliers($role['legal_id']);
             }
 
-            if ($client_debt_suppliers > 0){
+            if ($client_debt_suppliers > 0) {
                 return ApiViewer::getErrorBody(['value' => 'the_supplier_has_debts']);
             }
 
             $legals_id = $role['legal_id'] ? explode(',', $role['legal_id']) : [];
 
-            if ($user->role == 'supplier'){
+            if ($user->role == 'supplier') {
                 ClientsLM::supplierClientsAllDelete($role['id']);
                 ManagersLM::supplierManagersAllDelete($role['id']);
                 ClientServicesLM::supplierClientServicessAllDelete($role['id']);
                 SuppliersLM::supplierIdDelete($role['id']);
-            }else{
+            } else {
                 ClientsLM::clientIdDelete($role['id']);
             }
         }
@@ -675,7 +669,7 @@ class UserController extends BaseController
         }
 
 
-        foreach ($legals_id as $legal_id){
+        foreach ($legals_id as $legal_id) {
             DebtsLM::deleteAllActiveDebtUser($legal_id);
         }
 
@@ -762,6 +756,9 @@ class UserController extends BaseController
         $builder = MutualSettlement::newQueryBuilder()->delete();
         PdoConnector::execute($builder);
 
+        $builder = SupplierBalance::newQueryBuilder()->delete();
+        PdoConnector::execute($builder);
+
         $builder = StockBalances::newQueryBuilder()->update([
             'balance =' . 0
         ])->where([
@@ -769,8 +766,6 @@ class UserController extends BaseController
         ]);
         PdoConnector::execute($builder);
 
-        $builder = MutualSettlement::newQueryBuilder()->delete();
-        PdoConnector::execute($builder);
 
         //Logger::log(print_r($user, true), 'bindAccountSupplier');
 

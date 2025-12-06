@@ -68,11 +68,9 @@ class SuppliersLM
                 'u.id as user_id',
                 'u.restricted_access as restricted_access',
                 'u.created_at as created_at',
-                'le.bank_account as bank_account',
                 'le.inn as inn',
                 'le.company_name as company_name',
                 'le.id as le_id',
-                'ba.balance as balance',
                 'd.amount as debit_amount',
             ])
             ->from('suppliers')
@@ -80,10 +78,6 @@ class SuppliersLM
             ->on([
                 'le.supplier_id = id',
                 'le.client_services =' . 0,
-            ])
-            ->leftJoin('bank_accounts ba')
-            ->on([
-                'ba.legal_entity_id = le.id',
             ])
             ->leftJoin('debts d')
             ->on([
@@ -141,7 +135,7 @@ class SuppliersLM
             $suppliers_array[$supplier_id]['balance_sum'] += $balance_sum;
             $suppliers_array[$supplier_id]['debit_amount_sum'] += $debit_amount_sum;
 
-            $account_raw = $supplier->bank_account ?? null;
+            $account_raw = $supplier->inn ?? null;
             $account = is_null($account_raw) ? '' : trim((string) $account_raw);
 
             if ($account !== '') {
@@ -156,7 +150,6 @@ class SuppliersLM
                     ];
                 } else {
                     $suppliers_array[$supplier_id]['bank_accounts'][$account]['debit_amount'] += $debit_amount_sum;
-                    $suppliers_array[$supplier_id]['bank_accounts'][$account]['balance'] += $balance_sum;
 
                     if (empty($suppliers_array[$supplier_id]['bank_accounts'][$account]['inn']) && !empty($supplier->inn)) {
                         $suppliers_array[$supplier_id]['bank_accounts'][$account]['inn'] = $supplier->inn;
@@ -417,11 +410,9 @@ class SuppliersLM
                 'u.role as role',
                 'u.id as user_id',
                 'u.created_at as created_at',
-                'le.bank_account as bank_account',
                 'le.inn as inn',
                 'le.company_name as company_name',
                 'le.id as le_id',
-                'ba.balance as balance',
                 'd.amount as debit_amount',
             ]);
 
@@ -444,10 +435,6 @@ class SuppliersLM
         }
 
         $builder
-            ->leftJoin('bank_accounts ba')
-            ->on([
-                'ba.legal_entity_id = le.id',
-            ])
             ->leftJoin('debts d')
             ->on([
                 'd.to_account_id = le.id',

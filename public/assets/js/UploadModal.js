@@ -10,13 +10,52 @@ const openErrorModal = (message) => {
     document.getElementById('errorUpload').showModal();
 }
 
-const openSuccessModal = (transactions, newAccounts, updatedAccounts) => {
-    document.getElementById('transactionsCount').textContent = transactions;
-    document.getElementById('newAccountsCount').textContent = newAccounts;
-    document.getElementById('updatedAccountsCount').textContent = updatedAccounts;
+const openSuccessModal = (
+    transactions_count,
+    bank_order_count,
+    new_bank_accounts_count,
+    customer_client_returns_count,
+    customer_supplier_returns_count,
+    customer_client_services_returns_count,
+    goods_supplier,
+    goods_client,
+    goods_client_service
+) => {
+    let el;
 
-    document.getElementById('successUpload').showModal();
-}
+    el = document.getElementById('transactions_count');
+    if (el) el.textContent = transactions_count ?? 0;
+
+    el = document.getElementById('bank_order_count');
+    if (el) el.textContent = bank_order_count ?? 0;
+
+    el = document.getElementById('new_bank_accounts_count');
+    if (el) el.textContent = new_bank_accounts_count ?? 0;
+
+    el = document.getElementById('customer_client_returns_count');
+    if (el) el.textContent = customer_client_returns_count ?? 0;
+
+    el = document.getElementById('customer_supplier_returns_count');
+    if (el) el.textContent = customer_supplier_returns_count ?? 0;
+
+    el = document.getElementById('customer_client_services_returns_count');
+    if (el) el.textContent = customer_client_services_returns_count ?? 0;
+
+    el = document.getElementById('goods_supplier');
+    if (el) el.textContent = goods_supplier ?? 0;
+
+    el = document.getElementById('goods_client');
+    if (el) el.textContent = goods_client ?? 0;
+
+    el = document.getElementById('goods_client_service');
+    if (el) el.textContent = goods_client_service ?? 0;
+
+    // Открываем модалку (проверяем существование и метод)
+    const modal = document.getElementById('successUpload');
+    if (modal && typeof modal.showModal === 'function') {
+        modal.showModal();
+    }
+};
 
 
 uploadButton.addEventListener('click', async function () {
@@ -37,6 +76,12 @@ uploadButton.addEventListener('click', async function () {
         switch (result.value) {
             case 'error_file_format':
                 openErrorModal('Неправильный формат файла!!!');
+                break;
+            case 'non_json_response':
+                openErrorModal('Неправильный формат ответа попробуйте еще раз пожалуйста!!!');
+                break;
+            case 'network_error' || 'failed_to_save_file':
+                openErrorModal('Зpапрос не отправили попробуйте еще раз пожалуйста!!!');
                 break;
             case 'failed_to_save_file':
                 openErrorModal('Не удалось сохранить файл, попробуйте еще раз!!!');
@@ -59,9 +104,15 @@ uploadButton.addEventListener('click', async function () {
     if (result.status === 'ok' && result.success === 'ok') {
         openSuccessModal(
             result.transactions_count,
+            result.bank_order_count,
             result.new_bank_accounts_count,
-            result.bank_accounts_updated
-        )
+            result.customer_client_returns_count,
+            result.customer_supplier_returns_count,
+            result.customer_client_services_returns_count,
+            result.goods_supplier,
+            result.goods_client,
+            result.goods_client_service
+        );
     }
 });
 

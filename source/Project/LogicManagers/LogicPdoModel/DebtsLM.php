@@ -65,6 +65,20 @@ class DebtsLM
         return PdoConnector::execute($builder);
     }
 
+    public static function getDebtsFromClientServices($legal_id)
+    {
+        $builder = Debts::newQueryBuilder()
+            ->select()
+            ->where([
+                'from_account_id IN(' . $legal_id . ')',
+                "type_of_debt = 'client_services'",
+                "status = 'active'",
+            ]);
+
+        return PdoConnector::execute($builder);
+    }
+
+
     public static function deleteAllActiveDebtUser(int $legal_id)
     {
         $builder = Debts::newQueryBuilder()
@@ -605,7 +619,7 @@ class DebtsLM
         return $client_services;
     }
 
-    public static function payOffClientsDebt($legal_id, $amount, $transaction_id)
+    public static function payOffClientsDebt($legal_id, $amount, $transaction_id) :bool
     {
         $debts = self::getDebtsFromClientGoods($legal_id);
         //Если нету никаких долгов
@@ -647,13 +661,11 @@ class DebtsLM
                     'writing_transaction_id = ' . $transaction_id,
                 ], $debt->id);
 
-                // уменьшаем сумму на величину долга
                 $amount = $amount - $debt_amount;
 
-                //Получаемой id ишки для остатка
                 $from_account_id = $debt->to_account_id;
                 $to_account_id = $debt->from_account_id;
-            } // 💸 Если денег не хватает — частично погашаем и выходим
+            }
             else {
                 $new_debt_amount = $debt_amount - $amount;
 
@@ -667,7 +679,6 @@ class DebtsLM
             }
         }
 
-        // ✅ Если после погашения всех долгов остался остаток
         if ($amount > 0 && $from_account_id != null && $to_account_id != null) {
             self::setNewDebts([
                 'from_account_id' => $from_account_id,
@@ -683,7 +694,7 @@ class DebtsLM
         return true;
     }
 
-    public static function payOffClientServicesDebt($legal_id, $amount, $transaction_id)
+    public static function payOffSupplierClientServicesDebt($legal_id, $amount, $transaction_id): bool
     {
         $debts = self::getDebtsFromClientDebtSuppliers($legal_id);
         //Если нету никаких долгов
@@ -712,25 +723,25 @@ class DebtsLM
 
         foreach ($debts as $debt) {
             if ($amount <= 0) {
-                break; // 💥 Деньги закончились, выходим из цикла
+                break;
             }
 
             $debt_amount = $debt->amount;
 
-            // 💰 Если денег хватает, чтобы закрыть весь долг
+
             if ($amount >= $debt_amount) {
                 self::updateDebtsId([
                     'status = paid',
                     'writing_transaction_id = ' . $transaction_id,
                 ], $debt->id);
 
-                // уменьшаем сумму на величину долга
+
                 $amount -= $debt_amount;
 
-                //Получаемой id ишки для остатка
+
                 $from_account_id = $debt->to_account_id;
                 $to_account_id = $debt->from_account_id;
-            } // 💸 Если денег не хватает — частично погашаем и выходим
+            }
             else {
                 $new_debt_amount = $debt_amount - $amount;
 
@@ -744,7 +755,6 @@ class DebtsLM
             }
         }
 
-        // ✅ Если после погашения всех долгов остался остаток
         if ($amount > 0 && $from_account_id != null && $to_account_id != null) {
             self::setNewDebts([
                 'from_account_id' => $from_account_id,
@@ -752,6 +762,82 @@ class DebtsLM
                 'transaction_id' => $transaction_id,
                 'amount' => $amount,
                 'type_of_debt' => 'supplier_debt_сlient',
+                'date' => date('Y-m-d'),
+                'status' => 'active'
+            ]);
+        }
+
+        return true;
+    }
+
+    public static function payOffClientServicesDebt($legal_id, $amount, $transaction_id)
+    {
+        $debts = self::getDebtsFromClientServices($legal_id);
+        //Если нету никаких долгов
+        if (!$debts) {
+            $our_account_id = LegalEntitiesLM::getOurAccountOneId();
+
+            $from_account_id = $our_account_id;
+            $to_account_id = explode(',', $legal_id)[0];
+
+            self::setNewDebts([
+                'from_account_id' => $from_account_id,
+                'to_account_id' => $to_account_id,
+                'transaction_id' => $transaction_id,
+                'amount' => $amount,
+                'type_of_debt' => 'client_services_debt',
+                'date' => date('Y-m-d'),
+                'status' => 'active'
+            ]);
+
+            return true;
+        }
+
+        // Получаем все долги клиента
+        $from_account_id = null;
+        $to_account_id = null;
+
+        foreach ($debts as $debt) {
+            if ($amount <= 0) {
+                break;
+            }
+
+            $debt_amount = $debt->amount;
+
+
+            if ($amount >= $debt_amount) {
+                self::updateDebtsId([
+                    'status = paid',
+                    'writing_transaction_id = ' . $transaction_id,
+                ], $debt->id);
+
+
+                $amount -= $debt_amount;
+
+
+                $from_account_id = $debt->to_account_id;
+                $to_account_id = $debt->from_account_id;
+            }
+            else {
+                $new_debt_amount = $debt_amount - $amount;
+
+                self::updateDebtsId([
+                    'amount = ' . $new_debt_amount,
+                    'writing_transaction_id = ' . $transaction_id,
+                ], $debt->id);
+
+                $amount = 0; // всё списано
+                break;
+            }
+        }
+
+        if ($amount > 0 && $from_account_id != null && $to_account_id != null) {
+            self::setNewDebts([
+                'from_account_id' => $from_account_id,
+                'to_account_id' => $to_account_id,
+                'transaction_id' => $transaction_id,
+                'amount' => $amount,
+                'type_of_debt' => 'client_services_debt',
                 'date' => date('Y-m-d'),
                 'status' => 'active'
             ]);

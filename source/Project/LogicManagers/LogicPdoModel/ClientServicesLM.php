@@ -78,11 +78,9 @@ class ClientServicesLM
                 'u.password as password',
                 'u.id as user_id',
                 'u.created_at as created_at',
-                'le.bank_account as bank_account',
                 'le.inn as inn',
                 'le.company_name as company_name',
                 'le.id as le_id',
-                'ba.balance as balance',
                 'd.amount as debit_amount',
             ])
             ->from('client_services')
@@ -91,10 +89,6 @@ class ClientServicesLM
                 'le.supplier_id = supplier_id',
                 'le.client_services =' . 1,
                 'le.client_service_id = id',
-            ])
-            ->leftJoin('bank_accounts ba')
-            ->on([
-                'ba.legal_entity_id = le.id',
             ])
             ->leftJoin('debts d')
             ->on([
@@ -146,7 +140,7 @@ class ClientServicesLM
             $clients_array[$client_id]['balance_sum'] += $balance_sum;
             $clients_array[$client_id]['debit_amount_sum'] += $debit_amount_sum;
 
-            $account_raw = $client->bank_account ?? null;
+            $account_raw = $client->inn ?? null;
             $account = is_null($account_raw) ? '' : trim((string) $account_raw);
 
             if ($account !== '') {
@@ -193,6 +187,7 @@ class ClientServicesLM
                 'u.name as username',
                 'u.email as email',
                 'SUM(d.amount) as debit_amount',
+                'GROUP_CONCAT(le.id SEPARATOR ' . '", "' . ') as legal_id',
             ])
             ->leftJoin('users u')
             ->on([
@@ -200,7 +195,7 @@ class ClientServicesLM
             ])
             ->leftJoin('legal_entities le')
             ->on([
-                'le.supplier_id = supplier_id',
+                'le.client_service_id = id',
             ])
             ->leftJoin('debts d')
             ->on([
@@ -226,6 +221,7 @@ class ClientServicesLM
             'email' => $client->email,
             'username' => $client->username,
             'debit_amount' => $client->debit_amount,
+            'legal_id' => $client->legal_id,
         ];
 
 

@@ -46,10 +46,52 @@
                 flex flex-col justify-end">
             <h3 class="text-lg font-bold mb-4">Успешная загрузка</h3>
             <div class="space-y-2 text-base">
-                <p><span class="font-semibold">Количество транзакций:</span> <span id="transactionsCount">0</span></p>
-                <p><span class="font-semibold">Новых аккаунтов:</span> <span id="newAccountsCount">0</span></p>
-                <p><span class="font-semibold">Обновлено баланс аккаунтов:</span> <span id="updatedAccountsCount">0</span></p>
+                <p>
+                    <span class="font-semibold">Количество транзакций:</span>
+                    <span id="transactions_count">0</span>
+                </p>
+
+                <p>
+                    <span class="font-semibold">Банковских ордеров:</span>
+                    <span id="bank_order_count">0</span>
+                </p>
+
+                <p>
+                    <span class="font-semibold">Новые аккаунты:</span>
+                    <span id="new_bank_accounts_count">0</span>
+                </p>
+
+                <p>
+                    <span class="font-semibold">Возвратов клиенту:</span>
+                    <span id="customer_client_returns_count">0</span>
+                </p>
+
+                <p>
+                    <span class="font-semibold">Возвратов поставщику:</span>
+                    <span id="customer_supplier_returns_count">0</span>
+                </p>
+
+                <p>
+                    <span class="font-semibold">Возвратов клиент сервису:</span>
+                    <span id="customer_client_services_returns_count">0</span>
+                </p>
+
+                <p>
+                    <span class="font-semibold">Покупок у поставщика:</span>
+                    <span id="goods_supplier">0</span>
+                </p>
+
+                <p>
+                    <span class="font-semibold">Покупок клиента:</span>
+                    <span id="goods_client">0</span>
+                </p>
+
+                <p>
+                    <span class="font-semibold">Клиентских услуг:</span>
+                    <span id="goods_client_service">0</span>
+                </p>
             </div>
+
             <div class="modal-action flex flex-col sm:flex-row gap-2 mt-6">
                 <form method="dialog">
                     <button id="ready"

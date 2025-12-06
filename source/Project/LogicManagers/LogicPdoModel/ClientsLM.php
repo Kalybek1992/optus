@@ -78,22 +78,16 @@ class ClientsLM
                 'u.password as password',
                 'u.id as user_id',
                 'u.created_at as created_at',
-                'le.bank_account as bank_account',
                 'le.inn as inn',
                 'le.company_name as company_name',
                 'le.id as le_id',
                 'le.final_remainder as final_remainder',
-                'ba.balance as balance',
                 'd.amount as debit_amount',
             ])
             ->from('clients')
             ->leftJoin('legal_entities le')
             ->on([
                 'le.client_id = id',
-            ])
-            ->leftJoin('bank_accounts ba')
-            ->on([
-                'ba.legal_entity_id = le.id',
             ])
             ->leftJoin('debts d')
             ->on([
@@ -119,6 +113,7 @@ class ClientsLM
 
         foreach ($clients as $client) {
             $client_id = $client->id;
+
             if (!isset($clients_array[$client_id])) {
                 $clients_array[$client_id] = [
                     'id' => $client->id,
@@ -126,40 +121,35 @@ class ClientsLM
                     'role' => $client->role,
                     'name' => $client->username,
                     'percentage' => $client->percentage,
-                    'balance_sum' => 0,
+                    'balance_sum' => 0, // оставляем поле, если нужно, но не заполняем
                     'debit_amount_sum' => 0,
                     'final_remainder_sum' => 0,
                     'user_id' => $client->user_id,
                     'created_at' => $client->created_at,
-                    'bank_accounts' => [],
+                    'bank_accounts' => [], // тут будут уникальные ИНН
                 ];
             }
 
-            $clients_array[$client_id]['balance_sum'] += (float) ($client->balance ?? 0);
+
             $clients_array[$client_id]['debit_amount_sum'] += (float) ($client->debit_amount ?? 0);
             $clients_array[$client_id]['final_remainder_sum'] += (float) ($client->final_remainder ?? 0);
 
-            $accountRaw = $client->bank_account ?? null;
-            $account = is_null($accountRaw) ? '' : trim((string) $accountRaw);
+            $innRaw = $client->inn ?? null;
+            $inn = is_null($innRaw) ? '' : trim((string) $innRaw);
 
-            if ($account !== '') {
-                $key = $account;
+            if ($inn !== '') {
+                $key = $inn;
                 if (!isset($clients_array[$client_id]['bank_accounts'][$key])) {
                     $clients_array[$client_id]['bank_accounts'][$key] = [
-                        'account' => $account,
-                        'inn' => $client->inn ?? null,
+                        'inn' => $inn,
                         'company_name' => $client->company_name ?? null,
-                        'balance' => (float) ($client->balance ?? 0),
-                        'debit_amount' => (float) ($client->debit_amount ?? 0),
                         'le_id' => $client->le_id ?? null,
+                        'debit_amount' => (float) ($client->debit_amount ?? 0),
                     ];
                 } else {
-                    $clients_array[$client_id]['bank_accounts'][$key]['balance'] += (float) ($client->balance ?? 0);
+
                     $clients_array[$client_id]['bank_accounts'][$key]['debit_amount'] += (float) ($client->debit_amount ?? 0);
 
-                    if (empty($clients_array[$client_id]['bank_accounts'][$key]['inn']) && !empty($client->inn)) {
-                        $clients_array[$client_id]['bank_accounts'][$key]['inn'] = $client->inn;
-                    }
                     if (empty($clients_array[$client_id]['bank_accounts'][$key]['company_name']) && !empty($client->company_name)) {
                         $clients_array[$client_id]['bank_accounts'][$key]['company_name'] = $client->company_name;
                     }
@@ -174,7 +164,6 @@ class ClientsLM
             $client['bank_accounts'] = array_values($client['bank_accounts']);
             return $client;
         }, $clients_array));
-
 
 
         //Logger::log(print_r($clients_array, true), 'clients_array');

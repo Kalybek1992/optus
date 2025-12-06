@@ -73,11 +73,6 @@ class TransactionsLM
         $builder = Transactions::newQueryBuilder()
             ->select([
                 '*',
-                'ba.balance as balance_sender',
-            ])
-            ->leftJoin('bank_accounts ba')
-            ->on([
-                'ba.legal_entity_id = from_account_id',
             ])
             ->where([
                 'to_account_id =' . $to_account_id,
@@ -95,12 +90,10 @@ class TransactionsLM
             ->select([
                 '*',
                 'le_recipient.inn as inn_recipient',
-                'le_recipient.bank_account as account_recipient',
                 'le_recipient.company_name as company_name_recipient',
                 'le_recipient.bank_name as bank_name_recipient',
                 ////////////////////////////////////////////////
                 'le_sender.inn as inn_sender',
-                'le_sender.bank_account as account_sender',
                 'le_sender.company_name as company_name_sender',
                 'le_sender.bank_name as bank_name_sender',
             ])
@@ -152,13 +145,52 @@ class TransactionsLM
 
     public static function getTransactionsStatusPending()
     {
-
         $builder = Transactions::newQueryBuilder()
             ->select([
                 '*',
+                /* ======================================================
+                 * ===================== ПОЛУЧАТЕЛЬ =====================
+                 * ====================================================== */
+                'le_recipient.id                    AS recipient_id',
+                'le_recipient.our_account           AS recipient_our_account',
+                'le_recipient.supplier_id           AS recipient_supplier_id',
+                'le_recipient.client_services       AS recipient_client_services',
+                'le_recipient.client_service_id     AS recipient_client_service_id',
+                'le_recipient.manager_id            AS recipient_manager_id',
+                'le_recipient.supplier_client_id    AS recipient_supplier_client_id',
+                'le_recipient.client_id             AS recipient_client_id',
+                'le_recipient.shop_id               AS recipient_shop_id',
+                'le_recipient.percent               AS recipient_percent',
+                'le_recipient.inn                   AS recipient_inn',
+                'le_recipient.bank_name             AS recipient_bank_name',
+                'le_recipient.company_name          AS recipient_company_name',
+                /* ======================================================
+                 * ===================== ОТПРАВИТЕЛЬ =====================
+                 * ====================================================== */
+                'le_sender.id                       AS sender_id',
+                'le_sender.our_account              AS sender_our_account',
+                'le_sender.supplier_id              AS sender_supplier_id',
+                'le_sender.client_services          AS sender_client_services',
+                'le_sender.client_service_id        AS sender_client_service_id',
+                'le_sender.manager_id               AS sender_manager_id',
+                'le_sender.supplier_client_id       AS sender_supplier_client_id',
+                'le_sender.client_id                AS sender_client_id',
+                'le_sender.shop_id                  AS sender_shop_id',
+                'le_sender.percent                  AS sender_percent',
+                'le_sender.inn                      AS sender_inn',
+                'le_sender.bank_name                AS sender_bank_name',
+                'le_sender.company_name             AS sender_company_name',
+            ])
+            ->leftJoin('legal_entities le_recipient')
+            ->on([
+                'le_recipient.id = to_account_id',
+            ])
+            ->leftJoin('legal_entities le_sender')
+            ->on([
+                'le_sender.id = from_account_id',
             ])
             ->where([
-                'status =' . '"pending"'
+                'status = "pending"',
             ]);
 
 
@@ -229,11 +261,9 @@ class TransactionsLM
             ->select([
                 '*',
                 'le_recipient.inn as inn_recipient',
-                'le_recipient.bank_account as account_recipient',
                 'le_recipient.company_name as company_name_recipient',
                 'le_recipient.bank_name as bank_name_recipient',
                 'le_sender.inn as inn_sender',
-                'le_sender.bank_account as account_sender',
                 'le_sender.company_name as company_name_sender',
                 'le_sender.bank_name as bank_name_sender',
             ])
@@ -259,38 +289,37 @@ class TransactionsLM
 
         if ($date_from && $date_to) {
             $builder
-            ->where([
-                "from_account_id =" . $from_account_id . " OR " . " to_account_id =" . $from_account_id,
-                "date BETWEEN '$date_from' AND '$date_to'",
-            ]);
+                ->where([
+                    "from_account_id =" . $from_account_id . " OR " . " to_account_id =" . $from_account_id,
+                    "date BETWEEN '$date_from' AND '$date_to'",
+                ]);
         }
 
 
         if ($date_from && !$date_to) {
             $builder
                 ->where([
-                "from_account_id =" . $from_account_id . " OR " . " to_account_id =" . $from_account_id,
-                "date >='" . $date_from . "'",
-            ]);
+                    "from_account_id =" . $from_account_id . " OR " . " to_account_id =" . $from_account_id,
+                    "date >='" . $date_from . "'",
+                ]);
         }
 
         if (!$date_from && !$date_to) {
             $builder
                 ->where([
-                "from_account_id =" . $from_account_id . " OR " . " to_account_id =" . $from_account_id,
-            ]);
+                    "from_account_id =" . $from_account_id . " OR " . " to_account_id =" . $from_account_id,
+                ]);
         }
 
         $builder
             ->where([
-                "type != 'internal_transfer'" ,
+                "type != 'internal_transfer'",
             ]);
 
         $builder
             ->orderBy('date', 'DESC')
             ->limit($limit)
             ->offset($offset);
-
 
 
         $transactions = PdoConnector::execute($builder);
@@ -404,7 +433,6 @@ class TransactionsLM
             ->orderBy('t.percent');
 
 
-
         $transactions = PdoConnector::execute($builder);
         $transactions_by_percentage = [];
 
@@ -464,15 +492,11 @@ class TransactionsLM
             ->select([
                 '*',
                 'le_recipient.inn as inn_recipient',
-                'le_recipient.kpp as kpp_recipient',
-                'le_recipient.bank_account as bank_account_recipient',
                 'le_recipient.bank_name as bank_name_recipient',
                 'le_recipient.company_name as company_name_recipient',
                 'le_recipient.our_account  as recipient_our_account',
 
                 'le_sender.inn as inn_sender',
-                'le_sender.kpp as kpp_sender',
-                'le_sender.bank_account as bank_account_sender',
                 'le_sender.bank_name as bank_name_sender',
                 'le_sender.company_name as company_name_sender',
                 'le_sender.our_account as sender_our_account',
@@ -642,8 +666,6 @@ class TransactionsLM
         }
 
 
-
-
         $transactions = PdoConnector::execute($builder)[0] ?? [];
         $sum_amount = $transactions->sum_amount ?? 0;
 
@@ -706,7 +728,6 @@ class TransactionsLM
 
         return PdoConnector::execute($builder)[0]->count ?? 0;
     }
-
 
 
     public static function getEntitiesOurTransactions($offset, $limit, $date_from, $date_to): array

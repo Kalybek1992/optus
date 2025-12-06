@@ -56,6 +56,7 @@ class DocumentExtractLM
     public string $result_document_processing = '';
     private array $blocks = [];
     public array $payment_order = [];
+
     public array $bank_order = [];
     public array $bank_exchange = [];
     public array $expenses = [];

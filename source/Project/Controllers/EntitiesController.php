@@ -194,22 +194,10 @@ class EntitiesController extends BaseController
                     'description' => $transaction->description,
                     'recipient_company_name' => $get_entities->company_name,
                     'recipient_bank_name' => $get_entities->bank_name,
-                    'recipient_bank_account' => $get_entities->bank_account,
-                    'recipient_inn' => $get_entities->inn,
-                    'recipient_kpp' => $get_entities->kpp,
-                    'recipient_bic' => $get_entities->bic,
-                    'recipient_correspondent_account' => $get_entities->correspondent_account,
                     'status' => 'processed',
                     'return_account' => 1
                 ];
 
-                $old_balance = LegalEntitiesLM::getOurAccountBalance($transaction->from_account_id);
-
-                if ($old_balance) {
-                    BankAccountsLM::updateBankAccounts([
-                        'balance =' . $old_balance - $transaction->amount,
-                    ], $transaction->from_account_id);
-                }
 
                 TransactionsLM::updateTransactionsId([
                     'to_account_id =' . '<NULL>',
@@ -270,12 +258,6 @@ class EntitiesController extends BaseController
                     'status' => 'processed',
                 ];
 
-                $new_balance = $get_order->balance - $order_description->amount;
-
-                BankAccountsLM::updateBankAccounts([
-                    'balance =' . $new_balance
-                ], $order_description->from_account_id);
-
                 BankOrderLM::updateBankOrder([
                     'status = processed',
                     'auto_detection = 1'
@@ -309,11 +291,7 @@ class EntitiesController extends BaseController
 
         TransactionsLM::insertNewTransactions($insert_transaction);
         CompanyFinancesLM::insertTransactionsExpenses($insert_company_finances);
-        $new_balance = $get_order->balance - $get_order->amount;
 
-        BankAccountsLM::updateBankAccounts([
-            'balance =' . $new_balance
-        ], $get_order->from_account_id);
 
         BankOrderLM::updateBankOrder([
             'status = processed'

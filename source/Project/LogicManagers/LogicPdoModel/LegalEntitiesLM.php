@@ -48,7 +48,7 @@ class LegalEntitiesLM
             ->limit(1);
 
 
-        return PdoConnector::execute($builder)[0]->max_id ?? 0;
+        return PdoConnector::execute($builder)[0]->max_id ?? 1;
     }
 
     public static function deleteLegalEntitiesId($legal_id)
@@ -62,30 +62,14 @@ class LegalEntitiesLM
         return PdoConnector::execute($builder);
     }
 
-    public static function getBankAccounts(array $select_bank_account)
+    public static function getBankAccounts(string $select_bank_inn)
     {
-        $selects = '';
-        foreach ($select_bank_account as $key => $bank_account) {
-            if ($select_bank_account[$key + 1] ?? false) {
-                $selects .= "$bank_account, ";
-            } else {
-                $selects .= "$bank_account";
-            }
-        }
-
-
         $builder = LegalEntities::newQueryBuilder()
             ->select([
                 '*',
-                '(SELECT SUM(d.amount) FROM debts d WHERE d.from_account_id = legal_entities.id AND d.type_of_debt = "client_goods" AND d.status = "active" ) AS debt',
-                'ba.balance as balance',
-            ])
-            ->leftJoin('bank_accounts ba')
-            ->on([
-                'ba.legal_entity_id = id',
             ])
             ->where([
-                "bank_account IN($selects)"
+                "inn IN($select_bank_inn)"
             ]);
 
         return PdoConnector::execute($builder);
@@ -189,53 +173,15 @@ class LegalEntitiesLM
         return PdoConnector::execute($builder)[0]->sum_amount ?? 0;
     }
 
-    public static function getBankAccount(string $select_bank_account)
-    {
-
-        $builder = LegalEntities::newQueryBuilder()
-            ->select([
-                'id',
-                'client_id',
-                'supplier_id',
-                'bank_account',
-                'our_account',
-                'ba.balance as balance',
-                'c.percentage as client_percent',
-                's.percentage as supplier_percent',
-            ])
-            ->leftJoin('bank_accounts ba')
-            ->on([
-                'ba.legal_entity_id = id',
-            ])
-            ->leftJoin('clients c')
-            ->on([
-                'c.id = client_id',
-            ])
-            ->leftJoin('suppliers s')
-            ->on([
-                's.id = supplier_id',
-            ])
-            ->where([
-                "bank_account =" . "'$select_bank_account'"
-            ])
-            ->limit(1);
-
-        return PdoConnector::execute($builder)[0] ?? [];
-    }
-
     public static function getEntitiesNull($offset, $limit): array
     {
 
         $builder = LegalEntities::newQueryBuilder()
             ->select([
                 'id',
-                'bank_account',
                 'bank_name',
                 'inn',
-                'kpp',
-                'bic',
                 'company_name',
-                'correspondent_account',
                 'our_account',
             ])
             ->where([
@@ -330,24 +276,16 @@ class LegalEntitiesLM
         $builder = LegalEntities::newQueryBuilder()
             ->select([
                 'id',
-                'bank_account',
                 'bank_name',
                 'inn',
-                'kpp',
-                'bic',
                 'company_name',
-                'correspondent_account',
-                'ba.balance as balance',
+                'SUM(t_to.amount) as amount',
                 't_to.date as to_date',
                 't_to.description as to_description',
                 't_to.from_account_id as from_account_id',
                 't_from.to_account_id as to_account_id',
                 't_from.date as from_date',
                 't_from.description as from_description',
-            ])
-            ->leftJoin('bank_accounts ba')
-            ->on([
-                'ba.legal_entity_id = id',
             ])
             ->leftJoin('transactions t_to')
             ->on([
@@ -409,7 +347,7 @@ class LegalEntitiesLM
             'bank_name' => $entity->bank_name,
             'company_name' => $entity->company_name,
             'inn' => $entity->inn,
-            'balance' => number_format(abs($entity->balance), 2, '.', ''),
+            'balance' => $entity->amount,
             'transaction_data' => $formatted_date,
             'from_whom' => $from_whom->company_name ?? '',
             'to_whom' => $to_whom->company_name ?? '',
@@ -449,21 +387,13 @@ class LegalEntitiesLM
 
     public static function getEntitiesId($id)
     {
-
         $builder = LegalEntities::newQueryBuilder()
             ->select([
                 '*',
-                'ba.balance as balance',
-                'ba.stock_balance as stock_balance',
-                'ba.id as bank_account_id',
                 's.percentage as supplier_percentage',
                 'c.percentage as client_percentage',
                 'u.name as user_name',
                 'u.role as user_role',
-            ])
-            ->leftJoin('bank_accounts ba')
-            ->on([
-                'ba.legal_entity_id = id',
             ])
             ->leftJoin('suppliers s')
             ->on([
@@ -490,13 +420,7 @@ class LegalEntitiesLM
     public static function getOurAccountBalance($id)
     {
         $builder = LegalEntities::newQueryBuilder()
-            ->select([
-                'ba.balance as balance',
-            ])
-            ->leftJoin('bank_accounts ba')
-            ->on([
-                'ba.legal_entity_id = id',
-            ])
+            ->select()
             ->where([
                 'id =' . $id,
                 'our_account =' . 1,
@@ -531,7 +455,6 @@ class LegalEntitiesLM
                 'le.*',
                 'ul.transactions_count as transactions_count',
                 'ul.new_accounts_count as new_accounts_count',
-                'ul.bank_accounts_updated as bank_accounts_updated',
                 'ul.file_name as file_name',
                 'ul.date as uploaded_date',
             ])
@@ -598,6 +521,8 @@ class LegalEntitiesLM
                 'date_created' => $date_created,
                 'is_expired' => $is_expired,
             ];
+
+            $legal_in[] = $account->id;
         }
 
         $company_cards = CreditCardsLM::getAllLegalCardNumbersByIds($legal_in);
@@ -645,8 +570,16 @@ class LegalEntitiesLM
             ->select([
                 'le.*',
                 'ul.transactions_count',
+                'ul.bank_order_count',
                 'ul.new_accounts_count',
-                'ul.bank_accounts_updated',
+                'ul.client_returns_count',
+                'ul.supplier_returns_count',
+                'ul.client_services_returns_count',
+                'ul.goods_supplier',
+                'ul.goods_client',
+                'ul.goods_client_service',
+                'ul.expenses',
+                'ul.income',
                 'ul.file_name',
                 'ul.date as uploaded_date',
             ])
@@ -692,8 +625,16 @@ class LegalEntitiesLM
                 'total_written_off' => $row->total_written_off,
                 'final_remainder' => $row->final_remainder,
                 'transactions_count' => $row->transactions_count ?? 0,
+                'bank_order_count' => $row->bank_order_count ?? 0,
                 'new_accounts_count' => $row->new_accounts_count ?? 0,
-                'bank_accounts_updated' => $row->bank_accounts_updated ?? 0,
+                'client_returns_count' => $row->client_returns_count ?? 0,
+                'supplier_returns_count' => $row->supplier_returns_count ?? 0,
+                'client_services_returns_count' => $row->client_services_returns_count ?? 0,
+                'goods_supplier' => $row->goods_supplier ?? 0,
+                'goods_client' => $row->goods_client ?? 0,
+                'goods_client_service' => $row->goods_client_service ?? 0,
+                'expenses' => $row->expenses ?? 0,
+                'income' => $row->income ?? 0,
                 'file_name' => $row->file_name ?? null,
                 'date_created' => $date_created,
                 'is_expired' => $is_expired,
@@ -720,17 +661,11 @@ class LegalEntitiesLM
     {
         $builder = LegalEntities::newQueryBuilder()
             ->select([
-                'SUM(CASE WHEN le.our_account = 1 THEN ba.balance ELSE 0 END) AS our_account_balance',
                 '(SELECT SUM(d.amount) FROM debts d WHERE d.type_of_debt = "supplier_goods" AND d.status = "active") AS supplier_goods_balance',
                 '(SELECT SUM(d.amount) FROM debts d WHERE d.type_of_debt = "client_goods" AND d.status = "active") AS client_goods_balance',
                 '(SELECT SUM(d.amount) FROM debts d WHERE d.type_of_debt = "client_services" AND d.status = "active") AS client_services_balance',
                 '(SELECT SUM(d.amount) FROM debts d WHERE d.type_of_debt = "сlient_debt" AND d.status = "active") AS сlient_debt',
                 '(SELECT SUM(current_balance) FROM couriers) AS couriers_balance',
-            ])
-            ->from('legal_entities le')
-            ->leftJoin('bank_accounts ba')
-            ->on([
-                'ba.legal_entity_id = le.id',
             ]);
 
 
@@ -1945,11 +1880,9 @@ class LegalEntitiesLM
         $builder = LegalEntities::newQueryBuilder()
             ->select([
                 '*',
-                'ba.balance as balance',
                 'd.amount as debit_amount',
             ])
             ->from('legal_entities')
-            ->leftJoin('bank_accounts ba')
             ->on([
                 'ba.legal_entity_id = le.id',
             ])

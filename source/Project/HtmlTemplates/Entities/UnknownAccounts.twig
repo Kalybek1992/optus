@@ -340,29 +340,16 @@
                         <div class="user-info text-gray-500 font-semibold">Имя:</div>
                         <div class="user-info font-serif text-gray-800" id="modal-name">—</div>
 
-                        <div class="user-info text-gray-500 font-semibold">Почта:</div>
-                        <div class="user-info font-serif text-gray-800" id="modal-email">—</div>
-
                         <div class="user-info text-gray-500 font-semibold">Роль:</div>
                         <div class="user-info font-serif text-gray-800" id="modal-role">—</div>
 
                         <div class="user-info text-gray-500 font-semibold">ИНН:</div>
                         <div class="user-info font-serif text-gray-800" id="modal-inn">—</div>
 
-                        <div class="text-gray-500 font-semibold">Расчётный счёт:</div>
-                        <div class="font-serif text-gray-800" id="modal-bank">—</div>
-
-                        <div class="text-gray-500 font-semibold">Дата транзакции:</div>
-                        <div class="font-serif text-gray-800" id="modal-transaction">—</div>
 
                         <div class="text-gray-500 font-semibold">Компания:</div>
                         <div class="font-serif text-gray-800" id="modal-company">—</div>
 
-                        <div class="text-gray-500 font-semibold">От кого:</div>
-                        <div class="font-serif text-gray-800" id="modal-fromWhom">—</div>
-
-                        <div class="text-gray-500 font-semibold">Сумма:</div>
-                        <div class="font-serif text-gray-800" id="modal-balance">—</div>
                     </div>
                 </div>
 
@@ -499,14 +486,9 @@
             confirmBtn.dataset.role = role
 
             document.getElementById('modal-name').textContent = name || '—';
-            document.getElementById('modal-email').textContent = email || '—';
             document.getElementById('modal-role').textContent = translateRole(role);
             document.getElementById('modal-inn').textContent = inn || '—';
-            document.getElementById('modal-bank').textContent = bankAccount || '—';
-            document.getElementById('modal-transaction').textContent = transactionData || '—';
             document.getElementById('modal-company').textContent = companyName || '—';
-            document.getElementById('modal-fromWhom').textContent = fromWhom || '—';
-            document.getElementById('modal-balance').textContent = balance || '—';
 
             if (role === 'supplier'){
                 modalTitle.textContent = 'Укажите процент для поставщика';

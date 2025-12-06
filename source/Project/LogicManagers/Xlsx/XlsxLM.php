@@ -550,7 +550,7 @@ class XlsxLM extends LogicManager
         $spreadsheet = new Spreadsheet();
         $sheet = $spreadsheet->getActiveSheet();
 
-        // Заголовки, как в таблице
+        // Заголовки
         $headers = [
             'Название компании',
             'Название банка',
@@ -558,42 +558,49 @@ class XlsxLM extends LogicManager
             'Дата остатка',
             'Количество транзакций',
             'Количество новых аккаунтов',
-            'Количество обновленных аккаунтов',
-            'Загрузка',
+            'Возврат (клиент)',
+            'Возврат (поставщик)',
+            'Возврат (услуги)',
+            'Покупки (поставщик)',
+            'Покупки (клиент)',
+            'Покупки (услуги)',
+            'Расходы',
+            'Доходы',
+            'Статус загрузки',
         ];
 
-        // Запись заголовков
         $col = 'A';
         foreach ($headers as $header) {
             $sheet->setCellValue($col . '1', $header);
             $col++;
         }
 
-        // Данные
         $row = 2;
         foreach ($our_accounts as $account) {
-
             $sheet->setCellValue('A' . $row, $account['company_name'] ?? '');
             $sheet->setCellValue('B' . $row, $account['bank_name'] ?? '');
             $sheet->setCellValue('C' . $row, $account['final_remainder'] ?? 0);
             $sheet->setCellValue('D' . $row, $account['date_created'] ?? '');
             $sheet->setCellValue('E' . $row, $account['transactions_count'] ?? 0);
             $sheet->setCellValue('F' . $row, $account['new_accounts_count'] ?? 0);
-            $sheet->setCellValue('G' . $row, $account['bank_accounts_updated'] ?? 0);
-
-            // Статус загрузки
+            $sheet->setCellValue('G' . $row, $account['client_returns_count'] ?? 0);
+            $sheet->setCellValue('H' . $row, $account['supplier_returns_count'] ?? 0);
+            $sheet->setCellValue('I' . $row, $account['client_services_returns_count'] ?? 0);
+            $sheet->setCellValue('J' . $row, $account['goods_supplier'] ?? 0);
+            $sheet->setCellValue('K' . $row, $account['goods_client'] ?? 0);
+            $sheet->setCellValue('L' . $row, $account['goods_client_service'] ?? 0);
+            $sheet->setCellValue('M' . $row, $account['expenses'] ?? 0);
+            $sheet->setCellValue('N' . $row, $account['income'] ?? 0);
             $status = !empty($account['is_expired']) ? 'Просрочено' : 'Загружено';
-            $sheet->setCellValue('H' . $row, $status);
+            $sheet->setCellValue('O' . $row, $status);
 
             $row++;
         }
 
-        // Автоширина колонок
-        foreach (range('A', 'H') as $columnID) {
+        foreach (range('A', 'O') as $columnID) {
             $sheet->getColumnDimension($columnID)->setAutoSize(true);
         }
 
-        // Сохранение
         $uploadDir = Path::RESOURCES_DIR . 'unloading/';
         if (!is_dir($uploadDir)) {
             mkdir($uploadDir, 0777, true);
@@ -611,6 +618,7 @@ class XlsxLM extends LogicManager
 
         return $fileName;
     }
+
 
     public static function supplierClientReceiptsDate(array $transactions, array $transactions_sum): string
     {

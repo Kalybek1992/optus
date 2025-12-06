@@ -76,92 +76,72 @@
 
             <!-- Desktop таблица -->
             <div class="hidden md:block overflow-x-auto w-full border border-gray-200 rounded-lg shadow-sm">
-                <table class="table w-full text-sm text-left divide-x divide-gray-200">
-                    <thead class="bg-gray-100 text-xs text-gray-500 uppercase">
+                <table class="table w-full text-[10px] text-left divide-x divide-gray-200">
+                    <thead class="text-[10px] text-gray-500 uppercase">
                     <tr class="divide-x divide-gray-200">
-                        <th class="px-3 py-2">Название компании</th>
-                        <th class="px-3 py-2">Название банка</th>
-                        <th class="px-3 py-2">Конечный остаток</th>
-                        <th class="px-3 py-2">Дата остатка</th>
-                        <th class="px-3 py-2">Количество транзакций</th>
-                        <th class="px-3 py-2">Количество новых аккаунтов</th>
-                        <th class="px-3 py-2">Количество обновленных аккаунтов</th>
-                        <th class="px-3 py-2">Скачать выписку</th>
-                        <th class="px-3 py-2">Загрузка</th>
+                        <th class="px-2 py-1 min-w-[220px]">Компания</th>
+                        <th class="px-2 py-1 min-w-[220px]">Банк</th>
+                        <th class="px-2 py-1">Остаток</th>
+                        <th class="px-2 py-1">Дата остатка</th>
+                        <th class="px-2 py-1">Транзакции</th>
+                        <th class="px-2 py-1">Новые аккаунты</th>
+                        <th class="px-2 py-1">Возврат (клиент)</th>
+                        <th class="px-2 py-1">Возврат (поставщик)</th>
+                        <th class="px-2 py-1">Возврат (услуги)</th>
+                        <th class="px-2 py-1">Покупки (пост.)</th>
+                        <th class="px-2 py-1">Покупки (клиент)</th>
+                        <th class="px-2 py-1">Покупки (услуги)</th>
+                        <th class="px-6 py-1">Расходы</th>
+                        <th class="px-6 py-1">Доходы</th>
+                        <th class="px-2 py-1">Выписка</th>
+                        <th class="px-2 py-1">Загрузка</th>
                     </tr>
                     </thead>
-                    <tbody class="text-sm divide-y divide-gray-100">
+                    <tbody class="text-[10px] divide-y divide-gray-100">
                     {% for account in our_accounts %}
                         {% set total_final_remainder = total_final_remainder + account.final_remainder %}
-                            <tr class="hover:bg-gray-50 divide-x divide-gray-200">
-                                <td class="px-3 py-2 bg-green-100 font-bold italic text-gray-700">{{ account.company_name }}</td>
-                                <td class="px-3 py-2 bg-yellow-100 font-bold italic text-gray-700">{{ account.bank_name }}</td>
-                                <td class="px-3 py-2 bg-purple-100 font-bold italic text-gray-700">{{ account.final_remainder|number_format(0, ',', ' ') }} ₽</td>
-                                <td class="px-3 py-2 font-bold italic text-gray-700">{{ account.date_created|default('-') }}</td>
-                                <td class="px-3 py-2 font-bold italic text-gray-700">{{ account.transactions_count }}</td>
-                                <td class="px-3 py-2 font-bold italic text-gray-700">{{ account.new_accounts_count }}</td>
-                                <td class="px-3 py-2 font-bold italic text-gray-700">{{ account.bank_accounts_updated }}</td>
-                                <td class="px-3 py-2 font-bold italic text-gray-700">
-                                    {% if account.file_name is not empty %}
-                                        <button
-                                                type="button"
-                                                class="flex items-center gap-1 text-blue-600 hover:text-blue-800 download-file-btn"
-                                                data-file="{{ account.file_name }}"
-                                        >
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
-                                                 viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                                <path stroke-linecap="round" stroke-linejoin="round"
-                                                      d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5m0 0l5-5m-5 5V4"/>
-                                            </svg>
-                                            Скачать выписку
-                                        </button>
-                                    {% else %}
-                                        —
-                                    {% endif %}
-                                </td>
-                                <td class="px-3 py-2 font-bold italic text-gray-700">
-                                    {% if account.is_expired %}
-                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6 text-red-500">
-                                            <path stroke-linecap="round" stroke-linejoin="round"
-                                                  d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374
-                                                 1.948 3.374h14.71c1.73 0 2.813-1.874
-                                                 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898
-                                                 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z"/>
-                                        </svg>
-                                    {% else %}
-                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6 text-green-500">
-                                            <path stroke-linecap="round" stroke-linejoin="round"
-                                                  d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/>
-                                        </svg>
-                                    {% endif %}
-                                </td>
-                            </tr>
-                    {% endfor %}
-                    <!-- Сумма -->
-                        <tr class="hover:bg-gray-50 divide-x divide-gray-200">
-                            <td class="px-3 py-2 font-bold italic text-gray-700">Сумма конечного остатка</td>
-                            <td class="px-3 py-2"></td>
-                            <td class="px-3 py-2 font-bold italic text-gray-700"> {{ total_final_remainder|number_format(0, ',', ' ') }} ₽</td>
-                            <td class="px-3 py-2"></td>
-                            <td class="px-3 py-2"></td>
-                            <td class="px-3 py-2"></td>
-                            <td class="px-3 py-2"></td>
-                            <td class="px-3 py-2"></td>
-                            <td class="px-3 py-2"></td>
-                        </tr>
-                    </tbody>
-                    <tfoot class="bg-gray-100 text-xs text-gray-500 uppercase">
                         <tr class="divide-x divide-gray-200">
-                            <th class="px-3 py-2">Название компании</th>
-                            <th class="px-3 py-2">Название банка</th>
-                            <th class="px-3 py-2">Конечный остаток</th>
-                            <th class="px-3 py-2">Дата остатка</th>
-                            <th class="px-3 py-2">Количество транзакций</th>
-                            <th class="px-3 py-2">Количество новых аккаунтов</th>
-                            <th class="px-3 py-2">Количество обновленных аккаунтов</th>
-                            <th class="px-3 py-2">Скачать выписку</th>
-                            <th class="px-3 py-2">Загрузка</th>
+                            <td class="px-2 py-1">{{ account.company_name }}</td>
+                            <td class="px-2 py-1">{{ account.bank_name }}</td>
+                            <td class="px-2 py-1">{{ account.final_remainder|number_format(0, ',', ' ') }} ₽</td>
+                            <td class="px-2 py-1">{{ account.date_created|default('-') }}</td>
+                            <td class="px-2 py-1">{{ account.transactions_count }}</td>
+                            <td class="px-2 py-1">{{ account.new_accounts_count }}</td>
+
+                            <td class="px-2 py-1">{{ account.client_returns_count }}</td>
+                            <td class="px-2 py-1">{{ account.supplier_returns_count }}</td>
+                            <td class="px-2 py-1">{{ account.client_services_returns_count }}</td>
+
+                            <td class="px-2 py-1">{{ account.goods_supplier }}</td>
+                            <td class="px-2 py-1">{{ account.goods_client }}</td>
+                            <td class="px-2 py-1">{{ account.goods_client_service }}</td>
+                            <td class="px-6 py-1">{{ account.expenses|number_format(0, ',', ' ') }}</td>
+                            <td class="px-6 py-1">{{ account.income|number_format(0, ',', ' ') }}</td>
+                            <td class="px-2 py-1">
+                                {% if account.file_name is not empty %}
+                                    <button class="download-file-btn font-bold underline" data-file="{{ account.file_name }}">Скачать</button>
+                                {% else %}
+                                    —
+                                {% endif %}
+                            </td>
+                            <td class="px-2 py-1">
+                                {% if account.is_expired %}
+                                    <span>✕</span>
+                                {% else %}
+                                    <span>✓</span>
+                                {% endif %}
+                            </td>
                         </tr>
+                    {% endfor %}
+                    </tbody>
+
+                    <tfoot class="text-[10px] text-gray-500 uppercase">
+                    <tr class="divide-x divide-gray-200">
+                        <th class="px-2 py-1">Итого</th>
+                        <th class="px-2 py-1"></th>
+                        <th class="px-2 py-1">{{ total_final_remainder|number_format(0, ',', ' ') }} ₽</th>
+                        <th colspan="13"></th>
+                    </tr>
                     </tfoot>
                 </table>
             </div>
@@ -171,39 +151,33 @@
                 {% for account in our_accounts %}
                     <div class="border border-gray-200 rounded-lg shadow-sm p-4 space-y-2 text-xs">
 
-                        <div class="font-semibold">
-                            <span class="font-bold text-green-700">Компания:</span>
-                            {{ account.company_name }}
+                        <div>
+                            <span class="font-bold">Компания:</span> {{ account.company_name }}
                         </div>
 
-                        <div class="font-semibold">
-                            <span class="font-bold text-yellow-700">Банк:</span>
-                            {{ account.bank_name }}
+                        <div>
+                            <span class="font-bold">Банк:</span> {{ account.bank_name }}
                         </div>
 
-                        <div class="font-semibold">
-                            <span class="font-bold text-purple-700">Конечный остаток:</span>
-                            {{ account.final_remainder|number_format(0, ',', ' ') }} ₽
+                        <div>
+                            <span class="font-bold">Остаток:</span> {{ account.final_remainder|number_format(0, ',', ' ') }} ₽
                         </div>
 
-                        <div class="font-semibold">
-                            <span class="font-bold">Дата остатка:</span>
-                            {{ account.date_created|default('-') }}
+                        <div>
+                            <span class="font-bold">Дата остатка:</span> {{ account.date_created|default('-') }}
                         </div>
 
                         <div class="grid grid-cols-2 gap-x-2 gap-y-1 pt-1">
-                            <div>
-                                <span class="font-bold">Транзакции:</span>
-                                {{ account.transactions_count }}
-                            </div>
-                            <div>
-                                <span class="font-bold">Новые аккаунты:</span>
-                                {{ account.new_accounts_count }}
-                            </div>
-                            <div>
-                                <span class="font-bold">Обновленные:</span>
-                                {{ account.bank_accounts_updated }}
-                            </div>
+                            <div><span class="font-bold">Транзакции:</span> {{ account.transactions_count }}</div>
+                            <div><span class="font-bold">Новые аккаунты:</span> {{ account.new_accounts_count }}</div>
+                            <div><span class="font-bold">Возврат (клиент):</span> {{ account.client_returns_count }}</div>
+                            <div><span class="font-bold">Возврат (поставщик):</span> {{ account.supplier_returns_count }}</div>
+                            <div><span class="font-bold">Возврат (услуги):</span> {{ account.client_services_returns_count }}</div>
+                            <div><span class="font-bold">Покупки (пост.):</span> {{ account.goods_supplier }}</div>
+                            <div><span class="font-bold">Покупки (клиент):</span> {{ account.goods_client }}</div>
+                            <div><span class="font-bold">Покупки (услуги):</span> {{ account.goods_client_service }}</div>
+                            <div class="col-span-2"><span class="font-bold">Расходы:</span> {{ account.expenses|number_format(0, ',', ' ') }} ₽</div>
+                            <div class="col-span-2"><span class="font-bold">Доходы:</span> {{ account.income|number_format(0, ',', ' ') }} ₽</div>
                         </div>
 
                         <!-- Скачать -->
@@ -211,7 +185,7 @@
                             {% if account.file_name is not empty %}
                                 <button
                                         type="button"
-                                        class="flex items-center gap-1 text-blue-600 hover:text-blue-800 download-file-btn"
+                                        class="flex items-center gap-1 font-bold underline download-file-btn"
                                         data-file="{{ account.file_name }}"
                                 >
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
@@ -227,7 +201,7 @@
                         </div>
 
                         <!-- Статус -->
-                        <div class="pt-1 font-semibold">
+                        <div class="pt-1">
                             <span class="font-bold">Статус:</span>
                             {% if account.is_expired %}
                                 <span class="text-red-500">Просрочено</span>
@@ -238,7 +212,6 @@
                     </div>
                 {% endfor %}
             </div>
-
         {% endif %}
     </div>
 

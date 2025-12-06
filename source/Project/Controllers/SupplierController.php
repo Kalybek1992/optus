@@ -211,12 +211,6 @@ class SupplierController extends BaseController
         ];
         EndOfDaySettlementLM::updateEndOfDayTransactions($update_end_of_day);
 
-        $balance = $get_entities->balance;
-        $new_balance = $balance - $amount;
-
-        BankAccountsLM::updateBankAccounts([
-            'balance =' . $new_balance,
-        ], $get_entities->id);
 
 
         return ApiViewer::getOkBody(['success' => 'ok']);
@@ -667,7 +661,7 @@ class SupplierController extends BaseController
                 'status' => 'processed'
             ]);
 
-            DebtsLM::payOffClientServicesDebt(
+            DebtsLM::payOffSupplierClientServicesDebt(
                 $client['legal_id'],
                 $amount,
                 $translation_max_id + 1

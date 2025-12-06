@@ -173,15 +173,10 @@ class BankOrderLM
                 '*',
                 'le.company_name as sender_company_name',
                 'le.bank_name as sender_bank_name',
-                'ba.balance as balance',
             ])
             ->leftJoin('legal_entities le')
             ->on([
                 'le.id = from_account_id',
-            ])
-            ->leftJoin('bank_accounts ba')
-            ->on([
-                'ba.legal_entity_id = from_account_id',
             ])
             ->where([
                 "status = 'pending'",
@@ -265,15 +260,10 @@ class BankOrderLM
                 '*',
                 'le.company_name as sender_company_name',
                 'le.bank_name as sender_bank_name',
-                'ba.balance as balance',
             ])
             ->leftJoin('legal_entities le')
             ->on([
                 'le.id = from_account_id',
-            ])
-            ->leftJoin('bank_accounts ba')
-            ->on([
-                'ba.legal_entity_id = from_account_id',
             ])
             ->where([
                 "status = 'pending'",

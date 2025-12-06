@@ -62,10 +62,18 @@ try {
     }
 
 } catch (Throwable $e) {
-    Logger::log(print_r($e->getMessage(), true), 'error_exception');
+
+    $log = "EXCEPTION\n";
+    $log .= "Message: " . $e->getMessage() . "\n";
+    $log .= "File: " . $e->getFile() . "\n";
+    $log .= "Line: " . $e->getLine() . "\n";
+    $log .= "Code: " . $e->getCode() . "\n";
+    $log .= "Trace:\n" . $e->getTraceAsString();
+
+    Logger::log($log, 'error_exception');
+
     $error_controller = new ErrorController();
     $body = $error_controller->errorPage();
-
 
     $response->setBody($body);
     $response->sendHtmlExit();

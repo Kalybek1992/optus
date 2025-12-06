@@ -81,7 +81,7 @@ class UsersLM
                 's.user_id = id',
             ])
             ->where([
-                'id =' . "'" . $user_id . "'",
+                'id =' . $user_id,
                 'role =' . "'supplier'",
             ])
             ->limit(1);
@@ -342,7 +342,7 @@ class UsersLM
                 'cr.user_id = users.id',
             ])
             ->where([
-                'users.id =' . "'" . $user_id . "'",
+                'users.id =' . $user_id,
             ])
             ->limit(1);
 

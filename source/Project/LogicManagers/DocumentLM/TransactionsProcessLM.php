@@ -7,14 +7,19 @@ use Source\Base\Core\Logger;
 use Source\Project\Connectors\PdoConnector;
 use Source\Project\LogicManagers\LogicPdoModel\BankAccountsLM;
 use Source\Project\LogicManagers\LogicPdoModel\BankOrderLM;
+use Source\Project\LogicManagers\LogicPdoModel\ClientServicesLM;
 use Source\Project\LogicManagers\LogicPdoModel\ClientsLM;
+use Source\Project\LogicManagers\LogicPdoModel\CompanyFinancesLM;
 use Source\Project\LogicManagers\LogicPdoModel\DebtsLM;
 use Source\Project\LogicManagers\LogicPdoModel\EndOfDaySettlementLM;
 use Source\Project\LogicManagers\LogicPdoModel\LegalEntitiesLM;
+use Source\Project\LogicManagers\LogicPdoModel\SupplierBalanceLM;
+use Source\Project\LogicManagers\LogicPdoModel\SuppliersLM;
 use Source\Project\LogicManagers\LogicPdoModel\TransactionsLM;
 use Source\Project\LogicManagers\LogicPdoModel\UploadedDocumentsLM;
 use Source\Project\LogicManagers\LogicPdoModel\UploadedLogLM;
 use Source\Project\Models\LegalEntities;
+use Source\Project\Models\SupplierBalance;
 
 
 class TransactionsProcessLM extends DocumentExtractLM
@@ -23,10 +28,7 @@ class TransactionsProcessLM extends DocumentExtractLM
 
     public array $income = [];
 
-    public array $update_balance = [];
-
     public array $expenditure_on_goods = [];
-
 
     public array $transactions = [];
 
@@ -36,23 +38,44 @@ class TransactionsProcessLM extends DocumentExtractLM
 
     public array $new_bank_order = [];
 
-    public int|bool $our_account_id = false;
-
     public int $new_bank_accounts_count = 0;
 
     public int $transactions_count = 0;
+
+    public $our_inn = null;
 
     public int $bank_accounts_updated_count = 0;
 
     public array $transaction_pending = [];
 
 
-    public array $bank_accounts = [];
+    public array $date_update_report_supplier = [];
+
+    public array $our_account = [];
+
+    public int $bank_order_count = 0;
+
+    public int $customer_client_returns_count = 0;
+
+    public int $customer_supplier_returns_count = 0;
+
+    public int $customer_client_services_returns_count = 0;
+
+    public int $goods_client = 0;
+
+    public int $goods_supplier = 0;
+
+    public int $goods_client_service = 0;
+
+    public int $income_sum = 0;
+
+    public int $expense_sum = 0;
 
     public function __construct(array $lines, $section_document = 'СекцияДокумент')
     {
         parent::__construct($lines, $section_document);
-        $this->transactions_count = count($this->bank_order) + count($this->payment_order);
+        $this->transactions_count = count($this->payment_order);
+        $this->bank_order_count = count($this->bank_order);
     }
 
     /**
@@ -60,135 +83,101 @@ class TransactionsProcessLM extends DocumentExtractLM
      */
     public function determineExpensesIncome(): static
     {
-        Logger::log(print_r('determineExpensesIncome', true), 'tet');
 
         foreach ($this->payment_order as $order) {
             if ($order['bank_account'] == $this->bank_exchange['bank_account']) {
                 $this->expenses[] = $order;
+                $this->expense_sum += $order['balance'];
             } else {
                 $this->income[] = $order;
+                $this->income_sum += $order['balance'];
             }
         }
 
+        if ($this->expenses) {
+            $this->our_account = [
+                'company_name' => $this->expenses[0]['company_name'],
+                'inn' => $this->expenses[0]['inn'],
+                'bank_name' => $this->expenses[0]['name'],
+                'our_account' => 1,
+            ];
+
+            $this->our_inn = $this->expenses[0]['inn'];
+        } elseif ($this->income) {
+            $this->our_account = [
+                'company_name' => $this->income[0]['company_name'],
+                'inn' => $this->income[0]['inn'],
+                'bank_name' => $this->income[0]['bank_name'],
+                'our_account' => 1,
+            ];
+
+            $this->our_inn = $this->income[0]['inn'];
+        }
+
+
+//        Logger::log(
+//            'determineExpensesIncome = this->our_inn ' . print_r($this->our_account, true),
+//            'TransactionsProcess'
+//        );
+//
+//        Logger::log(
+//            'determineExpensesIncome = this->expenses ' . print_r($this->expenses, true),
+//            'TransactionsProcess'
+//        );
+//
+//        Logger::log(
+//            'determineExpensesIncome = this->income ' . print_r($this->income, true),
+//            'TransactionsProcess'
+//        );
 
         return $this;
     }
 
     /**
-     * Получить известных счетов
+     * Записать наш аккаунт если его нету и получить ид
+     */
+    public function getOurAccounts(): static
+    {
+        $our_account = LegalEntitiesLM::getBankAccounts($this->our_account['inn']);
+
+        if (!$our_account) {
+            $this->our_account['id'] = LegalEntitiesLM::getLegalEntitiesMaxId();
+            LegalEntitiesLM::setNewLegalEntitie($this->our_account);
+            $our_account = LegalEntitiesLM::getBankAccounts($this->our_account['inn']);
+        }
+
+        foreach ($our_account as $account) {
+            $this->our_account = [
+                'id' => $account->id,
+                'company_name' => $account->company_name,
+                'inn' => $account->inn,
+                'bank_name' => $account->bank_name,
+                'total_received' => $account->total_received,
+                'total_written_off' => $account->total_written_off,
+                'final_remainder' => $account->final_remainder,
+                'date_created' => $account->date_created,
+            ];
+        }
+
+//        Logger::log(
+//            'getOurAccounts = this->our_account ' . print_r($this->our_account, true),
+//            'TransactionsProcess'
+//        );
+
+        return $this;
+    }
+
+
+    /**
+     * Получить известных счетов через ИНН
      */
     public function getFamousCompanies(): static
     {
-        Logger::log(print_r('getFamousCompanies', true), 'tet');
 
+        $account_implode = $this->getBankAccountImplode();
 
-        $this->bank_accounts = $this->getBankAccountArr();
-        if ($this->bank_accounts) {
-            $this->db_bank_accounts = LegalEntitiesLM::getBankAccounts($this->bank_accounts);
-        }
-
-        return $this;
-    }
-
-    /**
-     * Обновить баланс существующих
-     */
-    public function updateBalanceExisting(): static
-    {
-        $this->getOurBalance();
-        $this->getNewBalanceExpenses();
-        $this->getNewBalanceIncome();
-        Logger::log(print_r('updateBalanceExisting', true), 'tet');
-
-
-        if ($this->update_balance) {
-            foreach ($this->update_balance as $id => $value) {
-                BankAccountsLM::updateBankAccounts([
-                    'balance =' . $value['balance'],
-                ], $id);
-            }
-
-            $this->bank_accounts_updated_count = count($this->update_balance);
-        }
-
-        return $this;
-    }
-
-    /**
-     * Возврат денег клиенту
-     */
-
-    public function closeClientsDebt(): static
-    {
-        Logger::log(print_r('closeClientsDebt', true), 'tet');
-        foreach ($this->db_bank_accounts as $bank_account) {
-
-            if ($this->update_balance[$bank_account->id] ?? null && $this->update_balance[$bank_account->id]['type_of_translation'] == 'expenses') {
-
-                if ($bank_account->debt ?? false) {
-                    $amount = $this->update_balance[$bank_account->id]['amount'] ?? 0;
-                    $role = $this->update_balance[$bank_account->id]['role'] ?? 'not_role';
-
-
-                    if ($role == 'client') {
-                        $debt = (int)$bank_account->debt;
-
-                        DebtsLM::updateDebts([
-                            'status = paid',
-                        ], $bank_account->id);
-
-                        if ($debt > $amount) {
-                            $this->expenditure_on_goods[] = [
-                                'from_account_id' => $bank_account->id,
-                                'to_account_id' => $bank_account->id,
-                                'type_of_debt' => 'client_goods',
-                                'amount' => $bank_account->debt - $amount,
-                                'status' => 'active',
-                            ];
-                        }
-                    }
-                }
-            }
-        }
-
-        return $this;
-    }
-
-
-    /**
-     * Возврат денег клиент услуга
-     */
-
-    public function closeClientServicesDebt(): static
-    {
-        Logger::log(print_r('closeClientServicesDebt', true), 'tet');
-        foreach ($this->db_bank_accounts as $bank_account) {
-
-            if ($this->update_balance[$bank_account->id] ?? null && $this->update_balance[$bank_account->id]['type_of_translation'] == 'expenses') {
-
-                if ($bank_account->debt ?? false) {
-                    $amount = $this->update_balance[$bank_account->id]['amount'] ?? 0;
-                    $role = $this->update_balance[$bank_account->id]['role'] ?? 'not_role';
-
-                    if ($role == 'client_services') {
-                        $debt = (int)$bank_account->debt;
-
-                        DebtsLM::updateDebts([
-                            'status = paid',
-                        ], $bank_account->id);
-
-                        if ($debt > $amount) {
-                            $this->expenditure_on_goods[] = [
-                                'from_account_id' => $bank_account->id,
-                                'to_account_id' => $bank_account->id,
-                                'type_of_debt' => 'client_services',
-                                'amount' => $bank_account->debt - $amount,
-                                'status' => 'active',
-                            ];
-                        }
-                    }
-                }
-            }
+        if ($account_implode != '') {
+            $this->db_bank_accounts = LegalEntitiesLM::getBankAccounts($account_implode);
         }
 
         return $this;
@@ -200,463 +189,39 @@ class TransactionsProcessLM extends DocumentExtractLM
 
     public function processingNewAccounts(): static
     {
-        Logger::log(print_r('processingNewAccounts', true), 'tet');
-
-        $this->setNewBankAccounts();
-
-        return $this;
-    }
-
-    /**
-     * Оформить покупки услуг
-     */
-
-    public function makePurchasesServices(): static
-    {
-
-        $this->determinePurchaseService();
-
-        if ($this->expenditure_on_goods) {
-            DebtsLM::setNewDebts($this->expenditure_on_goods);
-        }
-
-
-        Logger::log(print_r('makePurchasesServices', true), 'tet');
-
-        return $this;
-    }
-
-
-    /**
-     * Обработка ухода в денег
-     */
-
-    private function getNewBalanceExpenses(): void
-    {
-        foreach ($this->expenses as $key => $expense) {
-            foreach ($this->db_bank_accounts as $bank_account) {
-                if ($bank_account->bank_account == $expense['bank_account_recipient']) {
-
-                    $role = 'not_role';
-                    $amount = $expense['balance'];
-                    $balance = 0;
-
-                    if ($bank_account->client_id ?? false) {
-                        $role = 'client';
-                        $balance = $bank_account->balance - $expense['balance'];
-                    }
-
-                    if ($bank_account->supplier_id ?? false) {
-                        $role = 'supplier';
-                        //$amount = $expense['balance'] - ($expense['balance'] * $bank_account->percent / 100);
-                        //$balance = $bank_account->balance - $amount;
-                        $balance = $bank_account->balance + $expense['balance'];
-                    }
-
-                    if (isset($this->update_balance[$bank_account->id])) {
-                        $this->update_balance[$bank_account->id]['balance'] -= $amount;
-                        $this->update_balance[$bank_account->id]['amount'] += $amount;
-                    } else {
-                        $this->update_balance[$bank_account->id] = [
-                            'balance' => $balance,
-                            'amount' => $amount,
-                            'role' => $role,
-                            'type_of_translation' => 'expenses'
-                        ];
-                    }
-
-                    if ($this->our_account_id) {
-                        $this->update_balance[$this->our_account_id]['balance'] += $amount;
-                    }
-
-                    unset($this->expenses[$key]);
-                }
-            }
-        }
-    }
-
-    /**
-     * Обработка приходов денег
-     */
-
-    private function getNewBalanceIncome(): void
-    {
-        foreach ($this->income as $key => $income) {
-            foreach ($this->db_bank_accounts as $bank_account) {
-                if ($bank_account->bank_account == $income['bank_account']) {
-
-                    $role = 'not_role';
-                    $amount = $income['balance']; // по умолчанию весь доход
-                    $balance = $bank_account->balance + $amount;
-
-                    if ($bank_account->client_id ?? false) {
-                        $role = 'client';
-                        $amount = $income['balance'] - ($income['balance'] * $bank_account->percent / 100);
-                    }
-
-                    if ($bank_account->supplier_id ?? false) {
-                        $role = 'supplier';
-                        //$amount = $income['balance'] - ($income['balance'] * $bank_account->percent / 100);
-                    }
-
-                    if (isset($this->update_balance[$bank_account->id])) {
-                        $this->update_balance[$bank_account->id]['balance'] += $amount;
-                        $this->update_balance[$bank_account->id]['amount'] += $amount;
-                    } else {
-                        $this->update_balance[$bank_account->id] = [
-                            'balance' => $balance,
-                            'amount' => $amount,
-                            'role' => $role,
-                            'type_of_translation' => 'income'
-                        ];
-                    }
-
-                    if ($this->our_account_id) {
-                        $this->update_balance[$this->our_account_id]['balance'] -= $amount;
-                    }
-
-                    unset($this->income[$key]);
-                }
-            }
-        }
-    }
-
-    /**
-     * Корректировка нашего баланса
-     */
-    private function getOurBalance(): void
-    {
-        foreach ($this->db_bank_accounts as $key => $bank_account) {
-
-            if ($bank_account->bank_account == $this->bank_exchange['bank_account']) {
-                $balance = $bank_account->balance;
-                $this->our_account_id = $bank_account->id;
-
-                $this->update_balance[$this->our_account_id] = [
-                    'balance' => $balance,
-                    'role' => 'our_account',
-                ];
-                break;
-            }
-        }
-
-    }
-
-    /**
-     * Определить покупку услуги
-     */
-    private function determinePurchaseService(): void
-    {
-        $this->transaction_pending = TransactionsLM::getTransactionsStatusPending();
-        TransactionsLM::updateTransactionsStatusPending();
-
-        foreach ($this->payment_order as $transaction) {
-            $from_account_id = '';
-            $to_account_id = '';
-            $sender_role = '';
-            $recipient_role = '';
-            $percent = 0;
-            $amount = $transaction['balance'];
-            $transaction_id = 0;
-            $supplier_client_id = 0;
-
-            foreach ($this->db_bank_accounts as $account) {
-                if ($transaction['bank_account'] == $account->bank_account) {
-                    $from_account_id = $account->id;
-
-                    if ($account->supplier_id ?? false) {
-                        $sender_role = 'supplier';
-                    }
-
-                    if ($account->client_id ?? false) {
-                        $sender_role = 'client';
-                    }
-
-                    if ($account->our_account == 1) {
-                        $sender_role = 'our_account';
-                    }
-                }
-
-                if ($transaction['bank_account_recipient'] == $account->bank_account && !$account->client_services) {
-                    $to_account_id = $account->id;
-
-                    if ($account->supplier_id ?? false) {
-                        $recipient_role = 'supplier';
-                    }
-
-                    if ($account->our_account == 1) {
-                        $recipient_role = 'our_account';
-                    }
-                }
-
-                if ($account->percent > 0) {
-                    $percent = $account->percent;
-                }
-
-                $supplier_client_id = $account->supplier_client_id;
-            }
-
-            foreach ($this->transaction_pending as $pending) {
-                if (
-                    $pending->from_account_id == $from_account_id &&
-                    $pending->to_account_id == $to_account_id &&
-                    $pending->amount == $amount &&
-                    $pending->description == $transaction['type'] &&
-                    $pending->percent == $percent
-                ) {
-                    $transaction_id = $pending->id;
-                }
-            }
-
-            if ($percent > 0) {
-                $amount = $transaction['balance'] - ($transaction['balance'] * $percent / 100);
-            }
-
-            $type_of_debt = [
-                'our_account->supplier' => 'supplier_goods',
-                'supplier->our_account' => 'client_services',
-                'client->our_account' => 'client_goods',
-            ][$sender_role . '->' . $recipient_role] ?? '';
-
-            //TODO Образование товарного долга перед поставщиком клиента
-
-            if ($type_of_debt == 'client_services' && $supplier_client_id) {
-                $client = ClientsLM::getClientId($supplier_client_id);
-                $percent = $client['percentage'];
-                $amount = $transaction['balance'] - ($transaction['balance'] * $percent / 100);
-
-                $this->expenditure_on_goods[] = [
-                    'from_account_id' => $from_account_id,
-                    'to_account_id' => $to_account_id,
-                    'transaction_id' => $transaction_id,
-                    'type_of_debt' => 'сlient_debt_supplier',
-                    'amount' => $amount,
-                    'date' => date('Y-m-d'),
-                    'status' => 'active'
-                ];
-            }
-
-            // TODO образование и сохранение других долгов
-            if ($type_of_debt && $transaction_id) {
-                $this->expenditure_on_goods[] = [
-                    'from_account_id' => $from_account_id,
-                    'to_account_id' => $to_account_id,
-                    'transaction_id' => $transaction_id,
-                    'type_of_debt' => $type_of_debt,
-                    'amount' => $amount,
-                    'date' => date('Y-m-d'),
-                    'status' => 'active'
-                ];
-            }
-        }
-    }
-
-
-    /**
-     * Обработка новых аккаунтов
-     */
-    private function setNewBankAccounts(): void
-    {
         $this->getNewExpensesBankAccounts();
         $this->getNewIncomeBankAccounts();
-        $this->getNewOurAccountBankAccounts();
 
         foreach ($this->db_bank_accounts as $db_account) {
-            if ($this->new_bank_accounts[$db_account->bank_account] ?? false) {
-                unset($this->new_bank_accounts[$db_account->bank_account]);
+            if ($this->new_bank_accounts[$db_account->inn] ?? false) {
+                unset($this->new_bank_accounts[$db_account->inn]);
             }
         }
 
         if ($this->new_bank_accounts) {
-            $this->setBankAccounts();
+            $this->setIdBankAccounts();
         }
+
+        $account_implode = $this->getBankAccountImplode();
+        if ($account_implode != '') {
+            $this->db_bank_accounts = LegalEntitiesLM::getBankAccounts($account_implode . ', ' . $this->our_inn);
+        }
+
+
+//        Logger::log(
+//            'processingNewAccounts = this->new_bank_accounts ' . print_r($this->new_bank_accounts, true),
+//            'TransactionsProcess'
+//        );
+//
+//        Logger::log(
+//            'processingNewAccounts = this->db_bank_accounts ' . print_r($this->db_bank_accounts, true),
+//            'TransactionsProcess'
+//        );
+
 
         $this->new_bank_accounts_count = count($this->new_bank_accounts);
-    }
 
-
-    /**
-     * Обработка новых получателей
-     */
-    private function getNewExpensesBankAccounts(): void
-    {
-        $sections = $this->expenses;
-
-        foreach ($sections as $section) {
-            //Мы отправили деньги
-            if (array_key_exists($section['bank_account'], $this->new_bank_accounts)) {
-                $this->new_bank_accounts[$section['bank_account']]['balance'] += $section['balance'];
-            } else {
-                $this->new_bank_accounts[$section['bank_account']] = [
-                    'our_account' => 1,
-                    'inn' => $section['inn'],
-                    'kpp' => $section['kpp'] ?? 0,
-                    'bank_account' => $section['bank_account'],
-                    'bank_name' => $section['bank_name'],
-                    'bic' => $section['bic'] ?? 0,
-                    'correspondent_account' => $section['correspondent_account'],
-                    'company_name' => $section['company_name'],
-                    'balance' => $section['balance'],
-                ];
-            }
-
-            //Получатель должен нам
-            if (array_key_exists($section['bank_account_recipient'], $this->new_bank_accounts)) {
-                $this->new_bank_accounts[$section['bank_account_recipient']]['balance'] += $section['balance'];
-            } else {
-                $this->new_bank_accounts[$section['bank_account_recipient']] = [
-                    'inn' => $section['inn_recipient'],
-                    'kpp' => $section['kpp_recipient'] ?? 0,
-                    'bank_account' => $section['bank_account_recipient'],
-                    'bank_name' => $section['bank_name_recipient'],
-                    'bic' => $section['bic_recipient'] ?? 0,
-                    'correspondent_account' => $section['correspondent_account_recipient'],
-                    'company_name' => $section['company_name_recipient'],
-                    'balance' => $section['balance'], // минусуем
-                ];
-            }
-        }
-    }
-
-    /**
-     * Обработка новых отправителей
-     */
-    private function getNewIncomeBankAccounts(): void
-    {
-        $sections = $this->income;
-
-        foreach ($sections as $section) {
-            //Нам отправили деньги мы должны им вернуть
-
-            if (array_key_exists($section['bank_account'], $this->new_bank_accounts)) {
-                $this->new_bank_accounts[$section['bank_account']]['balance'] += $section['balance'];
-            } else {
-                $this->new_bank_accounts[$section['bank_account']] = [
-                    'inn' => $section['inn'],
-                    'kpp' => $section['kpp'] ?? 0,
-                    'bank_account' => $section['bank_account'],
-                    'bank_name' => $section['bank_name'],
-                    'bic' => $section['bic'] ?? 0,
-                    'correspondent_account' => $section['correspondent_account'],
-                    'company_name' => $section['company_name'],
-                    'balance' => $section['balance'], // плюсуем
-                ];
-            }
-
-            //Получатель мы
-            if (array_key_exists($section['bank_account_recipient'], $this->new_bank_accounts)) {
-                $this->new_bank_accounts[$section['bank_account_recipient']]['balance'] -= $section['balance'];
-            } else {
-                $this->new_bank_accounts[$section['bank_account_recipient']] = [
-                    'our_account' => 1,
-                    'inn' => $section['inn_recipient'],
-                    'kpp' => $section['kpp_recipient'] ?? 0,
-                    'bank_account' => $section['bank_account_recipient'],
-                    'bank_name' => $section['bank_name_recipient'],
-                    'bic' => $section['bic_recipient'] ?? 0,
-                    'correspondent_account' => $section['correspondent_account_recipient'],
-                    'company_name' => $section['company_name_recipient'],
-                    'balance' => -1 * $section['balance'],
-                ];
-            }
-        }
-    }
-
-    /**
-     * Если только наш новый аккаунт
-     */
-    private function getNewOurAccountBankAccounts(): void
-    {
-        $our_account = in_array('our_account', array_column($this->update_balance, 'role'), true);
-        $our_account_new = in_array(1, array_column($this->new_bank_accounts, 'our_account'), true);
-
-
-        if (!$our_account && !$our_account_new) {
-
-            foreach ($this->payment_order as $order) {
-                //Нам отправили деньги мы должны им вернуть
-
-                if ($order['bank_account'] == $this->bank_exchange['bank_account']) {
-
-                    if (array_key_exists($order['bank_account'], $this->new_bank_accounts)) {
-                        $this->new_bank_accounts[$order['bank_account']]['balance'] += $order['balance'];
-                    } else {
-                        $this->new_bank_accounts[$order['bank_account']] = [
-                            'our_account' => 1,
-                            'inn' => $order['inn'],
-                            'kpp' => $order['kpp'] ?? 0,
-                            'bank_account' => $order['bank_account'],
-                            'bank_name' => $order['bank_name'],
-                            'bic' => $order['bic'] ?? 0,
-                            'correspondent_account' => $order['correspondent_account'],
-                            'company_name' => $order['company_name'],
-                            'balance' => $order['balance'], // плюсуем
-                        ];
-                    }
-
-                } else {
-
-                    if (array_key_exists($order['bank_account_recipient'], $this->new_bank_accounts)) {
-                        $this->new_bank_accounts[$order['bank_account_recipient']]['balance'] -= $order['balance'];
-                    } else {
-                        $this->new_bank_accounts[$order['bank_account_recipient']] = [
-                            'our_account' => 1,
-                            'inn' => $order['inn_recipient'],
-                            'kpp' => $order['kpp_recipient'] ?? 0,
-                            'bank_account' => $order['bank_account_recipient'],
-                            'bank_name' => $order['bank_name_recipient'],
-                            'bic' => $order['bic_recipient'] ?? 0,
-                            'correspondent_account' => $order['correspondent_account_recipient'],
-                            'company_name' => $order['company_name_recipient'],
-                            'balance' => -1 * $order['balance'],
-                        ];
-                    }
-                }
-            }
-        }
-    }
-
-    /**
-     * Установка новых аккаунтов
-     */
-    private function setBankAccounts(): void
-    {
-        $legal_entities_insert = [];
-        $insert_balance_data = [];
-        $legal_entities_max = LegalEntitiesLM::getLegalEntitiesMaxId();
-
-
-        foreach ($this->new_bank_accounts as $key => $value) {
-            $legal_entities_max += 1;
-
-            $legal_entities_insert[] = [
-                'id' => $legal_entities_max,
-                'inn' => $value['inn'],
-                'kpp' => $value['kpp'],
-                'bank_account' => $value['bank_account'],
-                'bank_name' => $value['bank_name'],
-                'bic' => $value['bic'],
-                'company_name' => $value['company_name'],
-                'correspondent_account' => $value['correspondent_account'],
-                'our_account' => $value['our_account'] ?? 0,
-            ];
-
-            $insert_balance_data[] = [
-                'legal_entity_id' => $legal_entities_max,
-                'balance' => $value['balance'],
-            ];
-        }
-
-
-        if ($legal_entities_insert) {
-
-            $builder = LegalEntities::newQueryBuilder()
-                ->insert($legal_entities_insert);
-
-            PdoConnector::execute($builder);
-
-            BankAccountsLM::setNewBankAccounts($insert_balance_data);
-        }
+        return $this;
     }
 
     /**
@@ -664,27 +229,22 @@ class TransactionsProcessLM extends DocumentExtractLM
      */
     public function setNewTransactions(): static
     {
-        $date_update_report_supplier = [];
         $unique_manager_dates = [];
-
-        if ($this->bank_accounts) {
-            $this->db_bank_accounts = LegalEntitiesLM::getBankAccounts($this->bank_accounts);
-        }
 
         foreach ($this->payment_order as $transaction) {
             $from_account_id = '';
             $to_account_id = '';
             $percent = 0;
             $percent_income = 0;
-            $type = $this->bank_exchange['bank_account'] == $transaction['bank_account'] ? 'expense' : 'income';
+            $type = $this->our_inn == $transaction['inn'] ? 'expense' : 'income';
             $date = $this->parseDateToMysqlFormat($transaction['date']);
 
             foreach ($this->db_bank_accounts as $account) {
-                if ($transaction['bank_account'] == $account->bank_account) {
+                if ($transaction['inn']  == $account->inn) {
                     $from_account_id = $account->id;
                 }
 
-                if ($transaction['bank_account_recipient'] == $account->bank_account) {
+                if ($transaction['inn_recipient'] == $account->inn) {
                     $to_account_id = $account->id;
                 }
 
@@ -692,22 +252,28 @@ class TransactionsProcessLM extends DocumentExtractLM
                     $percent = $account->percent;
                 }
 
-                if ($transaction['bank_account_recipient'] == $account->bank_account && $account->client_id ?? false) {
+                if ($transaction['inn_recipient'] == $account->inn && $account->client_id ?? false) {
                     $type = 'return';
                     $percent = 0;
                 }
 
-                if ($transaction['bank_account_recipient'] == $account->bank_account && $account->client_services ?? false) {
+                if ($transaction['inn'] == $account->inn && $account->supplier_id ?? false) {
+                    $type = 'return_supplier';
+                    $percent = 0;
+                }
+
+                if ($transaction['inn_recipient'] == $account->inn && $account->client_services ?? false) {
                     $type = 'return_client_services';
                     $percent = 0;
                 }
+
 
                 if ($account->manager_id && $account->supplier_id) {
                     $key = $account->manager_id . '|' . $date;
 
                     if (!isset($unique_manager_dates[$key])) {
                         $unique_manager_dates[$key] = true;
-                        $date_update_report_supplier[] = [
+                        $this->date_update_report_supplier[] = [
                             'manager_id' => $account->manager_id,
                             'supplier_id' => $account->supplier_id,
                             'date' => $date,
@@ -733,25 +299,400 @@ class TransactionsProcessLM extends DocumentExtractLM
             ];
         }
 
-        if ($this->transactions) {
-            TransactionsLM::insertNewTransactions($this->transactions);
-        }
+//        Logger::log(
+//            'setNewTransactions = this->transactions ' . print_r($this->transactions, true),
+//            'TransactionsProcess'
+//        );
+//
+//        Logger::log(
+//            'setNewTransactions = this->date_update_report_supplier ' . print_r($this->date_update_report_supplier, true),
+//            'TransactionsProcess'
+//        );
 
-        if ($date_update_report_supplier) {
-            EndOfDaySettlementLM::updateEndOfDayTransactions($date_update_report_supplier);
+        if ($this->transactions){
+            TransactionsLM::insertNewTransactions($this->transactions);
+            $this->transaction_pending = TransactionsLM::getTransactionsStatusPending();
         }
 
         return $this;
     }
 
     /**
+     * Возврат денег клиенту если есть долги
+     */
+
+    public function closeClientsDebt(): static
+    {
+        foreach ($this->transaction_pending as $key => $transaction) {
+
+            if ($transaction->type == 'return_client_services') {
+
+                $client_id =  $transaction->sender_client_id;
+                $client = ClientsLM::getClientId($client_id);
+
+                if ($client && $client['legal_id']) {
+                    CompanyFinancesLM::insertTransactionsExpenses([
+                        'transaction_id' => $transaction->id,
+                        'client_id' => $client_id,
+                        'comments' => 'Вернули долг через выписки клиент',
+                        'type' => 'debt_repayment_transaction',
+                        'status' => 'confirm_admin',
+                        'issue_date' => $transaction->date,
+                    ]);
+
+                    DebtsLM::payOffClientsDebt(
+                        $client['legal_id'],
+                        $transaction->amount,
+                        $transaction->id
+                    );
+
+                    $this->customer_client_returns_count++;
+                    Logger::log(
+                        'closeClientsDebt = amount ' . print_r($transaction['amount'], true),
+                        'TransactionsProcess'
+                    );
+                }
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * Возврат денег клиент услуга
+     */
+
+    public function closeClientServicesDebt(): static
+    {
+        foreach ($this->transaction_pending as $key => $transaction) {
+
+            if ($transaction->type == 'return_client_services') {
+
+                $client_services_id = $transaction->sender_client_services_id;
+                $client_services = ClientServicesLM::clientServicesId($client_services_id);
+
+
+                if ($client_services && $client_services['legal_id']) {
+                    CompanyFinancesLM::insertTransactionsExpenses([
+                        'transaction_id' => $transaction->id,
+                        'client_services_id' => $client_services_id,
+                        'comments' => 'Вернули долг через выписки клиент услуги',
+                        'type' => 'debt_repayment_transaction',
+                        'status' => 'confirm_admin',
+                        'issue_date' => $transaction['date'],
+                    ]);
+
+                    DebtsLM::payOffClientServicesDebt(
+                        $client_services['legal_id'],
+                        $transaction->amount,
+                        $transaction->id,
+                    );
+
+                    $this->customer_client_services_returns_count++;
+
+                    Logger::log(
+                        'closeClientServicesDebt = amount ' . print_r($transaction['amount'], true),
+                        'TransactionsProcess'
+                    );
+                }
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * Возврат денег поставшик
+     */
+
+    public function closeSupplierDebt(): static
+    {
+        foreach ($this->transaction_pending as $key => $transaction) {
+
+            if ($transaction->type == 'return_supplier') {
+
+                $supplier_id = $transaction->recipient_supplier_id;
+                $supplier = SuppliersLM::getSupplierIdLegal($supplier_id);
+
+
+                if ($supplier && $supplier['legal_id']) {
+                    CompanyFinancesLM::insertTransactionsExpenses([
+                        'transaction_id' => $transaction->id,
+                        'supplier_id' => $supplier_id,
+                        'comments' => 'Поставщик вернул долг через выписки',
+                        'type' => 'debt_repayment_transaction',
+                        'status' => 'confirm_admin',
+                        'issue_date' => $transaction['date'],
+                    ]);
+
+                    DebtsLM::returnOffSuppliersDebt(
+                        $supplier['legal_id'],
+                        $transaction->amount,
+                        $transaction->id,
+                    );
+
+                    $this->customer_supplier_returns_count++;
+
+                    Logger::log(
+                        'closeSupplierDebt = amount ' . print_r($transaction['amount'], true),
+                        'TransactionsProcess'
+                    );
+                }
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * Обновить баланс существующих поставшиков
+     */
+    public function updateBalanceSupplier(): static
+    {
+        $insert_new_balance = [];
+
+        foreach ($this->transaction_pending as $transaction) {
+
+            if ($transaction->recipient_supplier_id && $transaction->sender_our_account) {
+                $supplier_balance = SupplierBalanceLM::getSupplierBalance(
+                    $transaction->recipient_id,
+                    $transaction->sender_id
+                );
+
+                if (!$supplier_balance) {
+
+                    $key = $transaction->recipient_id . '_' . $transaction->sender_id;
+
+                    if (!isset($insert_new_balance[$key])) {
+                        $insert_new_balance[$key] = [
+                            'legal_id' => $transaction->recipient_id,
+                            'sender_legal_id' => $transaction->sender_id,
+                            'amount' => $transaction->amount,
+                        ];
+                    }
+
+                    $insert_new_balance[$key]['amount'] += $transaction->amount;
+                }
+
+                if ($supplier_balance) {
+
+                    SupplierBalanceLM::updateSupplierBalance(
+                        [
+                            'amount = ' . ($supplier_balance['amount'] + $transaction->amount),
+                        ],
+                        $transaction->recipient_id,
+                        $transaction->sender_id,
+                    );
+                }
+            }
+
+        }
+
+        if ($insert_new_balance) {
+            $insert_new_balance = array_values($insert_new_balance);
+            SupplierBalanceLM::setNewSupplierBalance($insert_new_balance);
+        }
+
+        Logger::log(
+            'updateBalanceSupplie = insert_new_balance ' . print_r($insert_new_balance, true),
+            'TransactionsProcess'
+        );
+
+        return $this;
+    }
+
+    /**
+     * Оформить покупки услуг
+     */
+
+    public function makePurchasesServices(): static
+    {
+
+        $this->supplierGoods();
+        $this->clientServices();
+        $this->clientGoods();
+
+        if ($this->expenditure_on_goods) {
+            DebtsLM::setNewDebts($this->expenditure_on_goods);
+            TransactionsLM::updateTransactionsStatusPending();
+        }
+
+        if ($this->date_update_report_supplier) {
+            EndOfDaySettlementLM::updateEndOfDayTransactions($this->date_update_report_supplier);
+        }
+
+
+        return $this;
+    }
+
+    /**
+     * Определить покупку услуги у поставшика
+     */
+    private function supplierGoods(): void
+    {
+        foreach ($this->transaction_pending as $transaction) {
+
+            if ($transaction->recipient_supplier_id && $transaction->sender_our_account) {
+                $from_account_id = $transaction->from_account_id;
+                $to_account_id = $transaction->to_account_id;
+
+                $this->expenditure_on_goods[] = [
+                    'from_account_id' => $from_account_id,
+                    'to_account_id' => $to_account_id,
+                    'transaction_id' => $transaction->id,
+                    'type_of_debt' => 'supplier_goods',
+                    'amount' => $transaction->amount - $transaction->interest_income,
+                    'date' => date('Y-m-d'),
+                    'status' => 'active'
+                ];
+
+                $this->goods_supplier ++;
+            }
+        }
+    }
+
+
+    /**
+     * Определить покупку услуги у нас клиент сервис (и если поставщик назначил клиента)
+     */
+    private function clientServices(): void
+    {
+        foreach ($this->transaction_pending as $transaction) {
+            if (
+                $transaction->sender_supplier_id &&
+                $transaction->sender_client_service_id &&
+                $transaction->recipient_our_account
+            )
+            {
+                $from_account_id = $transaction->from_account_id;
+                $to_account_id = $transaction->to_account_id;
+
+                $this->expenditure_on_goods[] = [
+                    'from_account_id' => $from_account_id,
+                    'to_account_id' => $to_account_id,
+                    'transaction_id' => $transaction->id,
+                    'type_of_debt' => 'client_services',
+                    'amount' => $transaction->amount - $transaction->interest_income,
+                    'date' => date('Y-m-d'),
+                    'status' => 'active'
+                ];
+
+                if ($transaction->sender_supplier_client_id) {
+
+                    $client = ClientsLM::getClientId($transaction->sender_supplier_client_id);
+                    $percent = $client['percentage'];
+                    $amount = $transaction->amount - ($transaction->amount * $percent / 100);
+
+                    $this->expenditure_on_goods[] = [
+                        'from_account_id' => $from_account_id,
+                        'to_account_id' => $to_account_id,
+                        'transaction_id' => $transaction->id,
+                        'type_of_debt' => 'сlient_debt_supplier',
+                        'amount' => $amount,
+                        'date' => date('Y-m-d'),
+                        'status' => 'active'
+                    ];
+                }
+
+                $this->goods_client_service ++;
+            }
+        }
+    }
+
+    /**
+     * Определить покупку клиента
+     */
+    private function clientGoods(): void
+    {
+        foreach ($this->transaction_pending as $transaction) {
+            if ($transaction->recipient_our_account && $transaction->sender_client_id) {
+                $from_account_id = $transaction->from_account_id;
+                $to_account_id = $transaction->to_account_id;
+
+                $this->expenditure_on_goods[] = [
+                    'from_account_id' => $from_account_id,
+                    'to_account_id' => $to_account_id,
+                    'transaction_id' => $transaction->id,
+                    'type_of_debt' => 'client_goods',
+                    'amount' => $transaction->amount - $transaction->interest_income,
+                    'date' => date('Y-m-d'),
+                    'status' => 'active'
+                ];
+
+                $this->goods_client ++;
+            }
+        }
+    }
+
+
+    /**
+     * Обработка новых получателей
+     */
+    private function getNewExpensesBankAccounts(): void
+    {
+        $sections = $this->expenses;
+
+        foreach ($sections as $section) {
+            //Получатель должен нам
+            $this->new_bank_accounts[$section['inn_recipient']] = [
+                'inn' => $section['inn_recipient'],
+                'bank_name' => $section['bank_name_recipient'],
+                'company_name' => $section['company_name_recipient'],
+            ];
+        }
+    }
+
+    /**
+     * Обработка новых отправителей
+     */
+    private function getNewIncomeBankAccounts(): void
+    {
+        $sections = $this->income;
+
+        foreach ($sections as $section) {
+            //Нам отправили деньги мы должны им вернуть
+            $this->new_bank_accounts[$section['inn']] = [
+                'inn' => $section['inn'],
+                'bank_name' => $section['bank_name'],
+                'company_name' => $section['company_name'],
+            ];
+        }
+    }
+
+
+    /**
+     * Установка новых аккаунтов
+     */
+    private function setIdBankAccounts(): void
+    {
+        $legal_entities_insert = [];
+        $insert_balance_data = [];
+        $legal_entities_max = LegalEntitiesLM::getLegalEntitiesMaxId();
+
+        foreach ($this->new_bank_accounts as $key => $value) {
+            $legal_entities_max += 1;
+            $legal_entities_insert[] = [
+                'id' => $legal_entities_max,
+                'inn' => $value['inn'],
+                'bank_name' => $value['bank_name'],
+                'company_name' => $value['company_name'],
+            ];
+        }
+
+        $this->new_bank_accounts = $legal_entities_insert;
+
+        LegalEntitiesLM::setNewLegalEntitie($this->new_bank_accounts);
+    }
+
+
+    /**
      * Обработка банковских ордеров
      */
     public function setNewTransactionsBankOrder(): static
     {
-        $exchange = LegalEntitiesLM::getBankAccount($this->bank_exchange['bank_account']);
+        $id = $this->our_account['id'];
 
-        if ($exchange && $this->bank_order) {
+        if ($id && $this->bank_order) {
 
             foreach ($this->bank_order as $key => $bank_order) {
                 $transaction_type = $this->detectTransactionType($bank_order['type']);
@@ -763,15 +704,10 @@ class TransactionsProcessLM extends DocumentExtractLM
                         'amount' => $bank_order['balance'],
                         'date' => $date ?? 0,
                         'description' => $bank_order['type'] ?? 0,
-                        'from_account_id' => $exchange->id,
+                        'from_account_id' =>  $id,
                         'document_number' => $bank_order['document_number'] ?? 0,
                         'recipient_company_name' => $bank_order['company_name_recipient'] ?? 0,
                         'recipient_bank_name' => $bank_order['bank_name_recipient'] ?? 0,
-                        'recipient_bank_account' => $bank_order['bank_account_recipient'] ?? 0,
-                        'recipient_inn' => $bank_order['inn_recipient'] ?? 0,
-                        'recipient_kpp' => $bank_order['kpp_recipient'] ?? 0,
-                        'recipient_bic' => $bank_order['bic_recipient'] ?? 0,
-                        'recipient_correspondent_account' => $bank_order['correspondent_account_recipient'] ?? 0,
                     ];
                 } else {
                     unset($this->bank_order[$key]);
@@ -791,7 +727,6 @@ class TransactionsProcessLM extends DocumentExtractLM
      */
     public function setLoadedTransactions(): static
     {
-        Logger::log(print_r('setLoadedTransactions', true), 'tet');
         $data = array_merge(
             $this->bank_order,
             $this->payment_order,
@@ -814,21 +749,34 @@ class TransactionsProcessLM extends DocumentExtractLM
         return $this;
     }
 
+    /**
+     * Возвращаем все инн из выписки с помощью employed для запроса базу данных
+     */
 
-    private function getBankAccountArr(): array
+    private function getBankAccountImplode(): string
     {
 
         $select_bank_account = [];
         foreach ($this->payment_order as $entry) {
-            $select_bank_account[] = $entry['bank_account'];
-            $select_bank_account[] = $entry['bank_account_recipient'];
+
+            if ($entry['inn'] != $this->our_inn) {
+                $select_bank_account[] = $entry['inn'];
+            }
+
+            if ($entry['inn_recipient'] != $this->our_inn){
+                $select_bank_account[] = $entry['inn_recipient'];
+            }
         }
 
+        if (!$select_bank_account) {
+            return '';
+        }
 
         $remove_duplicates = array_unique($select_bank_account);
+        $array_values = array_values($remove_duplicates);
 
 
-        return array_values($remove_duplicates);
+        return implode(', ', $array_values);
     }
 
 
@@ -882,53 +830,79 @@ class TransactionsProcessLM extends DocumentExtractLM
         return 'unknown';
     }
 
-    public function updateKnownLegalEntitiesTotals($file_name): void
+    /**
+     * Запись остатков для нашего компаний
+     */
+
+    public function updateKnownLegalEntitiesTotals(): static
     {
-        // bank_exchange всегда массив с ключами total_received, total_written_off, final_remainder, bank_account
-        $insert_uploaded_log = [];
 
-        if (!empty($this->bank_exchange['bank_account'])) {
-            foreach ($this->db_bank_accounts as $entity) {
-                if ($entity->bank_account == $this->bank_exchange['bank_account']) {
-                    $date = null;
+        $date = null;
+        $our_account_id = $this->our_account['id'];
+        $total_received_db = $this->our_account['total_received'] ?? 0;
 
-                    if ($this->bank_exchange['end_date'] ?? false) {
-                        $date = DateTime::createFromFormat('d.m.Y', $this->bank_exchange['end_date']);
-                    }
-
-                    $total_received =
-                        ($entity->total_received ?? 0)
-                        + floatval($this->bank_exchange['total_received'] ?? 0);
-
-                    if ($date) {
-                        LegalEntitiesLM::updateLegalEntities([
-                            'total_received =' . $total_received,
-                            'total_written_off =' . floatval($this->bank_exchange['total_written_off'] ?? 0),
-                            'final_remainder =' . floatval($this->bank_exchange['final_remainder'] ?? 0),
-                            'date_created =' . $date->format('Y-m-d'),
-                        ], $entity->id);
-                    } else {
-                        LegalEntitiesLM::updateLegalEntities([
-                            'total_received =' . $total_received,
-                            'total_written_off =' . floatval($this->bank_exchange['total_written_off'] ?? 0),
-                            'final_remainder =' . floatval($this->bank_exchange['final_remainder'] ?? 0)
-                        ], $entity->id);
-                    }
-
-                    $insert_uploaded_log = [
-                        'legal_id' => $entity->id,
-                        'transactions_count' => $this->transactions_count ?? 0,
-                        'new_accounts_count' => $this->new_bank_accounts_count ?? 0,
-                        'bank_accounts_updated' => $this->bank_accounts_updated_count ?? 0,
-                        'file_name' => $file_name,
-                        'date' => date('Y-m-d H:i:s'),
-                    ];
-                }
-            }
+        if ($this->bank_exchange['end_date'] ?? false) {
+            $date = DateTime::createFromFormat('d.m.Y', $this->bank_exchange['end_date']);
         }
 
-        if ($insert_uploaded_log) {
-            UploadedLogLM::insertUploadedLog($insert_uploaded_log);
+        $total_received = $total_received_db + floatval($this->bank_exchange['total_received'] ?? 0);
+
+        if ($date) {
+            LegalEntitiesLM::updateLegalEntities([
+                'total_received =' . $total_received,
+                'total_written_off =' . floatval($this->bank_exchange['total_written_off'] ?? 0),
+                'final_remainder =' . floatval($this->bank_exchange['final_remainder'] ?? 0),
+                'date_created =' . $date->format('Y-m-d'),
+            ], $our_account_id);
+        } else {
+            LegalEntitiesLM::updateLegalEntities([
+                'total_received =' . $total_received,
+                'total_written_off =' . floatval($this->bank_exchange['total_written_off'] ?? 0),
+                'final_remainder =' . floatval($this->bank_exchange['final_remainder'] ?? 0)
+            ], $our_account_id);
         }
+
+
+        return $this;
+    }
+
+    /**
+     * Сохраняем последний загрузку выписки
+     */
+
+    public function lastStatementDownload($file_name): static
+    {
+        $our_account_id = $this->our_account['id'];
+        $transactions_count = $this->transactions_count;
+        $new_bank_accounts_count = $this->new_bank_accounts_count;
+        $bank_order_count = $this->bank_order_count;
+        $customer_client_returns_count = $this->customer_client_returns_count;
+        $customer_supplier_returns_count = $this->customer_supplier_returns_count;
+        $customer_client_services_returns_count = $this->customer_client_services_returns_count;
+        $goods_supplier = $this->goods_supplier;
+        $goods_client = $this->goods_client;
+        $goods_client_service = $this->goods_client_service;
+
+
+        $insert_uploaded_log = [
+            'legal_id' => $our_account_id,
+            'transactions_count' => $transactions_count,
+            'new_accounts_count' => $new_bank_accounts_count,
+            'bank_order_count' => $bank_order_count,
+            'client_returns_count' => $customer_client_returns_count,
+            'supplier_returns_count' => $customer_supplier_returns_count,
+            'client_services_returns_count' => $customer_client_services_returns_count,
+            'goods_supplier' => $goods_supplier,
+            'goods_client' => $goods_client,
+            'goods_client_service' => $goods_client_service,
+            'expenses' => $this->expense_sum,
+            'income' => $this->income_sum,
+            'file_name' => $file_name,
+            'date' => date('Y-m-d H:i:s'),
+        ];
+
+        UploadedLogLM::insertUploadedLog($insert_uploaded_log);
+
+        return $this;
     }
 }

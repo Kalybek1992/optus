@@ -50,11 +50,10 @@ class TransactionController extends BaseController
         $transfer_amount = $transaction->amount;
         $old_profit = $transaction->interest_income;
         $new_percent = $percent;
-        $old_balance = $legal_entities->balance;
 
-        $adjusted_balance = abs($old_balance) + $old_profit;
+
         $new_profit = $transfer_amount * ($new_percent / 100);
-        $new_balance = $adjusted_balance - $new_profit;
+
 
 
         TransactionsLM::updateTransactionsId([
@@ -63,26 +62,13 @@ class TransactionController extends BaseController
         ], $transaction_id);
 
 
-        if ($old_balance < 0) {
-            BankAccountsLM::updateBankAccounts([
-                'balance =' . -$new_balance,
-            ], $legal_id);
-
-        } else {
-            BankAccountsLM::updateBankAccounts([
-                'balance =' . $new_balance,
-            ], $legal_id);
-        }
 
         DebtsLM::editDebtTransactionId($transaction_id, $old_profit, $new_profit);
 
 
-        Logger::log(print_r("Старый баланс: $old_balance", true), 'changePercentage');
         Logger::log(print_r("Возврат старой прибыли: $old_profit", true), 'changePercentage');
-        Logger::log(print_r("Баланс без учёта процента: $adjusted_balance", true), 'changePercentage');
         Logger::log(print_r("Новый процент: $new_percent%", true), 'changePercentage');
         Logger::log(print_r("Новая прибыль: $new_profit", true), 'changePercentage');
-        Logger::log(print_r("Новый баланс: $new_balance", true), 'changePercentage');
         Logger::log(print_r("--------------------------------------------", true), 'changePercentage');
 
 
@@ -427,11 +413,6 @@ class TransactionController extends BaseController
                 'description' => $transaction->description,
                 'recipient_company_name' => $legal_entities->company_name,
                 'recipient_bank_name' => $legal_entities->bank_name,
-                'recipient_bank_account' => $legal_entities->bank_account,
-                'recipient_inn' => $legal_entities->inn,
-                'recipient_kpp' => $legal_entities->kpp,
-                'recipient_bic' => $legal_entities->bic,
-                'recipient_correspondent_account' => $legal_entities->correspondent_account,
                 'status' => 'processed',
                 'return_account' => 1
             ];
@@ -559,24 +540,10 @@ class TransactionController extends BaseController
                 'description' => $description,
                 'from_account_id' => $from_account_id,
                 'to_account_id' => $to_account_id,
-//                'user_id' => $user_id,
                 'status' => 'processed'
             ];
 
             TransactionsLM::insertNewTransactions([$transactionData]);
-
-            $old_balance_from_account = LegalEntitiesLM::getOurAccountBalance($from_account_id);
-            $old_balance_to_account = LegalEntitiesLM::getOurAccountBalance($to_account_id);
-            // --- Обновляем балансы счетов ---
-            // Уменьшаем баланс получателя (to_account_id)
-            BankAccountsLM::updateBankAccounts([
-                'balance =' . $old_balance_to_account - $total_amount,
-            ], $to_account_id);
-
-            // Увеличиваем баланс отправителя (from_account_id)
-            BankAccountsLM::updateBankAccounts([
-                'balance =' . $old_balance_from_account + $total_amount,
-            ], $from_account_id);
 
             return ApiViewer::getOkBody(['success' => true]);
 
@@ -937,11 +904,6 @@ class TransactionController extends BaseController
                     'description' => $transaction->description,
                     'recipient_company_name' => $get_entities->company_name,
                     'recipient_bank_name' => $get_entities->bank_name,
-                    'recipient_bank_account' => $get_entities->bank_account,
-                    'recipient_inn' => $get_entities->inn,
-                    'recipient_kpp' => $get_entities->kpp,
-                    'recipient_bic' => $get_entities->bic,
-                    'recipient_correspondent_account' => $get_entities->correspondent_account,
                     'status' => 'processed',
                     'return_account' => 1
                 ];
