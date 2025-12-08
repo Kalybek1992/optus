@@ -507,11 +507,25 @@ class SuppliersLM
     }
 
 
-    public static function getSuppliersUsersCount()
+    public static function getSuppliersUsersCount($role, int $supplier_id,) : int
     {
-        $builder = Suppliers::newQueryBuilder()
-            ->select(['COUNT(suppliers.id) as count']);
+        if ($role == 'manager') {
+            $builder = Managers::newQueryBuilder();
+        }
 
-        return PdoConnector::execute($builder)[0] ?? [];
+        if ($role == 'client') {
+            $builder = Clients::newQueryBuilder();
+        }
+
+        $builder
+            ->select([
+                'COUNT(id) as count',
+            ]);
+        $builder
+            ->where([
+                "supplier_id =" . $supplier_id,
+            ]);
+
+        return PdoConnector::execute($builder)[0]->count ?? 0;
     }
 }

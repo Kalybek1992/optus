@@ -417,6 +417,28 @@ class LegalEntitiesLM
         return PdoConnector::execute($builder)[0] ?? null;
     }
 
+    public static function getEntitiesSupplierBalance($id, $supplier_id, $sender_legal_id)
+    {
+        $builder = LegalEntities::newQueryBuilder()
+            ->select([
+                '*',
+                'sb.amount as balance',
+                'sb.stock_balance as stock_balance',
+            ])
+            ->innerJoin('supplier_balance as sb')
+            ->on([
+                'sb.legal_id = id',
+                'sb.sender_legal_id = ' . $sender_legal_id,
+            ])
+            ->where([
+                'id =' . $id,
+                'supplier_id =' . $supplier_id,
+            ])
+            ->limit(1);
+
+        return PdoConnector::execute($builder)[0] ?? null;
+    }
+
     public static function getOurAccountBalance($id)
     {
         $builder = LegalEntities::newQueryBuilder()
@@ -2117,14 +2139,8 @@ class LegalEntitiesLM
         $builder = LegalEntities::newQueryBuilder()
             ->select([
                 'le.*',
-                'b.balance as balance',
-                'b.stock_balance as stock_balance',
             ])
             ->from('legal_entities as le')
-            ->leftJoin('bank_accounts as b')
-            ->on([
-                'b.legal_entity_id = le.id',
-            ])
             ->where([
                 "le.supplier_id =" . $supplier_id,
                 "le.client_services =" . 0
@@ -2135,14 +2151,26 @@ class LegalEntitiesLM
 
 
         foreach ($legal_entities as $entities) {
+            $balance = SupplierBalanceLM::getSupplierBalanceCompany($entities->id);
+            $supplier_balance = [];
+
+            foreach ($balance as $balance_item) {
+                $supplier_balance[] = [
+                    'id' => $balance_item->id,
+                    'sender_legal_id' => $balance_item->sender_legal_id,
+                    'balance' => $balance_item->amount,
+                    'stock_balance' => $balance_item->stock_balance,
+                    'inn' => $balance_item->inn,
+                    'company_name' => $balance_item->company_name,
+                ];
+            }
 
             $legal_entities_arr[] = [
                 'id' => $entities->id,
                 'company_name' => $entities->company_name,
                 'bank_name' => $entities->bank_name,
                 'inn' => $entities->inn,
-                'balance' => $entities->balance,
-                'stock_balance' => $entities->stock_balance,
+                'balance' => $supplier_balance,
             ];
         }
 

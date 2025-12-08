@@ -1451,6 +1451,10 @@ return [
                     'required' => true,
                     'custom_logic' => fn($a) => is_numeric($a) && $a > 0
                 ],
+                'sender_legal_id' => [
+                    'required' => true,
+                    'custom_logic' => fn($a) => is_numeric($a) && $a > 0
+                ],
                 'date' => [
                     'required' => true,
                     'custom_logic' => fn($a) => is_string($a) && DateTime::createFromFormat('d.m.Y', $a) !== false

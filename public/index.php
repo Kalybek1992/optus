@@ -72,6 +72,8 @@ try {
 
     Logger::log($log, 'error_exception');
 
+
+
     $error_controller = new ErrorController();
     $body = $error_controller->errorPage();
 

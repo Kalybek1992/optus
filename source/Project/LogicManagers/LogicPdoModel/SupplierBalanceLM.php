@@ -47,4 +47,25 @@ class SupplierBalanceLM
         return PdoConnector::execute($builder);
     }
 
+    public static function getSupplierBalanceCompany(int $legal_id)
+    {
+        $builder = SupplierBalance::newQueryBuilder()
+            ->select([
+                '*',
+                'le.inn as inn',
+                'le.company_name as company_name',
+            ])
+            ->leftJoin('legal_entities as le')
+            ->on([
+                'le.id = sender_legal_id',
+            ])
+            ->where([
+                'legal_id =' . $legal_id,
+            ])
+            ->limit(1);
+
+        return PdoConnector::execute($builder);
+    }
+
+
 }

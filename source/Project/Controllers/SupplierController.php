@@ -16,6 +16,7 @@ use Source\Project\LogicManagers\LogicPdoModel\LegalEntitiesLM;
 use Source\Project\LogicManagers\LogicPdoModel\ManagersLM;
 use Source\Project\LogicManagers\LogicPdoModel\ReportsLM;
 use Source\Project\LogicManagers\LogicPdoModel\StockBalancesLM;
+use Source\Project\LogicManagers\LogicPdoModel\SupplierBalanceLM;
 use Source\Project\LogicManagers\LogicPdoModel\SuppliersLM;
 use Source\Project\LogicManagers\LogicPdoModel\TransactionsLM;
 use Source\Project\LogicManagers\LogicPdoModel\UsersLM;
@@ -166,6 +167,7 @@ class SupplierController extends BaseController
     public function distributeAmount(): array
     {
         $legal_id = InformationDC::get('legal_id');
+        $sender_legal_id = InformationDC::get('sender_legal_id');
         $manager_id = InformationDC::get('manager_id');
         $suplier = InformationDC::get('suplier');
         $comment = InformationDC::get('comment');
@@ -174,10 +176,10 @@ class SupplierController extends BaseController
         $date_obj = DateTime::createFromFormat('d.m.Y', $date);
         $supplier_id = $suplier['supplier_id'];
 
-        $get_entities = LegalEntitiesLM::getEntitiesId($legal_id);
+        $get_entities = LegalEntitiesLM::getEntitiesSupplierBalance($legal_id, $supplier_id, $sender_legal_id);
         $manager = ManagersLM::getManagerId($manager_id);
 
-        if (!$get_entities || $get_entities->manager_id || $supplier_id != $get_entities->supplier_id) {
+        if (!$get_entities) {
             return ApiViewer::getErrorBody(['value' => 'no_legal_id']);
         }
 
@@ -211,6 +213,10 @@ class SupplierController extends BaseController
         ];
         EndOfDaySettlementLM::updateEndOfDayTransactions($update_end_of_day);
 
+        $new_balance = $get_entities->balance - $amount;
+        SupplierBalanceLM::updateSupplierBalance([
+            ' amount =' .  $new_balance,
+        ], $legal_id, $sender_legal_id);
 
 
         return ApiViewer::getOkBody(['success' => 'ok']);
@@ -272,18 +278,20 @@ class SupplierController extends BaseController
     public function createReturnManager(): array
     {
         $legal_id = InformationDC::get('legal_id');
+        $sender_legal_id = InformationDC::get('sender_legal_id');
         $manager_id = InformationDC::get('manager_id');
         $suplier = InformationDC::get('suplier');
         $comment = InformationDC::get('comment');
         $amount = InformationDC::get('amount');
         $return_type = InformationDC::get('return_type');
-        $get_entities = LegalEntitiesLM::getEntitiesId($legal_id);
-        $manager = ManagersLM::getManagerId($manager_id);
         $date = InformationDC::get('date');
         $date_obj = DateTime::createFromFormat('d.m.Y', $date);
         $supplier_id = $suplier['supplier_id'];
 
-        if (!$get_entities || $get_entities->manager_id || $supplier_id != $get_entities->supplier_id) {
+        $get_entities = LegalEntitiesLM::getEntitiesSupplierBalance($legal_id, $supplier_id, $sender_legal_id);
+        $manager = ManagersLM::getManagerId($manager_id);
+
+        if (!$get_entities) {
             return ApiViewer::getErrorBody(['value' => 'no_legal_id']);
         }
 
@@ -300,6 +308,7 @@ class SupplierController extends BaseController
             'date' => $date_obj->format('Y-m-d H:i:s'),
             'description' => 'Возврат отгрузки менеджера - ' . $manager->username,
             'from_account_id' => $get_entities->id,
+            'to_account_id' => $sender_legal_id,
             'status' => 'processed'
         ]);
 
@@ -322,22 +331,20 @@ class SupplierController extends BaseController
         if ($return_type == 'cash') {
             $balance = $get_entities->balance;
             $new_balance = $balance + $amount;
-            BankAccountsLM::updateBankAccounts([
-                'balance =' . $new_balance,
-            ], $get_entities->id);
+            SupplierBalanceLM::updateSupplierBalance([
+                'amount =' .  $new_balance,
+            ], $legal_id, $sender_legal_id);
         }
 
         if ($return_type == 'wheel') {
             $balance = $get_entities->stock_balance;
             $new_balance = $balance + $amount;
-            BankAccountsLM::updateBankAccounts([
-                'stock_balance =' . $new_balance,
-            ], $get_entities->id);
+            SupplierBalanceLM::updateSupplierBalance([
+                'stock_balance =' .  $new_balance,
+            ], $legal_id, $sender_legal_id);
         }
 
-
         //Logger::log(print_r($new_balance, true), 'distributeAmount');
-
 
         return ApiViewer::getOkBody(['success' => 'ok']);
     }
@@ -586,9 +593,9 @@ class SupplierController extends BaseController
             'stock_balance =' . $supplier_stock_balance,
         ], $supplier_id);
 
-        BankAccountsLM::updateBankAccounts([
-            'stock_balance =' . $bank_accounts_stock_balance,
-        ], $finances->from_account_id);
+        SupplierBalanceLM::updateSupplierBalance([
+            'stock_balance =' .  $bank_accounts_stock_balance,
+        ], $finances->from_account_id, $finances->to_account_id);
 
         CompanyFinancesLM::updateCompanyFinancesId([
             'return_type =' . 'return_wheel',
@@ -1067,12 +1074,11 @@ class SupplierController extends BaseController
         $users = SuppliersLM::getSuppliersUsers($role, $supplier_id, $offset, $limit);
 
         if (!$users) {
-            return $this->twig->render('NoClients.twig');
+            return $this->twig->render('User/NoClients.twig');
         }
 
-        Logger::log(print_r($users, true), 'getUsersByRole');
-        $suppliers_count = 3;
-        $page_count = ceil($suppliers_count / $limit);
+        $suppliers_user_count = SuppliersLM::getSuppliersUsersCount($role, $supplier_id);
+        $page_count = ceil($suppliers_user_count / $limit);
 
 
         return $this->twig->render('Supplier/GetUsersByRole.twig', [

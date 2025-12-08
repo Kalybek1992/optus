@@ -22,7 +22,7 @@ class ManagersLM
         return PdoConnector::execute($builder);
     }
 
-    public static function getManagersOrClientsAll($supplier_id): array
+    public static function getManagersOrAll($supplier_id): array
     {
         $builder = Managers::newQueryBuilder()
             ->select([
@@ -40,23 +40,6 @@ class ManagersLM
 
         $managers = PdoConnector::execute($builder);
 
-        $builder = Clients::newQueryBuilder()
-            ->select([
-                '*',
-                'u.name as username',
-                'u.role as role',
-            ])
-            ->leftJoin('users u')
-            ->on([
-                'u.id = user_id',
-            ])
-            ->where([
-                'supplier_id =' . $supplier_id
-            ]);
-
-        $clients = PdoConnector::execute($builder);
-
-
         $managers_array = [];
 
         if (!$managers) {
@@ -72,13 +55,6 @@ class ManagersLM
             ];
         }
 
-        foreach ($clients as $client) {
-            $managers_array[] = [
-                'username' => $client->username,
-                'role_id' => $client->id,
-                'role' => $client->role,
-            ];
-        }
 
         //Logger::log(print_r($builder->build(), true), 'clients_array');
 

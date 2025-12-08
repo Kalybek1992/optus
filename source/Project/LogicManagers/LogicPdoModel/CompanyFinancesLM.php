@@ -624,15 +624,17 @@ class CompanyFinancesLM
                 '*',
                 't.amount as amount',
                 't.from_account_id as from_account_id',
-                'b.stock_balance as stock_balance',
+                't.to_account_id as to_account_id',
+                'sb.stock_balance as stock_balance',
             ])
             ->leftJoin('transactions t')
             ->on([
                 't.id = transaction_id',
             ])
-            ->leftJoin('bank_accounts b')
+            ->leftJoin('supplier_balance sb')
             ->on([
-                'b.legal_entity_id = t.from_account_id',
+                'sb.legal_id = t.from_account_id',
+                'sb.sender_legal_id = t.to_account_id',
             ])
             ->where([
                 'id =' . $company_finances_id,

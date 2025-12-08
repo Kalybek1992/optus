@@ -82,13 +82,13 @@
                 <div class="overflow-x-auto">
                     <table class="min-w-full text-xs sm:text-sm text-left border-t border-gray-200 table-auto">
                         <thead class="bg-gray-50 text-gray-700">
-                        <tr class="border-b">
-                            <th class="py-2 px-2 sm:px-4 font-medium">Дата</th>
-                            <th class="py-2 px-2 sm:px-4 font-medium">Компания</th>
-                            <th class="py-2 px-2 sm:px-4 font-medium w-72 sm:w-80 break-words">Назначение</th>
-                            <th class="py-2 px-2 sm:px-4 font-medium w-28 sm:w-36 text-right hidden sm:table-cell">Сумма (₽)</th>
-                            <th class="py-2 px-2 sm:px-4 font-medium w-40 sm:w-48 hidden sm:table-cell">Менеджер</th>
-                        </tr>
+                            <tr class="border-b">
+                                <th class="py-2 px-2 sm:px-4 font-medium">Дата</th>
+                                <th class="py-2 px-2 sm:px-4 font-medium">Компания</th>
+                                <th class="py-2 px-2 sm:px-4 font-medium w-72 sm:w-80 break-words">Назначение</th>
+                                <th class="py-2 px-2 sm:px-4 font-medium w-28 sm:w-36 text-right hidden sm:table-cell">Сумма (₽)</th>
+                                <th class="py-2 px-2 sm:px-4 font-medium w-40 sm:w-48 hidden sm:table-cell">Менеджер</th>
+                            </tr>
                         </thead>
 
                         <tbody class="text-gray-700">
@@ -149,48 +149,72 @@
                                         {{ company.inn }}
                                     </div>
                                 </div>
-                                <div class="flex gap-8">
-                                    <!-- Основной баланс -->
-                                    <div>
-                                        <div class="text-sm text-gray-500">Баланс</div>
-                                        <div class="text-2xl font-bold {{ company.balance < 0 ? 'text-red-600' : 'text-green-600' }}">
-                                            {{ company.balance < 0 ? ('-' ~ (company.balance * -1)|number_format(0, ',', ' ')) : (company.balance|number_format(0, ',', ' ')) }} ₽
+
+                                {% for bc in company.balance %}
+                                    <div class="space-y-4 py-4 {% if not loop.last %}border-b border-green-300{% endif %}">
+
+                                        <!-- Компания / INN -->
+                                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                                            <div>
+                                                <div class="text-xs text-gray-500">Компания</div>
+                                                <div class="text-base font-semibold text-gray-800">
+                                                    {{ bc.company_name }}
+                                                </div>
+                                            </div>
+
+                                            <div>
+                                                <div class="text-xs text-gray-500">INN</div>
+                                                <div class="text-base text-gray-700">
+                                                    {{ bc.inn }}
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Баланс / Возврат -->
+                                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                                            <div>
+                                                <div class="text-xs text-gray-500">Баланс</div>
+                                                <div class="text-2xl font-bold {{ bc.balance < 0 ? 'text-red-600' : 'text-green-600' }}">
+                                                    {{ bc.balance < 0
+                                                    ? ('-' ~ (bc.balance * -1)|number_format(0, ',', ' '))
+                                                    : (bc.balance|number_format(0, ',', ' ')) }} ₽
+                                                </div>
+                                            </div>
+
+                                            <div>
+                                                <div class="text-xs text-gray-500">Возврат баланса колесо</div>
+                                                <div class="text-xl font-semibold text-gray-600">
+                                                    {{ bc.stock_balance|number_format(0, ',', ' ') }} ₽
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Кнопки -->
+                                        <div class="flex flex-col sm:flex-row gap-4 pt-2">
+                                            <button
+                                                    class="btn btn-sm flex-1 bg-green-600 hover:bg-green-700 text-white border-none mx-2"
+                                                    data-distribute-id="{{ company.id }}"
+                                                    data-distribute-sender-id="{{ bc.sender_legal_id }}"
+                                                    data-company="{{ company.company_name }}"
+                                                    data-bank="{{ company.bank_name }}"
+                                                    data-inn="{{ company.inn }}"
+                                                    data-balance="{{ bc.balance}}"
+                                            >
+                                                Создать отгрузку
+                                            </button>
+                                            <button
+                                                    class="btn btn-sm flex-1 bg-green-100 hover:bg-green-200 text-green-700 border-none mx-2"
+                                                    data-return-id="{{ company.id }}"
+                                                    data-distribute-sender-id="{{ bc.sender_legal_id }}"
+                                                    data-bank="{{ company.bank_name }}"
+                                                    data-inn="{{ company.inn }}"
+                                                    data-balance="{{ bc.stock_balance }}"
+                                            >
+                                                Создать возврат
+                                            </button>
                                         </div>
                                     </div>
-
-                                    <!-- Возвращенный товарный баланс -->
-                                    <div>
-                                        <div class="text-sm text-gray-400">Возврат баланса колесо</div>
-                                        <div class="text-xl font-semibold text-gray-500">
-                                            {{ company.stock_balance|number_format(0, ',', ' ') }} ₽
-                                        </div>
-                                    </div>
-                                </div>
-
-                            </div>
-
-                            <!-- Кнопки -->
-                            <div class="mt-4 flex flex-col sm:flex-row gap-3">
-                                <button
-                                        class="btn btn-sm flex-1 bg-green-600 hover:bg-green-700 text-white border-none py-1.5 px-2.5 whitespace-nowrap"
-                                        data-distribute-id="{{ company.id }}"
-                                        data-company="{{ company.company_name }}"
-                                        data-bank="{{ company.bank_name }}"
-                                        data-inn="{{ company.inn }}"
-                                        data-balance="{{ company.balance }}"
-                                >
-                                    Создать отгрузку
-                                </button>
-                                <button
-                                        class="btn btn-sm flex-1 bg-green-100 hover:bg-green-200 text-green-700 border-none py-1.5 px-2.5 whitespace-nowrap"
-                                        data-return-id="{{ company.id }}"
-                                        data-company="{{ company.company_name }}"
-                                        data-bank="{{ company.bank_name }}"
-                                        data-inn="{{ company.inn }}"
-                                        data-balance="{{ company.balance }}"
-                                >
-                                    Создать возврат
-                                </button>
+                                {% endfor %}
                             </div>
                         </div>
                     {% endfor %}
@@ -633,11 +657,13 @@
             const distributeModalComment = document.getElementById('distribute_modal_comment');
 
             let distributeSelectedCompanyId = null;
+            let distributeSelectedCompanysenderId = null;
 
             distributeButtons.forEach(btn => {
                 btn.addEventListener('click', function() {
                     // ID компании и данные
                     distributeSelectedCompanyId = this.dataset.distributeId;
+                    distributeSelectedCompanysenderId = this.dataset.distributeSenderId;
                     const companyName = this.dataset.company || '';
                     const balance = parseFloat(this.dataset.balance) || 0;
 
@@ -699,15 +725,19 @@
 
                 const postData = {
                     legal_id: distributeSelectedCompanyId,
+                    sender_legal_id: distributeSelectedCompanysenderId,
                     manager_id: managerId,
                     amount: amount,
                     comment: comment,
                     date: dateInput.value,
                 };
 
+                console.log(postData);
                 distributeModal.close();
 
                 const result = await postDataRes('/supplier/distributeAmount', postData);
+
+                console.log(result);
                 if (result === 'error' || !result.success) {
                     openErrorModal('Ошибка распределения суммы!');
                 } else {
@@ -814,6 +844,7 @@
             returnButtons.forEach(btn => {
                 btn.addEventListener('click', function() {
                     returnSelectedCompanyId = this.dataset.returnId;
+                    distributeSelectedCompanysenderId = this.dataset.distributeSenderId;
 
                     // Берем данные напрямую из data- атрибутов кнопки
                     const companyName = this.dataset.company || '';
@@ -869,10 +900,9 @@
                     return;
                 }
 
-                console.log(returnType);
-
                 const postData = {
                     legal_id: returnSelectedCompanyId,
+                    sender_legal_id: distributeSelectedCompanysenderId,
                     manager_id: managerId,
                     amount: amount,
                     comment: comment,
@@ -959,7 +989,6 @@
             transform: translateY(-50%) !important;
             z-index: 10050 !important;
         }
-
 
         #confirm_manager_modal {
             position: fixed;

@@ -98,11 +98,11 @@ class HomeController extends BaseController
         $user = InformationDC::get('user');
         $supplier = UsersLM::getUserSupplier($user['id']);
         $no_managers = LegalEntitiesLM::getLegalNoManagers($supplier->suppliers_id);
-        $supplier_users = ManagersLM::getManagersOrClientsAll($supplier->suppliers_id);
+        $supplier_users = ManagersLM::getManagersOrAll($supplier->suppliers_id);
         $supplier_companies = LegalEntitiesLM::getLegalSupplierCompany($supplier->suppliers_id);
         $supplier_debts = DebtsLM::getDebtSupplierPage($supplier->suppliers_id);
 
-        //Logger::log(print_r($re, true), 'supplier_companies');
+        //Logger::log(print_r($supplier_companies, true), 'supplier_companies');
 
         return $this->twig->render('Supplier/SupplierHome.twig', [
             'supplier' => $user,
