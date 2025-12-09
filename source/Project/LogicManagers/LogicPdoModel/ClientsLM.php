@@ -101,7 +101,7 @@ class ClientsLM
             ])
             ->where([
                 "user_id IN($selects)"
-            ])->groupBy("clients.id, u.id, le.id, d.amount",);
+            ])->groupBy("clients.id, u.id, le.id, d.amount");
 
 
         $clients_array = [];
@@ -131,11 +131,11 @@ class ClientsLM
             }
 
 
-            $clients_array[$client_id]['debit_amount_sum'] += (float) ($client->debit_amount ?? 0);
-            $clients_array[$client_id]['final_remainder_sum'] += (float) ($client->final_remainder ?? 0);
+            $clients_array[$client_id]['debit_amount_sum'] += (float)($client->debit_amount ?? 0);
+            $clients_array[$client_id]['final_remainder_sum'] += (float)($client->final_remainder ?? 0);
 
             $innRaw = $client->inn ?? null;
-            $inn = is_null($innRaw) ? '' : trim((string) $innRaw);
+            $inn = is_null($innRaw) ? '' : trim((string)$innRaw);
 
             if ($inn !== '') {
                 $key = $inn;
@@ -144,11 +144,11 @@ class ClientsLM
                         'inn' => $inn,
                         'company_name' => $client->company_name ?? null,
                         'le_id' => $client->le_id ?? null,
-                        'debit_amount' => (float) ($client->debit_amount ?? 0),
+                        'debit_amount' => (float)($client->debit_amount ?? 0),
                     ];
                 } else {
 
-                    $clients_array[$client_id]['bank_accounts'][$key]['debit_amount'] += (float) ($client->debit_amount ?? 0);
+                    $clients_array[$client_id]['bank_accounts'][$key]['debit_amount'] += (float)($client->debit_amount ?? 0);
 
                     if (empty($clients_array[$client_id]['bank_accounts'][$key]['company_name']) && !empty($client->company_name)) {
                         $clients_array[$client_id]['bank_accounts'][$key]['company_name'] = $client->company_name;
@@ -167,6 +167,71 @@ class ClientsLM
 
 
         //Logger::log(print_r($clients_array, true), 'clients_array');
+
+        return $clients_array;
+    }
+
+
+    public static function getClientsDebitCompany($id = null): array
+    {
+
+        $builder = Clients::newQueryBuilder()
+            ->select([
+                'c.id as client_id',
+                'u.name as username',
+                'u.role as role',
+                'SUM(d_company.amount) as company_debit_amount',
+                'SUM(d_client.amount) as debit_amount',
+            ])
+            ->from('clients as c')
+            ->innerJoin('users u')
+            ->on([
+                'u.id = c.user_id',
+            ])
+            ->innerJoin('legal_entities le')
+            ->on([
+                'le.client_id = c.id',
+            ])
+            ->innerJoin('debts d_company')
+            ->on([
+                'd_company.to_account_id = le.id',
+                'd_company.type_of_debt = "сlient_debt"',
+                'd_company.status = "active"',
+            ])
+            ->innerJoin('debts d_client')
+            ->on([
+                'd_client.from_account_id = le.id',
+                'd_client.type_of_debt = "client_goods"',
+                'd_client.status = "active"',
+            ])
+            ->where([
+                "c.supplier_id IS NULL",
+            ]);
+
+        if ($id) {
+            $builder
+                ->where([
+                    'c.id = ' . $id,
+                ]);
+        }
+
+        $builder
+            ->groupBy("le.id");
+
+        $clients = PdoConnector::execute($builder);
+        $clients_array = [];
+
+        foreach ($clients as $client) {
+            $clients_array[] = [
+                'id' => $client->client_id,
+                'username' => $client->username,
+                'role' => $client->role,
+                'company_debit_amount' => $client->company_debit_amount,
+                'debit_amount' => $client->debit_amount,
+            ];
+        }
+
+        //Logger::log(print_r($builder->build(), true), 'clients_array');
 
         return $clients_array;
     }
@@ -240,12 +305,12 @@ class ClientsLM
                 'u.id = user_id',
             ]);
 
-        if ($supplier_id){
+        if ($supplier_id) {
             $builder
                 ->where([
-                'supplier_id =' . $supplier_id,
-            ]);
-        }else{
+                    'supplier_id =' . $supplier_id,
+                ]);
+        } else {
             $builder
                 ->where([
                     "supplier_id IS NULL",

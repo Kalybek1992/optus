@@ -470,21 +470,15 @@ class LegalEntitiesLM
 
     public static function getEntitiesOurAccount(): array
     {
-        $check_date = date('Y-m-d');
-
         $builder = LegalEntities::newQueryBuilder()
             ->select([
                 'le.*',
-                'ul.transactions_count as transactions_count',
-                'ul.new_accounts_count as new_accounts_count',
-                'ul.file_name as file_name',
-                'ul.date as uploaded_date',
+                'MAX(ul.date) as uploaded_date',
             ])
             ->from('legal_entities as le')
             ->leftJoin('uploaded_log ul')
             ->on([
                 'ul.id = le.id',
-                "DATE(ul.date) = '{$check_date}'",
             ])
             ->where([
                 'le.our_account =' . 1,
@@ -535,11 +529,8 @@ class LegalEntitiesLM
                 'total_received' => $account->total_received,
                 'total_written_off' => $account->total_written_off,
                 'final_remainder' => $account->final_remainder,
-                'total_received_interest' => $total_received_interest,
-                'transactions_count' => $account->transactions_count ?? 0,
-                'new_accounts_count' => $account->new_accounts_count ?? 0,
                 'bank_accounts_updated' => $account->bank_accounts_updated ?? 0,
-                'file_name' => $account->file_name ?? null,
+                'total_received_interest' => $total_received_interest,
                 'date_created' => $date_created,
                 'is_expired' => $is_expired,
             ];
@@ -679,19 +670,51 @@ class LegalEntitiesLM
         return $result;
     }
 
-    public static function getEntitiesBalance()
+    public static function getEntitiesBalance(): array
     {
         $builder = LegalEntities::newQueryBuilder()
             ->select([
                 '(SELECT SUM(d.amount) FROM debts d WHERE d.type_of_debt = "supplier_goods" AND d.status = "active") AS supplier_goods_balance',
                 '(SELECT SUM(d.amount) FROM debts d WHERE d.type_of_debt = "client_goods" AND d.status = "active") AS client_goods_balance',
                 '(SELECT SUM(d.amount) FROM debts d WHERE d.type_of_debt = "client_services" AND d.status = "active") AS client_services_balance',
-                '(SELECT SUM(d.amount) FROM debts d WHERE d.type_of_debt = "сlient_debt" AND d.status = "active") AS сlient_debt',
+                '(SELECT SUM(d.amount) FROM debts d WHERE d.type_of_debt = "сlient_debt" AND d.status = "active") AS company_сlient_debt',
+                '(SELECT SUM(d.amount) FROM debts d WHERE d.type_of_debt = "client_services_debt" AND d.status = "active") AS company_client_services_debt',
+                '(SELECT SUM(d.amount) FROM debts d WHERE d.type_of_debt = "supplier_debt" AND d.status = "active") AS company_supplier_debt',
                 '(SELECT SUM(current_balance) FROM couriers) AS couriers_balance',
             ]);
 
 
-        return PdoConnector::execute($builder)[0] ?? null;
+        $amount = PdoConnector::execute($builder)[0] ?? [];
+
+
+        return [
+            'client_debt' => $amount->client_goods_balance ?? 0,
+            'supplier_debt' => $amount->supplier_goods_balance ?? 0,
+            'client_services_debt' => $amount->client_services_balance ?? 0,
+            'company_сlient_debt' => $amount->company_сlient_debt ?? 0,
+            'company_client_services_debt' => $amount->company_client_services_debt ?? 0,
+            'company_supplier_debt' => $amount->company_supplier_debt ?? 0,
+            'couriers_balance' => $amount->couriers_balance ?? 0,
+        ];
+    }
+
+    public static function getEntitiesCompanyDebt(): array
+    {
+        $builder = LegalEntities::newQueryBuilder()
+            ->select([
+                '(SELECT SUM(d.amount) FROM debts d WHERE d.type_of_debt = "сlient_debt" AND d.status = "active") AS company_сlient_debt',
+                '(SELECT SUM(d.amount) FROM debts d WHERE d.type_of_debt = "client_services_debt" AND d.status = "active") AS company_client_services_debt',
+                '(SELECT SUM(d.amount) FROM debts d WHERE d.type_of_debt = "supplier_debt" AND d.status = "active") AS company_supplier_debt',
+            ]);
+
+        $amount = PdoConnector::execute($builder)[0] ?? [];
+
+
+        return [
+            'company_сlient_debt' => $amount->company_client_debt ?? 0,
+            'company_client_services_debt' => $amount->company_client_services_debt ?? 0,
+            'company_supplier_debt' => $amount->company_supplier_debt ?? 0,
+        ];
     }
 
     public static function getSupplierAccounts($supplier_id)

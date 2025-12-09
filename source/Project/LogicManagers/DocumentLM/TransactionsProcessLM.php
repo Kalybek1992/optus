@@ -44,10 +44,7 @@ class TransactionsProcessLM extends DocumentExtractLM
 
     public $our_inn = null;
 
-    public int $bank_accounts_updated_count = 0;
-
     public array $transaction_pending = [];
-
 
     public array $date_update_report_supplier = [];
 
@@ -70,6 +67,8 @@ class TransactionsProcessLM extends DocumentExtractLM
     public int $income_sum = 0;
 
     public int $expense_sum = 0;
+
+    public array $debts_repaid_company = [];
 
     public function __construct(array $lines, $section_document = 'СекцияДокумент')
     {
@@ -235,12 +234,11 @@ class TransactionsProcessLM extends DocumentExtractLM
             $from_account_id = '';
             $to_account_id = '';
             $percent = 0;
-            $percent_income = 0;
             $type = $this->our_inn == $transaction['inn'] ? 'expense' : 'income';
             $date = $this->parseDateToMysqlFormat($transaction['date']);
 
             foreach ($this->db_bank_accounts as $account) {
-                if ($transaction['inn']  == $account->inn) {
+                if ($transaction['inn'] == $account->inn) {
                     $from_account_id = $account->id;
                 }
 
@@ -252,21 +250,20 @@ class TransactionsProcessLM extends DocumentExtractLM
                     $percent = $account->percent;
                 }
 
-                if ($transaction['inn_recipient'] == $account->inn && $account->client_id ?? false) {
-                    $type = 'return';
-                    $percent = 0;
-                }
-
-                if ($transaction['inn'] == $account->inn && $account->supplier_id ?? false) {
+                if (($transaction['inn'] == $account->inn) && ($account->supplier_id ?? false) && (!$account->client_service_id)) {
                     $type = 'return_supplier';
                     $percent = 0;
                 }
 
-                if ($transaction['inn_recipient'] == $account->inn && $account->client_services ?? false) {
-                    $type = 'return_client_services';
+                if ($transaction['inn_recipient'] == $account->inn && ($account->client_id ?? false)) {
+                    $type = 'return';
                     $percent = 0;
                 }
 
+                if ($transaction['inn_recipient'] == $account->inn && ($account->client_service_id ?? false)) {
+                    $type = 'return_client_services';
+                    $percent = 0;
+                }
 
                 if ($account->manager_id && $account->supplier_id) {
                     $key = $account->manager_id . '|' . $date;
@@ -282,9 +279,13 @@ class TransactionsProcessLM extends DocumentExtractLM
                 }
             }
 
-            if ($percent > 0) {
+            if ($type != 'return' && $type != 'return_supplier' && $type != 'return_client_services') {
                 $percent_income = abs($transaction['balance']) * ($percent / 100);
+            } else {
+                $percent_income = 0;
+                $percent = 0;
             }
+
 
             $this->transactions[] = [
                 'type' => $type,
@@ -295,6 +296,8 @@ class TransactionsProcessLM extends DocumentExtractLM
                 'description' => $transaction['type'],
                 'from_account_id' => $from_account_id,
                 'to_account_id' => $to_account_id,
+                'account_sender' => $transaction['bank_account'],
+                'account_recipient' => $transaction['bank_account_recipient'],
                 'status' => 'pending'
             ];
         }
@@ -309,10 +312,15 @@ class TransactionsProcessLM extends DocumentExtractLM
 //            'TransactionsProcess'
 //        );
 
-        if ($this->transactions){
+        if ($this->transactions) {
             TransactionsLM::insertNewTransactions($this->transactions);
             $this->transaction_pending = TransactionsLM::getTransactionsStatusPending();
         }
+
+        Logger::log(
+            'setNewTransactions = this->transaction_pending ' . print_r($this->transaction_pending, true),
+            'TransactionsProcess'
+        );
 
         return $this;
     }
@@ -321,13 +329,14 @@ class TransactionsProcessLM extends DocumentExtractLM
      * Возврат денег клиенту если есть долги
      */
 
+
     public function closeClientsDebt(): static
     {
         foreach ($this->transaction_pending as $key => $transaction) {
 
-            if ($transaction->type == 'return_client_services') {
+            if ($transaction->type == 'return') {
 
-                $client_id =  $transaction->sender_client_id;
+                $client_id = $transaction->recipient_client_id;
                 $client = ClientsLM::getClientId($client_id);
 
                 if ($client && $client['legal_id']) {
@@ -340,15 +349,19 @@ class TransactionsProcessLM extends DocumentExtractLM
                         'issue_date' => $transaction->date,
                     ]);
 
+                    $amount = $transaction->amount;
+                    $percent = $transaction->recipient_percent;
+                    $result = $amount - ($amount * $percent / 100);
+
                     DebtsLM::payOffClientsDebt(
                         $client['legal_id'],
-                        $transaction->amount,
+                        $result,
                         $transaction->id
                     );
 
                     $this->customer_client_returns_count++;
                     Logger::log(
-                        'closeClientsDebt = amount ' . print_r($transaction['amount'], true),
+                        'closeClientsDebt = amount ' . print_r($transaction->amount, true),
                         'TransactionsProcess'
                     );
                 }
@@ -368,7 +381,7 @@ class TransactionsProcessLM extends DocumentExtractLM
 
             if ($transaction->type == 'return_client_services') {
 
-                $client_services_id = $transaction->sender_client_services_id;
+                $client_services_id = $transaction->recipient_client_service_id;
                 $client_services = ClientServicesLM::clientServicesId($client_services_id);
 
 
@@ -379,19 +392,23 @@ class TransactionsProcessLM extends DocumentExtractLM
                         'comments' => 'Вернули долг через выписки клиент услуги',
                         'type' => 'debt_repayment_transaction',
                         'status' => 'confirm_admin',
-                        'issue_date' => $transaction['date'],
+                        'issue_date' => $transaction->date,
                     ]);
+
+                    $amount = $transaction->amount;
+                    $percent = $transaction->recipient_percent;
+                    $result = $amount - ($amount * $percent / 100);
 
                     DebtsLM::payOffClientServicesDebt(
                         $client_services['legal_id'],
-                        $transaction->amount,
+                        $result,
                         $transaction->id,
                     );
 
                     $this->customer_client_services_returns_count++;
 
                     Logger::log(
-                        'closeClientServicesDebt = amount ' . print_r($transaction['amount'], true),
+                        'closeClientServicesDebt = amount ' . print_r($transaction->amount, true),
                         'TransactionsProcess'
                     );
                 }
@@ -411,9 +428,8 @@ class TransactionsProcessLM extends DocumentExtractLM
 
             if ($transaction->type == 'return_supplier') {
 
-                $supplier_id = $transaction->recipient_supplier_id;
+                $supplier_id = $transaction->sender_supplier_id;
                 $supplier = SuppliersLM::getSupplierIdLegal($supplier_id);
-
 
                 if ($supplier && $supplier['legal_id']) {
                     CompanyFinancesLM::insertTransactionsExpenses([
@@ -422,38 +438,43 @@ class TransactionsProcessLM extends DocumentExtractLM
                         'comments' => 'Поставщик вернул долг через выписки',
                         'type' => 'debt_repayment_transaction',
                         'status' => 'confirm_admin',
-                        'issue_date' => $transaction['date'],
+                        'issue_date' => $transaction->date,
                     ]);
+
+                    $amount = $transaction->amount;
+                    $percent = $transaction->sender_percent;
+                    $result = $amount - ($amount * $percent / 100);
 
                     DebtsLM::returnOffSuppliersDebt(
                         $supplier['legal_id'],
-                        $transaction->amount,
+                        $result,
                         $transaction->id,
                     );
 
                     $this->customer_supplier_returns_count++;
 
                     Logger::log(
-                        'closeSupplierDebt = amount ' . print_r($transaction['amount'], true),
+                        'closeSupplierDebt = amount ' . print_r($transaction->amount, true),
                         'TransactionsProcess'
                     );
                 }
             }
         }
-
         return $this;
     }
 
     /**
      * Обновить баланс существующих поставшиков
      */
+
+    //TODO Надо подумать как обновлять баланс при возврате
     public function updateBalanceSupplier(): static
     {
         $insert_new_balance = [];
 
         foreach ($this->transaction_pending as $transaction) {
 
-            if ($transaction->recipient_supplier_id && $transaction->sender_our_account) {
+            if ($transaction->recipient_supplier_id && $transaction->type == 'expense') {
                 $supplier_balance = SupplierBalanceLM::getSupplierBalance(
                     $transaction->recipient_id,
                     $transaction->sender_id
@@ -469,23 +490,23 @@ class TransactionsProcessLM extends DocumentExtractLM
                             'sender_legal_id' => $transaction->sender_id,
                             'amount' => $transaction->amount,
                         ];
+                    } else {
+                        $insert_new_balance[$key]['amount'] += $transaction->amount;
                     }
 
-                    $insert_new_balance[$key]['amount'] += $transaction->amount;
                 }
 
                 if ($supplier_balance) {
-
+                    $new_balance = $supplier_balance->amount + $transaction->amount;
                     SupplierBalanceLM::updateSupplierBalance(
                         [
-                            'amount = ' . ($supplier_balance['amount'] + $transaction->amount),
+                            'amount = ' . $new_balance,
                         ],
                         $transaction->recipient_id,
                         $transaction->sender_id,
                     );
                 }
             }
-
         }
 
         if ($insert_new_balance) {
@@ -507,21 +528,19 @@ class TransactionsProcessLM extends DocumentExtractLM
 
     public function makePurchasesServices(): static
     {
-
         $this->supplierGoods();
         $this->clientServices();
         $this->clientGoods();
 
         if ($this->expenditure_on_goods) {
             DebtsLM::setNewDebts($this->expenditure_on_goods);
-            TransactionsLM::updateTransactionsStatusPending();
         }
 
         if ($this->date_update_report_supplier) {
             EndOfDaySettlementLM::updateEndOfDayTransactions($this->date_update_report_supplier);
         }
 
-
+        TransactionsLM::updateTransactionsStatusPending();
         return $this;
     }
 
@@ -532,7 +551,7 @@ class TransactionsProcessLM extends DocumentExtractLM
     {
         foreach ($this->transaction_pending as $transaction) {
 
-            if ($transaction->recipient_supplier_id && $transaction->sender_our_account) {
+            if ($transaction->recipient_supplier_id && $transaction->type == 'expense') {
                 $from_account_id = $transaction->from_account_id;
                 $to_account_id = $transaction->to_account_id;
 
@@ -545,8 +564,6 @@ class TransactionsProcessLM extends DocumentExtractLM
                     'date' => date('Y-m-d'),
                     'status' => 'active'
                 ];
-
-                $this->goods_supplier ++;
             }
         }
     }
@@ -561,9 +578,8 @@ class TransactionsProcessLM extends DocumentExtractLM
             if (
                 $transaction->sender_supplier_id &&
                 $transaction->sender_client_service_id &&
-                $transaction->recipient_our_account
-            )
-            {
+                $transaction->type == 'income'
+            ) {
                 $from_account_id = $transaction->from_account_id;
                 $to_account_id = $transaction->to_account_id;
 
@@ -594,7 +610,7 @@ class TransactionsProcessLM extends DocumentExtractLM
                     ];
                 }
 
-                $this->goods_client_service ++;
+                $this->goods_client_service++;
             }
         }
     }
@@ -605,7 +621,10 @@ class TransactionsProcessLM extends DocumentExtractLM
     private function clientGoods(): void
     {
         foreach ($this->transaction_pending as $transaction) {
-            if ($transaction->recipient_our_account && $transaction->sender_client_id) {
+            if ($transaction->recipient_our_account &&
+                $transaction->sender_client_id &&
+                $transaction->type == 'income'
+            ) {
                 $from_account_id = $transaction->from_account_id;
                 $to_account_id = $transaction->to_account_id;
 
@@ -619,9 +638,54 @@ class TransactionsProcessLM extends DocumentExtractLM
                     'status' => 'active'
                 ];
 
-                $this->goods_client ++;
+                $this->goods_client++;
             }
         }
+    }
+
+
+    /**
+     * Определить покупку клиента
+     */
+    private function mutualSettlements($transaction_id, $user)
+    {
+        foreach ($this->transaction_pending as $transaction) {
+            if ($transaction->id == $transaction_id) {
+                if ($user['legal_id']) {
+
+                    $amount = $transaction->amount;
+
+                    $amount_new = DebtsLM::mutualSettlementsDebts(
+                        $user['legal_id'],
+                        $amount,
+                        $transaction->id,
+                    );
+
+                    if ($amount_new != $transaction->amount) {
+                        CompanyFinancesLM::insertTransactionsExpenses([
+                            'transaction_id' => $transaction->id,
+                            'supplier_id' => $user['id'],
+                            'comments' => 'Взаиморасчеты с поставщиком',
+                            'type' => 'debt_repayment_transaction',
+                            'status' => 'confirm_admin',
+                            'issue_date' => $transaction->date,
+                        ]);
+
+                        if ($amount_new > 0){
+                            $new = $amount_new - ($amount_new * $transaction->percent / 100);
+
+
+                        }
+
+                    }
+
+                }else{
+                    return false;
+                }
+            }
+        }
+
+        return true;
     }
 
 
@@ -704,7 +768,7 @@ class TransactionsProcessLM extends DocumentExtractLM
                         'amount' => $bank_order['balance'],
                         'date' => $date ?? 0,
                         'description' => $bank_order['type'] ?? 0,
-                        'from_account_id' =>  $id,
+                        'from_account_id' => $id,
                         'document_number' => $bank_order['document_number'] ?? 0,
                         'recipient_company_name' => $bank_order['company_name_recipient'] ?? 0,
                         'recipient_bank_name' => $bank_order['bank_name_recipient'] ?? 0,
@@ -763,7 +827,7 @@ class TransactionsProcessLM extends DocumentExtractLM
                 $select_bank_account[] = $entry['inn'];
             }
 
-            if ($entry['inn_recipient'] != $this->our_inn){
+            if ($entry['inn_recipient'] != $this->our_inn) {
                 $select_bank_account[] = $entry['inn_recipient'];
             }
         }
@@ -861,7 +925,6 @@ class TransactionsProcessLM extends DocumentExtractLM
                 'final_remainder =' . floatval($this->bank_exchange['final_remainder'] ?? 0)
             ], $our_account_id);
         }
-
 
         return $this;
     }

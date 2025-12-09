@@ -16,6 +16,7 @@ use Source\Project\Middlewares\VariablesMiddlewares\RepeatManagerNameMiddleware;
 use Source\Project\Middlewares\VariablesMiddlewares\UserIdMiddleware;
 use Source\Project\Middlewares\VariablesMiddlewares\ApiKeyShopreceiptsDateMiddleware;
 use Source\Project\Middlewares\VariablesMiddlewares\ApiKeyCourierMiddleware;
+use Source\Project\Middlewares\VariablesMiddlewares\MutualSettlementMiddleware;
 
 return [
     'GET' => [
@@ -1928,6 +1929,26 @@ return [
             ],
             'middlewares' => [
                 new ApiKeyAdminMiddleware,
+            ]
+        ],
+        '/transaction/mutualsettlement' => [
+            'validation' => [
+                'role_id' => [
+                    'required' => true,
+                    'custom_logic' => fn($a) => is_numeric($a) && $a > 0
+                ],
+                'amount' => [
+                    'required' => true,
+                    'custom_logic' => fn($a) => is_numeric($a) && $a > 0
+                ],
+                'role' => [
+                    'required' => true,
+                    'custom_logic' => fn($a) =>  $a == 'supplier' || $a == 'client' || $a == 'client_services',
+                ],
+            ],
+            'middlewares' => [
+                new ApiKeyAdminMiddleware,
+                new MutualSettlementMiddleware,
             ]
         ],
     ]

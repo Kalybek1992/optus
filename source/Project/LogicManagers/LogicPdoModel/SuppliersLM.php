@@ -7,6 +7,7 @@ use Source\Base\Core\Logger;
 use Source\Project\Connectors\PdoConnector;
 use Source\Project\Models\BankAccounts;
 use Source\Project\Models\Clients;
+use Source\Project\Models\ClientServices;
 use Source\Project\Models\LegalEntities;
 use Source\Project\Models\Managers;
 use Source\Project\Models\StockBalances;
@@ -129,14 +130,14 @@ class SuppliersLM
                 ];
             }
 
-            $balance_sum = (float) ($supplier->balance ?? 0);
-            $debit_amount_sum = (float) ($supplier->debit_amount ?? 0);
+            $balance_sum = (float)($supplier->balance ?? 0);
+            $debit_amount_sum = (float)($supplier->debit_amount ?? 0);
 
             $suppliers_array[$supplier_id]['balance_sum'] += $balance_sum;
             $suppliers_array[$supplier_id]['debit_amount_sum'] += $debit_amount_sum;
 
             $account_raw = $supplier->inn ?? null;
-            $account = is_null($account_raw) ? '' : trim((string) $account_raw);
+            $account = is_null($account_raw) ? '' : trim((string)$account_raw);
 
             if ($account !== '') {
                 if (!isset($suppliers_array[$supplier_id]['bank_accounts'][$account])) {
@@ -507,7 +508,7 @@ class SuppliersLM
     }
 
 
-    public static function getSuppliersUsersCount($role, int $supplier_id,) : int
+    public static function getSuppliersUsersCount($role, int $supplier_id): int
     {
         if ($role == 'manager') {
             $builder = Managers::newQueryBuilder();
@@ -527,5 +528,67 @@ class SuppliersLM
             ]);
 
         return PdoConnector::execute($builder)[0]->count ?? 0;
+    }
+
+    public static function getSuppliersDebitCompany($id = null): array
+    {
+        $builder = Suppliers::newQueryBuilder()
+            ->select([
+                's.id as id',
+                'u.name as username',
+                'u.role as role',
+                'SUM(d_company.amount) as company_debit_amount',
+                'SUM(d.amount) as debit_amount',
+            ])
+            ->from('suppliers as s')
+            ->innerJoin('users u')
+            ->on([
+                'u.id = s.user_id',
+            ])
+            ->innerJoin('legal_entities le')
+            ->on([
+                'le.supplier_id = s.id',
+            ])
+            ->innerJoin('debts d_company')
+            ->on([
+                'd_company.from_account_id = le.id',
+                'd_company.type_of_debt = "supplier_debt"',
+                'd_company.status = "active"',
+            ])
+            ->innerJoin('debts d')
+            ->on([
+                'd.to_account_id = le.id',
+                'd.type_of_debt = "supplier_goods"',
+                'd.status = "active"',
+            ]);
+
+
+        if ($id) {
+            $builder
+                ->where([
+                "s.id =" . $id,
+            ]);
+        }
+
+
+        $builder
+            ->groupBy("le.id");
+
+        $suppliers = PdoConnector::execute($builder);
+        $suppliers_array = [];
+
+        foreach ($suppliers as $supplier) {
+            $suppliers_array[] = [
+                'id' => $supplier->id,
+                'username' => $supplier->username,
+                'role' => $supplier->role,
+                'company_debit_amount' => $supplier->company_debit_amount,
+                'debit_amount' => $supplier->debit_amount,
+            ];
+        }
+
+        //Logger::log(print_r($builder->build(), true), 'clients_array');
+
+        return $suppliers_array;
     }
 }

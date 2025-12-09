@@ -281,7 +281,7 @@ class CourierController extends BaseController
                     return ApiViewer::getErrorBody(['value' => 'bad_client_legal_entities']);
                 }
 
-                DebtsLM::returnOffClientsDebt(
+                DebtsLM::payOffClientsDebt(
                     $client['legal_id'],
                     $finances->amount,
                     $finances->transaction_id

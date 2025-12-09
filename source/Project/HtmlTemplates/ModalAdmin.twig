@@ -507,4 +507,60 @@
         </div>
     </div>
 
+    <!-- взаиморасчетов лишних долгов -->
+    <input type="checkbox" id="mutual_settlement_modal" class="modal-toggle" />
+    <div class="modal" role="dialog">
+        <div class="modal-box max-w-md">
+            <h1 class="text-lg font-bold text-gray-800 mb-4">
+                Взаиморасчёт
+            </h1>
+
+            <div class="space-y-3">
+                <!-- Лишняя выдача -->
+                <div class="p-3 border rounded-xl bg-gray-50">
+                    <span class="font-semibold text-gray-700">Лишняя выдача:</span>
+                    <div id="companyDebitAmount" class="text-gray-900 mt-1"></div>
+                </div>
+
+                <!-- Долг пользователя -->
+                <div class="p-3 border rounded-xl bg-gray-50">
+                    <span class="font-semibold text-gray-700">Долг пользователя:</span>
+                    <div id="userDebtAmount" class="text-gray-900 mt-1"></div>
+                </div>
+
+                <!-- Input -->
+                <div class="p-3 border rounded-xl bg-gray-50">
+                    <label class="font-semibold text-gray-700 block mb-1">
+                        Сумма взаиморасчёта
+                    </label>
+                    <input
+                            id="mutualAmountInput"
+                            type="number"
+                            min="0"
+                            step="0.01"
+                            class="input input-bordered w-full"
+                            placeholder="Введите сумму"
+                    />
+                    <div id="amountError" class="text-red-600 text-sm mt-1 hidden"></div>
+                </div>
+
+                <div class="alert alert-info rounded-xl text-white">
+                    Сумма не должна превышать лишнюю выдачу и долг пользователя
+                </div>
+            </div>
+
+            <div class="modal-action mt-6">
+                <button
+                        id="confirmMutualSettlement"
+                        class="btn bg-blue-600 hover:bg-blue-700 text-white border-none rounded-lg px-6">
+                    Подтвердить
+                </button>
+                <label for="mutual_settlement_modal" class="btn btn-outline rounded-lg">
+                    Отменить
+                </label>
+            </div>
+        </div>
+    </div>
+
+
 {% endblock %}

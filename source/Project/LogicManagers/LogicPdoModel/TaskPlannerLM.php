@@ -110,8 +110,11 @@ class TaskPlannerLM
         return self::getArrStatus($task);
     }
 
-    public static function getAllTaskPlan($date_from, $date_to): array
+    public static function getAllTaskPlan(): array
     {
+        $date_from = date('d.m.Y');
+        $date_to = date('d.m.Y', strtotime('+4 days'));
+
         $builder = TaskPlanner::newQueryBuilder()
             ->select([
                 'tp.*',

@@ -6,7 +6,7 @@
             <div class="border border-blue-400 rounded-lg p-4 text-center">
                 <div class="text-sm text-gray-600 mb-1">Долг клиентам</div>
                 <div class="text-base font-bold text-black">
-                    {{ client_goods_balance|number_format(0, ',', ' ') }} ₽
+                    {{ finance.client_debt|number_format(0, ',', ' ') }} ₽
                 </div>
                 <div class="text-xs text-gray-500 mt-1">Мы должны товар</div>
             </div>
@@ -24,16 +24,13 @@
             <div class="border border-blue-400 rounded-lg p-4 text-center">
                 <div class="text-sm text-gray-600 mb-1">Должники (товар)</div>
                 <div class="text-base font-bold text-black">
-                    +{{ supplier_goods_balance|number_format(0, ',', ' ') }} ₽
+                    +{{ finance.supplier_debt|number_format(0, ',', ' ') }} ₽
                 </div>
                 <div class="text-xs text-gray-500 mt-1">Нам должны</div>
             </div>
 
             <!-- Долг (услуги) -->
-            <div
-                    class="relative border border-blue-400 rounded-lg p-4 text-center {% if client_services %}cursor-pointer{% endif %}"
-                    {% if client_services %}onclick="location.href='/debts/debtsClientServices'"{% endif %}
-            >
+            <div class="relative border border-blue-400 rounded-lg p-4 text-center {% if client_services %}cursor-pointer{% endif %}" {% if client_services %}onclick="location.href='/debts/debtsClientServices'"{% endif %}>
                 {% if client_services %}
                     <div class="absolute top-2 right-2">
                         <span class="inline-block w-4 h-4 bg-red-500 text-white text-[10px] font-bold rounded-full text-center leading-[14px]">!</span>
@@ -41,7 +38,7 @@
                 {% endif %}
                 <div class="text-sm text-gray-600 mb-1">Долг (клиент услуги)</div>
                 <div class="text-base font-bold text-black">
-                    {{ client_services_balance|number_format(0, ',', ' ') }} ₽
+                    {{ finance.client_services_debt|number_format(0, ',', ' ') }} ₽
                 </div>
                 <div class="text-xs text-gray-500 mt-1">Мы должны в БН</div>
             </div>
@@ -50,21 +47,14 @@
             <div class="border border-blue-400 rounded-lg p-4 text-center">
                 <div class="text-sm text-gray-600 mb-1">Курьеры</div>
                 <div class="text-base font-bold text-black">
-                    {{ couriers_balance < 0 ? '-' : '' }}{{ couriers_balance|abs|number_format(0, ',', ' ') }} ₽
+                    {{ finance.couriers_balance|number_format(0, ',', ' ') }} ₽
                 </div>
                 <div class="text-xs text-gray-500 mt-1">Баланс курьеров</div>
             </div>
-
-            <!-- Наш баланс (если понадобится снова включить) -->
-            {# <div class="border border-blue-400 rounded-lg p-4 text-center">
-                <div class="text-sm text-gray-600 mb-1">Наш баланс</div>
-                <div class="text-base font-bold text-black">
-                    {{ our_account_balance < 0 ? '-' : '' }}{{ our_account_balance|abs|number_format(0, '.', ' ') }} ₽
-                </div>
-                <div class="text-xs text-gray-500 mt-1">На наших счетах</div>
-            </div> #}
         </div>
     </div>
+
+
 
 
 {% endblock %}

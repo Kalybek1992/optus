@@ -931,4 +931,128 @@ class TransactionController extends BaseController
         return ApiViewer::getOkBody(['success' => 'ok']);
     }
 
+
+    public function mutualSettlement(): array
+    {
+        $role_id = InformationDC::get('role_id');
+        $amount = InformationDC::get('amount');
+        $role = InformationDC::get('role');
+        $user_debit = InformationDC::get('user_debit');
+        $translation_max_id = TransactionsLM::getTranslationMaxId();
+        $insert_company_finances = [];
+        $legals_id = false;
+
+        if (!$user_debit) {
+            return ApiViewer::getErrorBody(['value' => 'bad_user_debit']);
+        }
+
+        if ($user_debit['debit_amount'] < $amount || $user_debit['company_debit_amount'] < $amount) {
+            return ApiViewer::getErrorBody(['value' => 'bad_amount']);
+        }
+
+        if ($role == 'supplier') {
+            $supplier = SuppliersLM::getSupplierIdLegal($role_id);
+
+            TransactionsLM::insertNewTransactions([
+                'id' => $translation_max_id + 1,
+                'type' => 'internal_transfer',
+                'amount' => $amount,
+                'date' => date('Y-m-d H:i:s'),
+                'description' => 'Закрытие долга поставщика при займе расчёте.',
+                'status' => 'processed'
+            ]);
+
+            $insert_company_finances = [
+                'transaction_id' => $translation_max_id + 1,
+                'supplier_id' => $role_id,
+                'comments' => 'Закрытие долга поставщика при займе расчёте.',
+                'type' => 'debt_repayment_transaction',
+                'status' => 'confirm_admin'
+            ];
+
+            DebtsLM::payOffCompaniesDebt(
+                $supplier['legal_id'],
+                $amount,
+                $translation_max_id + 1
+            );
+
+            $legals_id = $supplier['legal_id'];
+        }
+
+        if ($role == 'client') {
+            $client = ClientsLM::getClientId($role_id);
+
+            TransactionsLM::insertNewTransactions([
+                'id' => $translation_max_id + 1,
+                'type' => 'internal_transfer',
+                'amount' => $amount,
+                'date' => date('Y-m-d H:i:s'),
+                'description' => 'Взаиморасчеты клиентам.',
+                'status' => 'processed'
+            ]);
+
+            $insert_company_finances = [
+                'transaction_id' => $translation_max_id + 1,
+                'client_id' => $role_id,
+                'comments' => 'Взаиморасчеты клиентам.',
+                'type' => 'debt_repayment_transaction',
+                'status' => 'processed',
+            ];
+
+            DebtsLM::payOffClientsDebt(
+                $client['legal_id'],
+                $amount,
+                $translation_max_id + 1
+            );
+
+            $legals_id = $client['legal_id'];
+        }
+
+        if ($role == 'client_services') {
+            $client_services = ClientServicesLM::clientServicesId($role_id);
+
+            TransactionsLM::insertNewTransactions([
+                'id' => $translation_max_id + 1,
+                'type' => 'internal_transfer',
+                'amount' => $amount,
+                'date' => date('Y-m-d H:i:s'),
+                'description' => 'Взаиморасчеты клиент услуги.',
+                'status' => 'processed'
+            ]);
+
+            $insert_company_finances = [
+                'transaction_id' => $translation_max_id + 1,
+                'client_services_id' => $role_id,
+                'comments' => 'Взаиморасчеты клиент услуги.',
+                'type' => 'debt_repayment_transaction',
+                'status' => 'confirm_admin',
+            ];
+
+
+            DebtsLM::payOffClientServicesDebt(
+                $client_services['legal_id'],
+                $amount,
+                $translation_max_id + 1,
+            );
+
+            $legals_id = $client_services['legal_id'];
+        }
+
+
+        if (!$insert_company_finances) {
+            return ApiViewer::getErrorBody(['value' => 'bad_add_stock_balances']);
+        }
+
+
+        DebtsLM::mutualSettlementsDebts(
+            $legals_id,
+            $amount,
+            $translation_max_id + 1,
+        );
+
+        CompanyFinancesLM::insertTransactionsExpenses($insert_company_finances);
+        Logger::log(print_r($user_debit, true), 'mutualSettlement');
+
+        return ApiViewer::getOkBody(['success' => 'ok']);
+    }
 }

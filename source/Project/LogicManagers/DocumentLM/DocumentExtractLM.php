@@ -86,6 +86,8 @@ class DocumentExtractLM
 
         $this->blocks = $blocks;
 
+        //Logger::log(print_r($blocks, true), 'blocks');
+
         $this->sortSection();
     }
 

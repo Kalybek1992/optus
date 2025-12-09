@@ -52,6 +52,19 @@ class DebtsLM
         return PdoConnector::execute($builder);
     }
 
+    public static function getDebtsFromSupplierGoods($legal_id)
+    {
+        $builder = Debts::newQueryBuilder()
+            ->select()
+            ->where([
+                'to_account_id IN(' . $legal_id . ')',
+                "type_of_debt = 'supplier_goods'",
+                "status = 'active'",
+            ]);
+
+        return PdoConnector::execute($builder);
+    }
+
     public static function getDebtsFromClientDebtSuppliers($legal_id)
     {
         $builder = Debts::newQueryBuilder()
@@ -59,6 +72,19 @@ class DebtsLM
             ->where([
                 'from_account_id IN(' . $legal_id . ')',
                 "type_of_debt = 'сlient_debt_supplier'",
+                "status = 'active'",
+            ]);
+
+        return PdoConnector::execute($builder);
+    }
+
+    public static function getDebtsCompanyMutual($legal_id)
+    {
+        $builder = Debts::newQueryBuilder()
+            ->select()
+            ->where([
+                '(' . $legal_id . ' IS NOT NULL AND (from_account_id IN(' . $legal_id . ') OR to_account_id IN(' . $legal_id . ')))',
+                "type_of_debt IN ('supplier_debt', 'client_services_debt', 'сlient_debt')",
                 "status = 'active'",
             ]);
 
@@ -77,7 +103,6 @@ class DebtsLM
 
         return PdoConnector::execute($builder);
     }
-
 
     public static function deleteAllActiveDebtUser(int $legal_id)
     {
@@ -389,7 +414,6 @@ class DebtsLM
         return $client_services;
     }
 
-
     public static function getDebtsClientServicesGroupRemaining($debt_ids)
     {
         //TODO только не оплаченные берем???
@@ -413,7 +437,6 @@ class DebtsLM
 
         return PdoConnector::execute($builder)[0]->remaining ?? 0;
     }
-
 
     public static function getDebtsMutualSettlement($amount_repaid, $supplier_id, $client_services, $supplier_goods): array
     {
@@ -619,18 +642,17 @@ class DebtsLM
         return $client_services;
     }
 
-    public static function payOffClientsDebt($legal_id, $amount, $transaction_id) :bool
+    public static function payOffClientsDebt($legal_id, $amount, $transaction_id): bool
     {
         $debts = self::getDebtsFromClientGoods($legal_id);
-        //Если нету никаких долгов
-        if (!$debts) {
-            $our_account_id = LegalEntitiesLM::getOurAccountOneId();
 
-            $from_account_id = $our_account_id;
+        if (!$debts) {
+            // Если долгов нет, создаём новый долг
+            $our_account_id = LegalEntitiesLM::getOurAccountOneId();
             $to_account_id = explode(',', $legal_id)[0];
 
             self::setNewDebts([
-                'from_account_id' => $from_account_id,
+                'from_account_id' => $our_account_id,
                 'to_account_id' => $to_account_id,
                 'transaction_id' => $transaction_id,
                 'amount' => $amount,
@@ -642,31 +664,28 @@ class DebtsLM
             return true;
         }
 
-
-        // Получаем все долги клиента
         $from_account_id = null;
         $to_account_id = null;
 
         foreach ($debts as $debt) {
-            if ($amount <= 0) {
-                break; // 💥 Деньги закончились, выходим из цикла
-            }
+            if ($amount <= 0) break;
 
             $debt_amount = $debt->amount;
 
-            // 💰 Если денег хватает, чтобы закрыть весь долг
             if ($amount >= $debt_amount) {
+                // Полностью закрываем долг
                 self::updateDebtsId([
                     'status = paid',
                     'writing_transaction_id = ' . $transaction_id,
                 ], $debt->id);
 
-                $amount = $amount - $debt_amount;
+                $amount -= $debt_amount;
 
                 $from_account_id = $debt->to_account_id;
                 $to_account_id = $debt->from_account_id;
-            }
-            else {
+
+            } else {
+                // Частично закрываем долг
                 $new_debt_amount = $debt_amount - $amount;
 
                 self::updateDebtsId([
@@ -674,12 +693,15 @@ class DebtsLM
                     'writing_transaction_id = ' . $transaction_id,
                 ], $debt->id);
 
-                $amount = 0; // всё списано
+                $amount = 0;
+                $from_account_id = $debt->to_account_id;
+                $to_account_id = $debt->from_account_id;
                 break;
             }
         }
 
-        if ($amount > 0 && $from_account_id != null && $to_account_id != null) {
+        // Если остались лишние деньги — создаём новый долг
+        if ($amount > 0 && $from_account_id !== null && $to_account_id !== null) {
             self::setNewDebts([
                 'from_account_id' => $from_account_id,
                 'to_account_id' => $to_account_id,
@@ -717,32 +739,28 @@ class DebtsLM
             return true;
         }
 
-        // Получаем все долги клиента
         $from_account_id = null;
         $to_account_id = null;
 
         foreach ($debts as $debt) {
-            if ($amount <= 0) {
-                break;
-            }
+            if ($amount <= 0) break;
 
             $debt_amount = $debt->amount;
 
-
             if ($amount >= $debt_amount) {
+                // Полностью закрываем долг
                 self::updateDebtsId([
                     'status = paid',
                     'writing_transaction_id = ' . $transaction_id,
                 ], $debt->id);
 
-
                 $amount -= $debt_amount;
-
 
                 $from_account_id = $debt->to_account_id;
                 $to_account_id = $debt->from_account_id;
-            }
-            else {
+
+            } else {
+                // Частично закрываем долг
                 $new_debt_amount = $debt_amount - $amount;
 
                 self::updateDebtsId([
@@ -750,7 +768,9 @@ class DebtsLM
                     'writing_transaction_id = ' . $transaction_id,
                 ], $debt->id);
 
-                $amount = 0; // всё списано
+                $amount = 0;
+                $from_account_id = $debt->to_account_id;
+                $to_account_id = $debt->from_account_id;
                 break;
             }
         }
@@ -770,18 +790,59 @@ class DebtsLM
         return true;
     }
 
-    public static function payOffClientServicesDebt($legal_id, $amount, $transaction_id)
+    public static function mutualSettlementsDebts($legal_id, $amount, $transaction_id)
     {
-        $debts = self::getDebtsFromClientServices($legal_id);
+        $debts = self::getDebtsCompanyMutual($legal_id);
+
+
         //Если нету никаких долгов
         if (!$debts) {
-            $our_account_id = LegalEntitiesLM::getOurAccountOneId();
+            return $amount;
+        }
 
-            $from_account_id = $our_account_id;
+        foreach ($debts as $debt) {
+            if ($amount <= 0) {
+                break;
+            }
+
+            $debt_amount = $debt->amount;
+            if ($amount >= $debt_amount) {
+                self::updateDebtsId([
+                    'status = paid',
+                    'writing_transaction_id = ' . $transaction_id,
+                ], $debt->id);
+
+
+                $amount -= $debt_amount;
+            }
+            else {
+                // Частично закрываем долг
+                $new_debt_amount = $debt_amount - $amount;
+
+                self::updateDebtsId([
+                    'amount = ' . $new_debt_amount,
+                    'writing_transaction_id = ' . $transaction_id,
+                ], $debt->id);
+
+                $amount = 0;
+                break;
+            }
+        }
+
+        return $amount;
+    }
+
+    public static function payOffClientServicesDebt($legal_id, $amount, $transaction_id):bool
+    {
+        $debts = self::getDebtsFromClientServices($legal_id);
+
+        // Если нет долгов — создаём новый
+        if (!$debts) {
+            $our_account_id = LegalEntitiesLM::getOurAccountOneId();
             $to_account_id = explode(',', $legal_id)[0];
 
             self::setNewDebts([
-                'from_account_id' => $from_account_id,
+                'from_account_id' => $our_account_id,
                 'to_account_id' => $to_account_id,
                 'transaction_id' => $transaction_id,
                 'amount' => $amount,
@@ -793,32 +854,28 @@ class DebtsLM
             return true;
         }
 
-        // Получаем все долги клиента
         $from_account_id = null;
         $to_account_id = null;
 
         foreach ($debts as $debt) {
-            if ($amount <= 0) {
-                break;
-            }
+            if ($amount <= 0) break;
 
             $debt_amount = $debt->amount;
 
-
             if ($amount >= $debt_amount) {
+                // Полностью закрываем долг
                 self::updateDebtsId([
                     'status = paid',
                     'writing_transaction_id = ' . $transaction_id,
                 ], $debt->id);
 
-
                 $amount -= $debt_amount;
-
 
                 $from_account_id = $debt->to_account_id;
                 $to_account_id = $debt->from_account_id;
-            }
-            else {
+
+            } else {
+                // Частично закрываем долг
                 $new_debt_amount = $debt_amount - $amount;
 
                 self::updateDebtsId([
@@ -826,12 +883,16 @@ class DebtsLM
                     'writing_transaction_id = ' . $transaction_id,
                 ], $debt->id);
 
-                $amount = 0; // всё списано
+                $from_account_id = $debt->to_account_id;
+                $to_account_id = $debt->from_account_id;
+
+                $amount = 0;
                 break;
             }
         }
 
-        if ($amount > 0 && $from_account_id != null && $to_account_id != null) {
+        // Если остались лишние деньги — создаём новый долг
+        if ($amount > 0 && $from_account_id !== null && $to_account_id !== null) {
             self::setNewDebts([
                 'from_account_id' => $from_account_id,
                 'to_account_id' => $to_account_id,
@@ -846,22 +907,21 @@ class DebtsLM
         return true;
     }
 
-    public static function payOffCompaniesDebt($legal_id, $amount, $transaction_id)
+    public static function payOffCompaniesDebt($legal_id, $amount, $transaction_id):bool
     {
         $debts = self::getDebtsFromCompanies($legal_id);
-        //Если нету никаких долгов
+
+        // Если долгов нет — создаём новый долг
         if (!$debts) {
             $our_account_id = LegalEntitiesLM::getOurAccountOneId();
-
-            $to_account_id = $our_account_id;
             $from_account_id = explode(',', $legal_id)[0];
 
             self::setNewDebts([
                 'from_account_id' => $from_account_id,
-                'to_account_id' => $to_account_id,
+                'to_account_id' => $our_account_id,
                 'transaction_id' => $transaction_id,
                 'amount' => $amount,
-                'type_of_debt' => 'client_services',
+                'type_of_debt' => 'supplier_debt',
                 'date' => date('Y-m-d'),
                 'status' => 'active'
             ]);
@@ -869,32 +929,28 @@ class DebtsLM
             return true;
         }
 
-        // Получаем все долги клиента
         $from_account_id = null;
         $to_account_id = null;
 
         foreach ($debts as $debt) {
-            if ($amount <= 0) {
-                break; // 💥 Деньги закончились, выходим из цикла
-            }
+            if ($amount <= 0) break;
 
             $debt_amount = $debt->amount;
 
-            // 💰 Если денег хватает, чтобы закрыть весь долг
             if ($amount >= $debt_amount) {
+                // Полностью закрываем долг
                 self::updateDebtsId([
                     'status = paid',
                     'writing_transaction_id = ' . $transaction_id,
                 ], $debt->id);
 
-                // уменьшаем сумму на величину долга
                 $amount -= $debt_amount;
 
-                //Получаемой id ишки для остатка
                 $from_account_id = $debt->to_account_id;
                 $to_account_id = $debt->from_account_id;
-            } // 💸 Если денег не хватает — частично погашаем и выходим
-            else {
+
+            } else {
+                // Частично закрываем долг
                 $new_debt_amount = $debt_amount - $amount;
 
                 self::updateDebtsId([
@@ -902,63 +958,25 @@ class DebtsLM
                     'writing_transaction_id = ' . $transaction_id,
                 ], $debt->id);
 
-                $amount = 0; // всё списано
+                $from_account_id = $debt->to_account_id;
+                $to_account_id = $debt->from_account_id;
+
+                $amount = 0;
                 break;
             }
         }
 
-        // ✅ Если после погашения всех долгов остался остаток
-        if ($amount > 0 && $from_account_id != null && $to_account_id != null) {
+        // Если остались лишние деньги — создаём новый долг
+        if ($amount > 0 && $from_account_id !== null && $to_account_id !== null) {
             self::setNewDebts([
                 'from_account_id' => $from_account_id,
                 'to_account_id' => $to_account_id,
                 'transaction_id' => $transaction_id,
                 'amount' => $amount,
-                'type_of_debt' => 'client_services',
+                'type_of_debt' => 'supplier_debt',
                 'date' => date('Y-m-d'),
                 'status' => 'active'
             ]);
-        }
-
-        return true;
-    }
-
-    public static function returnOffClientsDebt($legal_id, $amount, $transaction_id): bool
-    {
-        $debts = self::getDebtsFromCompanies($legal_id);
-
-        if (!$debts) {
-            $our_account_id = LegalEntitiesLM::getOurAccountOneId();
-
-            $from_account_id = $our_account_id;
-            $to_account_id = explode(',', $legal_id)[0];
-
-            self::setNewDebts([
-                'from_account_id' => $from_account_id,
-                'to_account_id' => $to_account_id,
-                'transaction_id' => $transaction_id,
-                'amount' => $amount,
-                'type_of_debt' => 'client_goods',
-                'date' => date('Y-m-d'),
-                'status' => 'active'
-            ]);
-
-            return true;
-        }
-
-
-        foreach ($debts as $debt) {
-
-            $debt_amount = $debt->amount;
-
-            $new_debt_amount = $debt_amount + $amount;
-
-            self::updateDebtsId([
-                'amount = ' . $new_debt_amount,
-                'writing_transaction_id = ' . '<NULL>',
-            ], $debt->id);
-
-            break;
         }
 
         return true;
@@ -992,22 +1010,65 @@ class DebtsLM
         ];
     }
 
+
+    public static function payOffCompaniesExcessDebt($legal_id, $amount, $transaction_id):bool
+    {
+        $debts = self::getDebtsFromCompanies($legal_id);
+
+        // Если долгов нет — создаём новый долг
+        if (!$debts) {
+            return false;
+        }
+
+
+        foreach ($debts as $debt) {
+            if ($amount <= 0) break;
+
+            $debt_amount = $debt->amount;
+
+            if ($amount >= $debt_amount) {
+                // Полностью закрываем долг
+                self::updateDebtsId([
+                    'status = paid',
+                    'writing_transaction_id = ' . $transaction_id,
+                ], $debt->id);
+
+                $amount -= $debt_amount;
+
+                $from_account_id = $debt->to_account_id;
+                $to_account_id = $debt->from_account_id;
+
+            } else {
+                // Частично закрываем долг
+                $new_debt_amount = $debt_amount - $amount;
+
+                self::updateDebtsId([
+                    'amount = ' . $new_debt_amount,
+                    'writing_transaction_id = ' . $transaction_id,
+                ], $debt->id);
+
+                break;
+            }
+        }
+
+        return true;
+    }
+
     public static function returnOffSuppliersDebt($legal_id, $amount, $transaction_id): bool
     {
-        $debts = self::getDebtsFromClientGoods($legal_id);
+        $debts = self::getDebtsFromSupplierGoods($legal_id);
 
+        // Если долгов нет — создаём новый долг
         if (!$debts) {
             $our_account_id = LegalEntitiesLM::getOurAccountOneId();
-
-            $from_account_id = $our_account_id;
             $to_account_id = explode(',', $legal_id)[0];
 
             self::setNewDebts([
-                'from_account_id' => $from_account_id,
+                'from_account_id' => $our_account_id,
                 'to_account_id' => $to_account_id,
                 'transaction_id' => $transaction_id,
                 'amount' => $amount,
-                'type_of_debt' => 'сlient_debt',
+                'type_of_debt' => 'supplier_debt',
                 'date' => date('Y-m-d'),
                 'status' => 'active'
             ]);
@@ -1015,26 +1076,58 @@ class DebtsLM
             return true;
         }
 
+        $from_account_id = null;
+        $to_account_id = null;
 
         foreach ($debts as $debt) {
+            if ($amount <= 0) break;
 
             $debt_amount = $debt->amount;
 
-            $new_debt_amount = $debt_amount + $amount;
+            if ($amount >= $debt_amount) {
+                // Полностью закрываем долг
+                self::updateDebtsId([
+                    'status = paid',
+                    'writing_transaction_id = ' . $transaction_id,
+                ], $debt->id);
 
-            self::updateDebtsId([
-                'amount = ' . $new_debt_amount,
-                'writing_transaction_id = ' . '<NULL>',
-            ], $debt->id);
+                $amount -= $debt_amount;
 
-            break;
+                $from_account_id = $debt->to_account_id;
+                $to_account_id = $debt->from_account_id;
+
+            } else {
+                // Частично закрываем долг
+                $new_debt_amount = $debt_amount - $amount;
+
+                self::updateDebtsId([
+                    'amount = ' . $new_debt_amount,
+                    'writing_transaction_id = ' . $transaction_id,
+                ], $debt->id);
+
+                $from_account_id = $debt->to_account_id;
+                $to_account_id = $debt->from_account_id;
+
+                $amount = 0;
+                break;
+            }
+        }
+
+        // Если остались лишние деньги — создаём новый долг
+        if ($amount > 0 && $from_account_id !== null && $to_account_id !== null) {
+            self::setNewDebts([
+                'from_account_id' => $from_account_id,
+                'to_account_id' => $to_account_id,
+                'transaction_id' => $transaction_id,
+                'amount' => $amount,
+                'type_of_debt' => 'supplier_debt',
+                'date' => date('Y-m-d'),
+                'status' => 'active'
+            ]);
         }
 
         return true;
     }
 
-    public static function getDebts()
-    {
 
-    }
 }

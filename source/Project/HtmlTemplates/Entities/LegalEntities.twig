@@ -87,8 +87,10 @@
                             <tr class="hover:bg-gray-50 divide-x divide-gray-200">
                                 <td class="px-3 py-2">{{ transaction.id }}</td>
                                 <td class="px-3 py-2">
+                                    {% if 'return' in transaction.type %}
+                                        Возврат
+                                    {% endif %}
                                     {% if transaction.type == 'expense' %}Расходы
-                                    {% elseif transaction.type == 'return' %}Возврат
                                     {% elseif transaction.type == 'income' %}Доход
                                     {% endif %}
                                 </td>
@@ -115,9 +117,9 @@
                                 </span>
                                     {% endif %}
                                 </td>
-                                <td class="px-3 py-2">{{ transaction.amount }}</td>
-                                <td class="px-3 py-2">{{ transaction.interest_income ?? '' }}</td>
-                                <td class="px-3 py-2">{{ transaction.total_amount ?? '' }}</td>
+                                <td class="px-3 py-2">{{ transaction.amount|number_format(0, ',', ' ') }}</td>
+                                <td class="px-3 py-2">{{ transaction.interest_income|number_format(0, ',', ' ') }}</td>
+                                <td class="px-3 py-2">{{ transaction.total_amount|number_format(0, ',', ' ') }}</td>
                             </tr>
                         {% endfor %}
                         </tbody>
@@ -169,12 +171,11 @@
                                 {% endif %}
                             </div>
                             <div><span class="text-gray-500 text-xs">Общая сумма:</span> <span
-                                        class="font-semibold">{{ transaction.amount }}</span></div>
+                                        class="font-semibold">{{ transaction.amount|number_format(0, ',', ' ') }}</span></div>
                             <div><span class="text-gray-500 text-xs">Комиссия:</span> <span
-                                        class="font-semibold">{{ transaction.interest_income ?? '' }}</span></div>
+                                        class="font-semibold">{{ transaction.interest_income|number_format(0, ',', ' ') }}</span></div>
                             <div><span class="text-gray-500 text-xs">Итоговая сумма:</span> <span
-                                        class="font-semibold">{{ transaction.total_amount ?? '' }}</span></div>
-
+                                        class="font-semibold">{{  transaction.total_amount|number_format(0, ',', ' ') }}</span></div>
                         </div>
                     {% endfor %}
                 </div>

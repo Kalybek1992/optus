@@ -12,10 +12,7 @@
     <script src="https://cdn.jsdelivr.net/npm/pikaday/pikaday.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            const openErrorModal = (message) => {
-                document.getElementById('errorText').innerHTML = message;
-                document.getElementById('errorModal').showModal();
-            };
+
 
             let currentExpense = null;
             let roleUser = null;
@@ -53,6 +50,77 @@
 
                 document.getElementById('confirm_expense_modal').checked = true;
             };
+
+            let currentSettlement = null;
+
+            window.openMutualSettlement = (button) => {
+                const companyDebit = Math.trunc(Number(button.dataset.companyDebitAmount));
+                const userDebt = Math.trunc(Number(button.dataset.debitAmount));
+                const role = button.dataset.userRole;
+
+                currentSettlement = {
+                    id: button.dataset.id,
+                    role,
+                    companyDebit,
+                    userDebt
+                };
+
+                const format = (value) =>
+                    value
+                        .toFixed(1)
+                        .replace(/\B(?=(\d{3})+(?!\d))/g, ' ') + ' ₽';
+
+                document.getElementById('companyDebitAmount').textContent =
+                    format(companyDebit);
+
+                document.getElementById('userDebtAmount').textContent =
+                    format(userDebt);
+
+                document.getElementById('mutualAmountInput').value = '';
+
+                document.getElementById('mutual_settlement_modal').checked = true;
+            };
+
+
+            document
+                .getElementById('confirmMutualSettlement')
+                .addEventListener('click', async () => {
+
+                    if (!currentSettlement) {
+                        return openErrorModal('Данные не найдены.');
+                    }
+
+                    const amount = Math.trunc(Number(
+                        document.getElementById('mutualAmountInput').value
+                    ));
+
+                    // Проверки
+                    if (!amount || isNaN(amount) || amount <= 0) {
+                        return openErrorModal('Введите корректную сумму.');
+                    }
+
+                    if (amount > currentSettlement.companyDebit) {
+                        return openErrorModal('Сумма превышает лишнюю выдачу.');
+                    }
+
+                    if (amount > currentSettlement.userDebt) {
+                        return openErrorModal('Сумма превышает долг пользователя.');
+                    }
+
+                    const result = await postData('/transaction/mutualSettlement', {
+                        role: currentSettlement.role,
+                        role_id: currentSettlement.id,
+                        amount: amount
+                    });
+
+                    if (!result.success) {
+                        return openErrorModal('Не удалось подтвердить действие.');
+                    }
+
+                    document.getElementById('mutual_settlement_modal').checked = false;
+                    location.reload();
+                });
+
 
             document.getElementById('confirmCourierBtn').addEventListener('click', async () => {
                 if (!currentExpense) return openErrorModal('Ошибка: данные не найдены.');

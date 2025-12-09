@@ -44,7 +44,7 @@ class SupplierBalanceLM
             ])
             ->limit(1);
 
-        return PdoConnector::execute($builder);
+        return PdoConnector::execute($builder)[0] ?? [];
     }
 
     public static function getSupplierBalanceCompany(int $legal_id)

@@ -1,6 +1,105 @@
 {% block content %}
     <div class="max-w-8xl mx-auto space-y-10">
 
+        {# ==================== Mutual Settlements ==================== #}
+        {% if mutual_settlements is not empty %}
+            <div class="bg-white rounded-2xl shadow-lg p-6 relative mt-6">
+                <div class="text-center text-sm font-semibold text-gray-700 mb-6">
+                    Взаиморасчёты
+                    <div class="mx-auto w-1/2 border-t border-gray-300 mt-4 mb-4"></div>
+                </div>
+
+                {# ===== Desktop table ===== #}
+                <div class="hidden md:block overflow-x-auto w-full border border-gray-200 rounded-lg shadow-sm">
+                    <table class="table w-full text-sm text-left divide-x divide-gray-200">
+                        <thead class="bg-gray-100 text-xs text-gray-500 uppercase">
+                        <tr class="divide-x divide-gray-200">
+                            <th class="px-4 py-2">Пользователь</th>
+                            <th class="px-4 py-2">Роль</th>
+                            <th class="px-4 py-2">Лишный выдача</th>
+                            <th class="px-4 py-2">Долг пользователя</th>
+                            <th class="px-4 py-2 text-center">Взаиморасчёт</th>
+                        </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-100">
+                        {% for item in mutual_settlements %}
+                            <tr class="hover:bg-gray-50 divide-x divide-gray-200">
+                                <td class="px-4 py-2 font-bold text-gray-800">
+                                    {{ item.username }}
+                                </td>
+                                <td class="px-4 py-2 font-semibold text-gray-700">
+                                    {% if item.role == 'supplier' %}
+                                        Поставщик
+                                    {% elseif item.role == 'client_services' %}
+                                        Клиент услуги
+                                    {% else %}
+                                        Клиент
+                                    {% endif %}
+                                </td>
+                                <td class="px-4 py-2 text-red-600 font-semibold">
+                                    {{ item.company_debit_amount|number_format(0, ',', ' ') }}
+                                </td>
+                                <td class="px-4 py-2 text-green-600 font-semibold">
+                                    {{ item.debit_amount|number_format(0, ',', ' ') }}
+                                </td>
+                                <td class="px-4 py-2 text-center">
+                                    <button
+                                            class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-md text-sm font-medium transition"
+                                            data-id="{{ item.id }}"
+                                            data-company-debit-amount="{{ item.company_debit_amount }}"
+                                            data-debit-amount="{{ item.debit_amount }}"
+                                            data-user-role="{{ item.role }}"
+                                            onclick="openMutualSettlement(this)">
+                                        Взаиморасчёт
+                                    </button>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                {# ===== Mobile cards ===== #}
+                <div class="md:hidden space-y-4">
+                    {% for item in mutual_settlements %}
+                        <div class="border border-gray-200 rounded-lg shadow-sm p-4">
+                            <div class="text-xs font-semibold mb-1">
+                                <span class="font-bold">Контрагент:</span> {{ item.username }}
+                            </div>
+
+                            <div class="text-xs font-semibold mb-1">
+                                <span class="font-bold text-gray-700">Роль:</span>
+                                {% if item.role == 'supplier' %}
+                                    Поставщик
+                                {% elseif item.role == 'client_services' %}
+                                    Клиент услуги
+                                {% else %}
+                                    Клиент
+                                {% endif %}
+                            </div>
+
+                            <div class="text-xs font-semibold mb-1 text-red-600">
+                                <span class="font-bold">Лишный выдача:</span> {{ item.company_debit_amount|number_format(0, ',', ' ') }}
+                            </div>
+
+                            <div class="text-xs font-semibold mb-3 text-green-600">
+                                <span class="font-bold">Долг пользователя:</span> {{ item.debit_amount|number_format(0, ',', ' ') }}
+                            </div>
+                            <button
+                                    class="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium transition"
+                                    data-id="{{ item.id }}"
+                                    data-company-debit-amount="{{ item.company_debit_amount }}"
+                                    data-debit-amount="{{ item.debit_amount }}"
+                                    data-user-role="{{ item.role }}"
+                                    onclick="openMutualSettlement(this)">
+                                Взаиморасчёт
+                            </button>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        {% endif %}
+
         {# ==================== Confirmation Costs Courier ==================== #}
         {% if confirmation_costs_courier is not empty %}
             <div class="bg-white rounded-2xl shadow-lg p-6 relative">
@@ -312,5 +411,9 @@
             </div>
         {% endif %}
     </div>
+
+
+
+
 {% endblock %}
 

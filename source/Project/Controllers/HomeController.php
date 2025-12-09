@@ -7,12 +7,15 @@ use Source\Base\Core\Logger;
 use Source\Project\Controllers\Base\BaseController;
 use Source\Project\DataContainers\InformationDC;
 use Source\Project\LogicManagers\LogicPdoModel\BankOrderLM;
+use Source\Project\LogicManagers\LogicPdoModel\ClientServicesLM;
+use Source\Project\LogicManagers\LogicPdoModel\ClientsLM;
 use Source\Project\LogicManagers\LogicPdoModel\CompanyFinancesLM;
 use Source\Project\LogicManagers\LogicPdoModel\CouriersLM;
 use Source\Project\LogicManagers\LogicPdoModel\DebtsLM;
 use Source\Project\LogicManagers\LogicPdoModel\LegalEntitiesLM;
 use Source\Project\LogicManagers\LogicPdoModel\ManagersLM;
 use Source\Project\LogicManagers\LogicPdoModel\StockBalancesLM;
+use Source\Project\LogicManagers\LogicPdoModel\SuppliersLM;
 use Source\Project\LogicManagers\LogicPdoModel\TaskPlannerLM;
 use Source\Project\LogicManagers\LogicPdoModel\TransactionsLM;
 use Source\Project\LogicManagers\LogicPdoModel\UsersLM;
@@ -46,29 +49,37 @@ class HomeController extends BaseController
     {
         $unknown_accounts = LegalEntitiesLM::getEntitiesNulCount();
         $pending_orders = BankOrderLM::getBankOrderCountPending();
-        $balance = LegalEntitiesLM::getEntitiesBalance();
+        $finance = LegalEntitiesLM::getEntitiesBalance();
         $client_services = DebtsLM::getDebtsClientServicesCount();
         $stock_balances = StockBalancesLM::getStockBalances()->balance ?? 0;
         $our_accounts = LegalEntitiesLM::getEntitiesOurAccount();
         $confirmation = CompanyFinancesLM::confirmationCostsCourier();
-        $date_from = date('d.m.Y');
-        $date_to = date('d.m.Y', strtotime('+4 days'));
-        $task_planner = TaskPlannerLM::getAllTaskPlan($date_from, $date_to);
+        $task_planner = TaskPlannerLM::getAllTaskPlan();
         $legal_entitie = LegalEntitiesLM::getNonOurCompanies();
+        $mutual_settlements = [];
 
 
-        //Logger::log(print_r($task_planner, true), 'adminHomePage');
+        if ($finance['company_client_services_debt'] > 0) {
+            $mutual_settlements = array_merge($mutual_settlements, ClientServicesLM::getClientServicesDebitCompany());
+        }
+
+        if ($finance['company_сlient_debt'] > 0) {
+            $mutual_settlements = array_merge($mutual_settlements, ClientsLM::getClientsDebitCompany());
+        }
+
+        if ($finance['company_supplier_debt'] > 0) {
+            $mutual_settlements = array_merge($mutual_settlements, SuppliersLM::getSuppliersDebitCompany());
+        }
+
+
+
+        Logger::log(print_r($mutual_settlements, true), 'adminHomePage');
         //var_dump($balance);
 
         return $this->twig->render('AdminHomePage.twig', [
             'unknown_accounts' => $unknown_accounts,
             'pending_orders' => $pending_orders,
-            'our_account_balance' => $balance->our_account_balance ?? 0,
-            'client_goods_balance' => $balance->client_goods_balance ?? 0,
-            'supplier_goods_balance' => $balance->supplier_goods_balance ?? 0,
-            'client_services_balance' => $balance->client_services_balance ?? 0,
-            'couriers_balance' => $balance->couriers_balance ?? 0,
-            'сlient_debt' => $balance->client_debt ?? 0,
+            'finance' => $finance,
             'client_services' => $client_services,
             'stock_balances' => $stock_balances,
             'our_accounts' => $our_accounts,
@@ -78,6 +89,7 @@ class HomeController extends BaseController
             'debt_repayment_companies_supplier' => $confirmation['debt_repayment_companies_supplier'] ?? [],
             'task_planner' => $task_planner,
             'legal_entitie' => $legal_entitie,
+            'mutual_settlements' => $mutual_settlements,
             'role' => 'admin'
         ]);
     }
@@ -126,7 +138,7 @@ class HomeController extends BaseController
         $offset = $page * $limit;
         $shop_id = $user_shop->shop_id ?? 0;
 
-        if (!$user_shop){
+        if (!$user_shop) {
             return $this->twig->render('Shop/ErrorPage.twig');
         }
 

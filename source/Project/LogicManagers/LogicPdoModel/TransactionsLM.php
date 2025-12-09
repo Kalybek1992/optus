@@ -333,7 +333,11 @@ class TransactionsLM
             $legal_id = 0;
             $bank_name_recipient = '';
 
-            if ($transaction->type == 'expense' || $transaction->type == 'return') {
+            if ($transaction->type == 'expense' ||
+                $transaction->type == 'return' ||
+                $transaction->type == 'return_supplier' ||
+                $transaction->type == 'return_client_services'
+            ) {
                 $legal_entities = $transaction->account_sender;
                 $company_name = $transaction->company_name_sender;
                 $inn_recipient = $transaction->inn_sender;

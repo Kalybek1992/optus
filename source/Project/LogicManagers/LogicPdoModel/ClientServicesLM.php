@@ -134,14 +134,14 @@ class ClientServicesLM
                 ];
             }
 
-            $balance_sum = (float) ($client->balance ?? 0);
-            $debit_amount_sum = (float) ($client->debit_amount ?? 0);
+            $balance_sum = (float)($client->balance ?? 0);
+            $debit_amount_sum = (float)($client->debit_amount ?? 0);
 
             $clients_array[$client_id]['balance_sum'] += $balance_sum;
             $clients_array[$client_id]['debit_amount_sum'] += $debit_amount_sum;
 
             $account_raw = $client->inn ?? null;
-            $account = is_null($account_raw) ? '' : trim((string) $account_raw);
+            $account = is_null($account_raw) ? '' : trim((string)$account_raw);
 
             if ($account !== '') {
                 if (!isset($clients_array[$client_id]['bank_accounts'][$account])) {
@@ -267,5 +267,65 @@ class ClientServicesLM
             'id' => $client->id,
             'legal_id' => $client->legal_id ?? null,
         ];
+    }
+
+    public static function getClientServicesDebitCompany($id = null): array
+    {
+        $builder = ClientServices::newQueryBuilder()
+            ->select([
+                'cs.id as client_id',
+                'u.name as username',
+                'u.role as role',
+                'SUM(d_company.amount) as company_debit_amount',
+                'SUM(d_client.amount) as debit_amount',
+            ])
+            ->from('client_services as cs')
+            ->innerJoin('users u')
+            ->on([
+                'u.id = cs.user_id',
+            ])
+            ->innerJoin('legal_entities le')
+            ->on([
+                'le.client_service_id = cs.id',
+            ])
+            ->innerJoin('debts d_company')
+            ->on([
+                'd_company.to_account_id = le.id',
+                'd_company.type_of_debt = "client_services_debt"',
+                'd_company.status = "active"',
+            ])
+            ->innerJoin('debts d_client')
+            ->on([
+                'd_client.from_account_id = le.id',
+                'd_client.type_of_debt = "client_services"',
+                'd_client.status = "active"',
+            ]);
+
+        if ($id) {
+            $builder
+                ->where([
+                    'cs.id =' . $id,
+                ]);
+        }
+
+        $builder
+            ->groupBy("le.id");
+
+        $clients = PdoConnector::execute($builder);
+        $clients_array = [];
+
+        foreach ($clients as $client) {
+            $clients_array[] = [
+                'id' => $client->client_id,
+                'username' => $client->username,
+                'role' => $client->role,
+                'company_debit_amount' => $client->company_debit_amount,
+                'debit_amount' => $client->debit_amount,
+            ];
+        }
+
+        //Logger::log(print_r($builder->build(), true), 'clients_array');
+
+        return $clients_array;
     }
 }
