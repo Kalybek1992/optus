@@ -1595,7 +1595,7 @@ return [
                 ],
                 'stock_balances' => [
                     'required' => false,
-                    'custom_logic' => fn($a) => $a === 'сompany' || $a === 'courier' || null,
+                    'custom_logic' => fn($a) => $a === 'сompany' || $a === 'courier' || $a == null,
                 ],
             ],
             'middlewares' => [

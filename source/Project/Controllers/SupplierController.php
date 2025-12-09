@@ -300,7 +300,6 @@ class SupplierController extends BaseController
         }
 
         $translation_max_id = TransactionsLM::getTranslationMaxId();
-
         TransactionsLM::insertNewTransactions([
             'id' => $translation_max_id + 1,
             'type' => 'internal_transfer',

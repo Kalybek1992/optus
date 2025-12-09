@@ -62,14 +62,14 @@ class LegalEntitiesLM
         return PdoConnector::execute($builder);
     }
 
-    public static function getBankAccounts(string $select_bank_inn)
+    public static function getBankAccounts(string $select)
     {
         $builder = LegalEntities::newQueryBuilder()
             ->select([
                 '*',
             ])
             ->where([
-                "inn IN($select_bank_inn)"
+                "account IN($select)"
             ]);
 
         return PdoConnector::execute($builder);

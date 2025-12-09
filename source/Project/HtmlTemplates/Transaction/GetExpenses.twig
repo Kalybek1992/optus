@@ -395,9 +395,10 @@
 
         document.getElementById('confirmUnlink').addEventListener('click', async () => {
             const result = await postData('/entities/returnAccount', {
-                order_id: orderId
+                order_id: orderId,
             });
 
+            console.log(result);
             if (result.success) {
                 location.reload();
             } else {

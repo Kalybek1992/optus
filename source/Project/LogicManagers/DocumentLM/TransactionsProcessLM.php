@@ -42,7 +42,7 @@ class TransactionsProcessLM extends DocumentExtractLM
 
     public int $transactions_count = 0;
 
-    public $our_inn = null;
+    public $our_account_number = null;
 
     public array $transaction_pending = [];
 
@@ -97,20 +97,22 @@ class TransactionsProcessLM extends DocumentExtractLM
             $this->our_account = [
                 'company_name' => $this->expenses[0]['company_name'],
                 'inn' => $this->expenses[0]['inn'],
-                'bank_name' => $this->expenses[0]['name'],
+                'bank_name' => $this->expenses[0]['bank_name'],
+                'account' => $this->expenses[0]['bank_account'],
                 'our_account' => 1,
             ];
 
-            $this->our_inn = $this->expenses[0]['inn'];
+            $this->our_account_number = $this->expenses[0]['bank_account'];
         } elseif ($this->income) {
             $this->our_account = [
-                'company_name' => $this->income[0]['company_name'],
-                'inn' => $this->income[0]['inn'],
-                'bank_name' => $this->income[0]['bank_name'],
+                'company_name' => $this->income[0]['company_name_recipient'],
+                'inn' => $this->income[0]['inn_recipient'],
+                'bank_name' => $this->income[0]['bank_name_recipient'],
+                'account' => $this->income[0]['bank_account_recipient'],
                 'our_account' => 1,
             ];
 
-            $this->our_inn = $this->income[0]['inn'];
+            $this->our_account_number = $this->income[0]['bank_account'];
         }
 
 
@@ -137,12 +139,12 @@ class TransactionsProcessLM extends DocumentExtractLM
      */
     public function getOurAccounts(): static
     {
-        $our_account = LegalEntitiesLM::getBankAccounts($this->our_account['inn']);
+        $our_account = LegalEntitiesLM::getBankAccounts($this->our_account_number);
 
         if (!$our_account) {
-            $this->our_account['id'] = LegalEntitiesLM::getLegalEntitiesMaxId();
+            $this->our_account['id'] = LegalEntitiesLM::getLegalEntitiesMaxId() + 1;
             LegalEntitiesLM::setNewLegalEntitie($this->our_account);
-            $our_account = LegalEntitiesLM::getBankAccounts($this->our_account['inn']);
+            $our_account = LegalEntitiesLM::getBankAccounts($this->our_account_number);
         }
 
         foreach ($our_account as $account) {
@@ -192,8 +194,8 @@ class TransactionsProcessLM extends DocumentExtractLM
         $this->getNewIncomeBankAccounts();
 
         foreach ($this->db_bank_accounts as $db_account) {
-            if ($this->new_bank_accounts[$db_account->inn] ?? false) {
-                unset($this->new_bank_accounts[$db_account->inn]);
+            if ($this->new_bank_accounts[$db_account->account] ?? false) {
+                unset($this->new_bank_accounts[$db_account->account]);
             }
         }
 
@@ -203,7 +205,7 @@ class TransactionsProcessLM extends DocumentExtractLM
 
         $account_implode = $this->getBankAccountImplode();
         if ($account_implode != '') {
-            $this->db_bank_accounts = LegalEntitiesLM::getBankAccounts($account_implode . ', ' . $this->our_inn);
+            $this->db_bank_accounts = LegalEntitiesLM::getBankAccounts($account_implode . ', ' . $this->our_account_number);
         }
 
 
@@ -234,15 +236,15 @@ class TransactionsProcessLM extends DocumentExtractLM
             $from_account_id = '';
             $to_account_id = '';
             $percent = 0;
-            $type = $this->our_inn == $transaction['inn'] ? 'expense' : 'income';
+            $type = $this->our_account_number == $transaction['bank_account'] ? 'expense' : 'income';
             $date = $this->parseDateToMysqlFormat($transaction['date']);
 
             foreach ($this->db_bank_accounts as $account) {
-                if ($transaction['inn'] == $account->inn) {
+                if ($transaction['bank_account'] == $account->account) {
                     $from_account_id = $account->id;
                 }
 
-                if ($transaction['inn_recipient'] == $account->inn) {
+                if ($transaction['bank_account_recipient'] == $account->account) {
                     $to_account_id = $account->id;
                 }
 
@@ -250,17 +252,17 @@ class TransactionsProcessLM extends DocumentExtractLM
                     $percent = $account->percent;
                 }
 
-                if (($transaction['inn'] == $account->inn) && ($account->supplier_id ?? false) && (!$account->client_service_id)) {
+                if (($transaction['bank_account'] == $account->account) && ($account->supplier_id ?? false) && (!$account->client_service_id)) {
                     $type = 'return_supplier';
                     $percent = 0;
                 }
 
-                if ($transaction['inn_recipient'] == $account->inn && ($account->client_id ?? false)) {
+                if ($transaction['bank_account_recipient'] == $account->account && ($account->client_id ?? false)) {
                     $type = 'return';
                     $percent = 0;
                 }
 
-                if ($transaction['inn_recipient'] == $account->inn && ($account->client_service_id ?? false)) {
+                if ($transaction['bank_account_recipient'] == $account->account && ($account->client_service_id ?? false)) {
                     $type = 'return_client_services';
                     $percent = 0;
                 }
@@ -286,7 +288,6 @@ class TransactionsProcessLM extends DocumentExtractLM
                 $percent = 0;
             }
 
-
             $this->transactions[] = [
                 'type' => $type,
                 'amount' => $transaction['balance'],
@@ -296,8 +297,6 @@ class TransactionsProcessLM extends DocumentExtractLM
                 'description' => $transaction['type'],
                 'from_account_id' => $from_account_id,
                 'to_account_id' => $to_account_id,
-                'account_sender' => $transaction['bank_account'],
-                'account_recipient' => $transaction['bank_account_recipient'],
                 'status' => 'pending'
             ];
         }
@@ -473,7 +472,6 @@ class TransactionsProcessLM extends DocumentExtractLM
         $insert_new_balance = [];
 
         foreach ($this->transaction_pending as $transaction) {
-
             if ($transaction->recipient_supplier_id && $transaction->type == 'expense') {
                 $supplier_balance = SupplierBalanceLM::getSupplierBalance(
                     $transaction->recipient_id,
@@ -696,12 +694,14 @@ class TransactionsProcessLM extends DocumentExtractLM
     {
         $sections = $this->expenses;
 
+        //$transaction['bank_account_recipient'],
         foreach ($sections as $section) {
             //Получатель должен нам
-            $this->new_bank_accounts[$section['inn_recipient']] = [
+            $this->new_bank_accounts[$section['bank_account_recipient']] = [
                 'inn' => $section['inn_recipient'],
                 'bank_name' => $section['bank_name_recipient'],
                 'company_name' => $section['company_name_recipient'],
+                'account' => $section['bank_account_recipient'],
             ];
         }
     }
@@ -713,12 +713,14 @@ class TransactionsProcessLM extends DocumentExtractLM
     {
         $sections = $this->income;
 
+        //$transaction['bank_account']
         foreach ($sections as $section) {
             //Нам отправили деньги мы должны им вернуть
-            $this->new_bank_accounts[$section['inn']] = [
+            $this->new_bank_accounts[$section['bank_account']] = [
                 'inn' => $section['inn'],
                 'bank_name' => $section['bank_name'],
                 'company_name' => $section['company_name'],
+                'account' => $section['bank_account'],
             ];
         }
     }
@@ -730,7 +732,6 @@ class TransactionsProcessLM extends DocumentExtractLM
     private function setIdBankAccounts(): void
     {
         $legal_entities_insert = [];
-        $insert_balance_data = [];
         $legal_entities_max = LegalEntitiesLM::getLegalEntitiesMaxId();
 
         foreach ($this->new_bank_accounts as $key => $value) {
@@ -740,6 +741,7 @@ class TransactionsProcessLM extends DocumentExtractLM
                 'inn' => $value['inn'],
                 'bank_name' => $value['bank_name'],
                 'company_name' => $value['company_name'],
+                'account' => $value['account'],
             ];
         }
 
@@ -823,12 +825,12 @@ class TransactionsProcessLM extends DocumentExtractLM
         $select_bank_account = [];
         foreach ($this->payment_order as $entry) {
 
-            if ($entry['inn'] != $this->our_inn) {
-                $select_bank_account[] = $entry['inn'];
+            if ($entry['bank_account'] != $this->our_account_number) {
+                $select_bank_account[] = $entry['bank_account'];
             }
 
-            if ($entry['inn_recipient'] != $this->our_inn) {
-                $select_bank_account[] = $entry['inn_recipient'];
+            if ($entry['bank_account_recipient'] != $this->our_account_number) {
+                $select_bank_account[] = $entry['bank_account_recipient'];
             }
         }
 
@@ -900,7 +902,6 @@ class TransactionsProcessLM extends DocumentExtractLM
 
     public function updateKnownLegalEntitiesTotals(): static
     {
-
         $date = null;
         $our_account_id = $this->our_account['id'];
         $total_received_db = $this->our_account['total_received'] ?? 0;

@@ -194,6 +194,8 @@ class EntitiesController extends BaseController
                     'description' => $transaction->description,
                     'recipient_company_name' => $get_entities->company_name,
                     'recipient_bank_name' => $get_entities->bank_name,
+                    'recipient_inn' => $get_entities->inn,
+                    'account' => $get_entities->account,
                     'status' => 'processed',
                     'return_account' => 1
                 ];
@@ -683,21 +685,17 @@ class EntitiesController extends BaseController
 
         $bank_order_all = BankOrderLM::getBankOrderRecipientCompanyName($bank_order->recipient_company_name);
         $entities_max_id = LegalEntitiesLM::getLegalEntitiesMaxId();
-        $account_balance = 0;
+
 
         LegalEntitiesLM::setNewLegalEntitie([
             'id' => $entities_max_id + 1,
             'inn' => $bank_order->recipient_inn,
-            'kpp' => $bank_order->recipient_kpp,
-            'bank_account' => $bank_order->recipient_bank_account,
+            'account' => $bank_order->account,
             'bank_name' => $bank_order->recipient_bank_name,
             'company_name' => $bank_order->recipient_company_name,
-            'bic' => $bank_order->recipient_bic,
-            'correspondent_account' => $bank_order->recipient_correspondent_account,
         ]);
 
         foreach ($bank_order_all as $order) {
-            $account_balance -= $order->amount;
             $sum_amout = $sum_amout + $order->amount;
 
             TransactionsLM::updateTransactionsId([
@@ -720,7 +718,6 @@ class EntitiesController extends BaseController
             CompanyFinancesLM::deleteOrderId($order->id);
         }
 
-
         if ($stock_balances == 'сompany') {
             $stock_balances = StockBalancesLM::getStockBalances();
             $stock_balances = $stock_balances->balance - $sum_amout;
@@ -730,12 +727,6 @@ class EntitiesController extends BaseController
                 'updated_date=' . date('Y-m-d')
             ]);
         }
-
-
-        BankAccountsLM::setNewBankAccounts([
-            'legal_entity_id' => $entities_max_id + 1,
-            'balance' => $account_balance,
-        ]);
 
         BankOrderLM::deleteBankOrderRecipientCompanyName($bank_order->recipient_company_name);
         return ApiViewer::getOkBody(['success' => 'ok']);

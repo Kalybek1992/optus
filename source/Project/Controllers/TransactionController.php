@@ -413,6 +413,8 @@ class TransactionController extends BaseController
                 'description' => $transaction->description,
                 'recipient_company_name' => $legal_entities->company_name,
                 'recipient_bank_name' => $legal_entities->bank_name,
+                'recipient_inn' => $legal_entities->inn,
+                'account' => $legal_entities->account,
                 'status' => 'processed',
                 'return_account' => 1
             ];
@@ -904,6 +906,8 @@ class TransactionController extends BaseController
                     'description' => $transaction->description,
                     'recipient_company_name' => $get_entities->company_name,
                     'recipient_bank_name' => $get_entities->bank_name,
+                    'recipient_inn' => $get_entities->inn,
+                    'account' => $get_entities->account,
                     'status' => 'processed',
                     'return_account' => 1
                 ];
