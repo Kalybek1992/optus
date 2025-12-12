@@ -488,12 +488,11 @@ class TransactionsProcessLM extends DocumentExtractLM
 
                 if ($supplier_balance) {
                     $new_balance = $supplier_balance->amount + $transaction->amount;
-                    SupplierBalanceLM::getSupplierBalance(
+                    SupplierBalanceLM::updateSupplierBalance(
                         [
                             'amount = ' . $new_balance,
                         ],
-                        $transaction->recipient_inn,
-                        $transaction->sender_inn,
+                        $supplier_balance->id,
                     );
                 }
             }
