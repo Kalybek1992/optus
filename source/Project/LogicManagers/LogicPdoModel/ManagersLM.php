@@ -40,6 +40,22 @@ class ManagersLM
 
         $managers = PdoConnector::execute($builder);
 
+        $builder = Clients::newQueryBuilder()
+            ->select([
+                '*',
+                'u.name as username',
+                'u.role as role',
+            ])
+            ->leftJoin('users u')
+            ->on([
+                'u.id = user_id',
+            ])
+            ->where([
+                'supplier_id =' . $supplier_id
+            ]);
+
+        $clients = PdoConnector::execute($builder);
+
         $managers_array = [];
 
         if (!$managers) {
@@ -52,6 +68,15 @@ class ManagersLM
                 'role_id' => $manager->id,
                 'current_balance' => $manager->current_balance,
                 'role' => $manager->role,
+            ];
+        }
+
+        foreach ($clients as $client) {
+            $managers_array[] = [
+                'username' => $client->username,
+                'role_id' => $client->id,
+                'current_balance' => $client->current_balance,
+                'role' => $client->role,
             ];
         }
 

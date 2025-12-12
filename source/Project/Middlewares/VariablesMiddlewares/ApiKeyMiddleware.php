@@ -52,6 +52,8 @@ final class ApiKeyMiddleware extends Middleware
             'name' => $user->name,
             'email' => $user->email,
             'role' => $user->role,
+            'token' => $user->token,
+            'restricted_access' => $user->restricted_access,
         ];
 
         InformationDC::set('user', $user_arr);

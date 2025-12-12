@@ -746,9 +746,11 @@ class SupplierController extends BaseController
             );
         }
 
-        SuppliersLM::updateSuppliers([
-            'stock_balance =' . $stock_balance - $amount,
-        ], $supplier_id);
+        if ($suplier['restricted_access'] == 0){
+            SuppliersLM::updateSuppliers([
+                'stock_balance =' . $stock_balance - $amount,
+            ], $supplier_id);
+        }
 
         return ApiViewer::getOkBody(['success' => 'ok']);
     }

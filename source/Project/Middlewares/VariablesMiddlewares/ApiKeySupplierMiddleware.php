@@ -6,6 +6,7 @@ use Source\Base\Core\Logger;
 use Source\Base\Core\Middleware;
 use Source\Base\LogicManagers\MiddlewareManager;
 use Source\Project\Connectors\PdoConnector;
+use Source\Project\Controllers\HomeController;
 use Source\Project\DataContainers\InformationDC;
 use Source\Project\DataContainers\RequestDC;
 use Source\Project\DataContainers\VariablesDC;
@@ -20,11 +21,17 @@ final class ApiKeySupplierMiddleware extends Middleware
      */
     public function handle(callable $next): bool|string
     {
-
         $auth_token = RequestDC::get('auth_token');
+        $method = RequestDC::get('method');
 
         if (!$auth_token) {
-            return false;
+            if ($method == 'GET') {
+                $home_controller = new HomeController();
+                echo $home_controller->authPage();
+                die();
+            }else{
+                return false;
+            }
         }
 
         $query_builder = Users::newQueryBuilder()
@@ -46,11 +53,23 @@ final class ApiKeySupplierMiddleware extends Middleware
         $user = PdoConnector::execute($query_builder)[0] ?? null;
 
         if (!$user) {
-            return false;
+            if ($method == 'GET') {
+                $home_controller = new HomeController();
+                echo $home_controller->authPage();
+                die();
+            }else{
+                return false;
+            }
         }
 
         if ($user->role != 'supplier'){
-            return false;
+            if ($method == 'GET') {
+                $home_controller = new HomeController();
+                echo $home_controller->authPage();
+                die();
+            }else{
+                return false;
+            }
         }
 
         $user_arr = [
@@ -61,6 +80,7 @@ final class ApiKeySupplierMiddleware extends Middleware
             'supplier_id' => $user->supplier_id,
             'balance' => $user->balance,
             'stock_balance' => $user->stock_balance,
+            'restricted_access' => $user->restricted_access
         ];
 
         InformationDC::set('suplier', $user_arr);

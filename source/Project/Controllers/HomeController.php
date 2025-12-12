@@ -108,13 +108,17 @@ class HomeController extends BaseController
     public function supplierHomePage(): string
     {
         $user = InformationDC::get('user');
+        if ($user['restricted_access'] === 1){
+            return $this->supplierHomeRestrictedAccessPage();
+        }
+
         $supplier = UsersLM::getUserSupplier($user['id']);
         $no_managers = LegalEntitiesLM::getLegalNoManagers($supplier->suppliers_id);
         $supplier_users = ManagersLM::getManagersOrAll($supplier->suppliers_id);
         $supplier_companies = LegalEntitiesLM::getLegalSupplierCompany($supplier->suppliers_id);
         $supplier_debts = DebtsLM::getDebtSupplierPage($supplier->suppliers_id);
 
-        //Logger::log(print_r($supplier_companies, true), 'supplier_companies');
+        //Logger::log(print_r($user, true), 'supplier_users');
 
         return $this->twig->render('Supplier/SupplierHome.twig', [
             'supplier' => $user,
@@ -174,6 +178,26 @@ class HomeController extends BaseController
             'shop_name' => $user_shop->name ?? '',
             'page_count' => $page_count,
             'shop_id' => $shop_id,
+        ]);
+    }
+
+    public function supplierHomeRestrictedAccessPage(): string
+    {
+        $user = InformationDC::get('user');
+        $supplier = UsersLM::getUserSupplier($user['id']);
+        $supplier_companies = LegalEntitiesLM::getLegalSupplierCompany($supplier->suppliers_id);
+        $supplier_debts = DebtsLM::getDebtSupplierPage($supplier->suppliers_id);
+        $couriers = CouriersLM::getCouriersAll();
+
+        Logger::log(print_r($user, true), 'supplier_users');
+
+        return $this->twig->render('Supplier/SupplierHomeRestrictedAccess.twig', [
+            'supplier' => $user,
+            'companies' => $supplier_companies,
+            'debts' => $supplier_debts,
+            'stock_balance' => $supplier->stock_balance ?? 0,
+            'couriers' => $couriers,
+            'role' => 'supplier_restricted_access'
         ]);
     }
 }

@@ -21,11 +21,17 @@ final class ApiKeyAdminMiddleware extends Middleware
      */
     public function handle(callable $next): bool|string
     {
-
         $auth_token = RequestDC::get('auth_token');
+        $method = RequestDC::get('method');
 
         if (!$auth_token) {
-            return false;
+            if ($method == 'GET') {
+                $home_controller = new HomeController();
+                echo $home_controller->authPage();
+                die();
+            }else{
+                return false;
+            }
         }
 
 
@@ -40,11 +46,16 @@ final class ApiKeyAdminMiddleware extends Middleware
 
 
         if (!$user) {
-            return false;
+            if ($method == 'GET') {
+                $home_controller = new HomeController();
+                echo $home_controller->authPage();
+                die();
+            }else{
+                return false;
+            }
         }
 
         if ($user->role != 'admin'){
-            $method = RequestDC::get('method');
             if ($method == 'GET') {
                 $home_controller = new HomeController();
                 echo $home_controller->authPage();
