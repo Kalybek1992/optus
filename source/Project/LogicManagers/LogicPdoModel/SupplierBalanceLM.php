@@ -13,14 +13,13 @@ use Source\Project\Models\SupplierBalance;
  */
 class SupplierBalanceLM
 {
-    public static function updateSupplierBalance(array $data, int $legal_id, int $sender_legal_id)
+    public static function updateSupplierBalance(array $data, int $id)
     {
 
         $builder = SupplierBalance::newQueryBuilder()
             ->update($data)
             ->where([
-                'legal_id =' . $legal_id,
-                'sender_legal_id =' . $sender_legal_id
+                'id =' . $id,
             ]);
 
         return PdoConnector::execute($builder);
@@ -34,20 +33,32 @@ class SupplierBalanceLM
         return PdoConnector::execute($builder);
     }
 
-    public static function getSupplierBalance(int $legal_id, int $sender_legal_id)
+    public static function getSupplierBalance($recipient_inn, $sender_inn)
     {
         $builder = SupplierBalance::newQueryBuilder()
             ->select()
             ->where([
-                'legal_id =' . $legal_id,
-                'sender_legal_id =' . $sender_legal_id
+                'recipient_inn =' . $recipient_inn,
+                'sender_inn =' . $sender_inn
             ])
             ->limit(1);
 
         return PdoConnector::execute($builder)[0] ?? [];
     }
 
-    public static function getSupplierBalanceCompany(int $legal_id)
+    public static function getSupplierBalanceId(int $id)
+    {
+        $builder = SupplierBalance::newQueryBuilder()
+            ->select()
+            ->where([
+                'id =' . $id,
+            ])
+            ->limit(1);
+
+        return PdoConnector::execute($builder)[0] ?? [];
+    }
+
+    public static function getSupplierBalanceCompany($recipient_inn)
     {
         $builder = SupplierBalance::newQueryBuilder()
             ->select([
@@ -57,12 +68,12 @@ class SupplierBalanceLM
             ])
             ->leftJoin('legal_entities as le')
             ->on([
-                'le.id = sender_legal_id',
+                'le.inn = sender_inn',
             ])
             ->where([
-                'legal_id =' . $legal_id,
+                'recipient_inn =' . $recipient_inn,
             ])
-            ->limit(1);
+            ->groupBy('id');
 
         return PdoConnector::execute($builder);
     }

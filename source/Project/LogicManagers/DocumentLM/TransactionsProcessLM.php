@@ -64,9 +64,9 @@ class TransactionsProcessLM extends DocumentExtractLM
 
     public int $goods_client_service = 0;
 
-    public int $income_sum = 0;
+    public float $income_sum = 0;
 
-    public int $expense_sum = 0;
+    public float $expense_sum = 0;
 
     public array $debts_repaid_company = [];
 
@@ -112,7 +112,7 @@ class TransactionsProcessLM extends DocumentExtractLM
                 'our_account' => 1,
             ];
 
-            $this->our_account_number = $this->income[0]['bank_account'];
+            $this->our_account_number = $this->income[0]['bank_account_recipient'];
         }
 
 
@@ -139,12 +139,12 @@ class TransactionsProcessLM extends DocumentExtractLM
      */
     public function getOurAccounts(): static
     {
-        $our_account = LegalEntitiesLM::getBankAccounts($this->our_account_number);
+        $our_account = LegalEntitiesLM::getBankAccount($this->our_account_number);
 
         if (!$our_account) {
             $this->our_account['id'] = LegalEntitiesLM::getLegalEntitiesMaxId() + 1;
             LegalEntitiesLM::setNewLegalEntitie($this->our_account);
-            $our_account = LegalEntitiesLM::getBankAccounts($this->our_account_number);
+            $our_account = LegalEntitiesLM::getBankAccount($this->our_account_number);
         }
 
         foreach ($our_account as $account) {
@@ -190,6 +190,7 @@ class TransactionsProcessLM extends DocumentExtractLM
 
     public function processingNewAccounts(): static
     {
+
         $this->getNewExpensesBankAccounts();
         $this->getNewIncomeBankAccounts();
 
@@ -203,21 +204,12 @@ class TransactionsProcessLM extends DocumentExtractLM
             $this->setIdBankAccounts();
         }
 
+
+
         $account_implode = $this->getBankAccountImplode();
         if ($account_implode != '') {
-            $this->db_bank_accounts = LegalEntitiesLM::getBankAccounts($account_implode . ', ' . $this->our_account_number);
+            $this->db_bank_accounts = LegalEntitiesLM::getBankAccounts($account_implode . ", '" . $this->our_account_number . "'");
         }
-
-
-//        Logger::log(
-//            'processingNewAccounts = this->new_bank_accounts ' . print_r($this->new_bank_accounts, true),
-//            'TransactionsProcess'
-//        );
-//
-//        Logger::log(
-//            'processingNewAccounts = this->db_bank_accounts ' . print_r($this->db_bank_accounts, true),
-//            'TransactionsProcess'
-//        );
 
 
         $this->new_bank_accounts_count = count($this->new_bank_accounts);
@@ -281,6 +273,7 @@ class TransactionsProcessLM extends DocumentExtractLM
                 }
             }
 
+
             if ($type != 'return' && $type != 'return_supplier' && $type != 'return_client_services') {
                 $percent_income = abs($transaction['balance']) * ($percent / 100);
             } else {
@@ -305,6 +298,7 @@ class TransactionsProcessLM extends DocumentExtractLM
 //            'setNewTransactions = this->transactions ' . print_r($this->transactions, true),
 //            'TransactionsProcess'
 //        );
+
 //
 //        Logger::log(
 //            'setNewTransactions = this->date_update_report_supplier ' . print_r($this->date_update_report_supplier, true),
@@ -466,7 +460,6 @@ class TransactionsProcessLM extends DocumentExtractLM
      * Обновить баланс существующих поставшиков
      */
 
-    //TODO Надо подумать как обновлять баланс при возврате
     public function updateBalanceSupplier(): static
     {
         $insert_new_balance = [];
@@ -474,34 +467,33 @@ class TransactionsProcessLM extends DocumentExtractLM
         foreach ($this->transaction_pending as $transaction) {
             if ($transaction->recipient_supplier_id && $transaction->type == 'expense') {
                 $supplier_balance = SupplierBalanceLM::getSupplierBalance(
-                    $transaction->recipient_id,
-                    $transaction->sender_id
+                    $transaction->recipient_inn,
+                    $transaction->sender_inn
                 );
 
                 if (!$supplier_balance) {
 
-                    $key = $transaction->recipient_id . '_' . $transaction->sender_id;
+                    $key = $transaction->recipient_inn . '_' . $transaction->sender_inn;
 
                     if (!isset($insert_new_balance[$key])) {
                         $insert_new_balance[$key] = [
-                            'legal_id' => $transaction->recipient_id,
-                            'sender_legal_id' => $transaction->sender_id,
+                            'recipient_inn' => $transaction->recipient_inn,
+                            'sender_inn' => $transaction->sender_inn,
                             'amount' => $transaction->amount,
                         ];
                     } else {
                         $insert_new_balance[$key]['amount'] += $transaction->amount;
                     }
-
                 }
 
                 if ($supplier_balance) {
                     $new_balance = $supplier_balance->amount + $transaction->amount;
-                    SupplierBalanceLM::updateSupplierBalance(
+                    SupplierBalanceLM::getSupplierBalance(
                         [
                             'amount = ' . $new_balance,
                         ],
-                        $transaction->recipient_id,
-                        $transaction->sender_id,
+                        $transaction->recipient_inn,
+                        $transaction->sender_inn,
                     );
                 }
             }
@@ -669,7 +661,7 @@ class TransactionsProcessLM extends DocumentExtractLM
                             'issue_date' => $transaction->date,
                         ]);
 
-                        if ($amount_new > 0){
+                        if ($amount_new > 0) {
                             $new = $amount_new - ($amount_new * $transaction->percent / 100);
 
 
@@ -677,7 +669,7 @@ class TransactionsProcessLM extends DocumentExtractLM
 
                     }
 
-                }else{
+                } else {
                     return false;
                 }
             }
@@ -821,10 +813,8 @@ class TransactionsProcessLM extends DocumentExtractLM
 
     private function getBankAccountImplode(): string
     {
-
         $select_bank_account = [];
         foreach ($this->payment_order as $entry) {
-
             if ($entry['bank_account'] != $this->our_account_number) {
                 $select_bank_account[] = $entry['bank_account'];
             }
@@ -841,9 +831,13 @@ class TransactionsProcessLM extends DocumentExtractLM
         $remove_duplicates = array_unique($select_bank_account);
         $array_values = array_values($remove_duplicates);
 
+        $quoted_values = array_map(function($val) {
+            return "'" . $val . "'";
+        }, $array_values);
 
-        return implode(', ', $array_values);
+        return implode(', ', $quoted_values);
     }
+
 
 
     private function parseDateToMysqlFormat(string $raw_date): ?string

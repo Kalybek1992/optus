@@ -303,4 +303,18 @@ class CourierController extends BaseController
 
         return ApiViewer::getOkBody(['success' => 'ok']);
     }
+
+    public function issueaAnotherCourier(): string
+    {
+        $user = InformationDC::get('user');
+        $couriers = CouriersLM::getCouriersNotUser($user['id']);
+        $courier = CouriersLM::getCourierByUserId($user['id']);
+
+        $stock_balances = $courier['balance_sum'] ?? 0;
+
+        return $this->twig->render('Courier/IssueAnotherCourier.twig', [
+            'couriers' => $couriers,
+            'stock_balances' => $stock_balances,
+        ]);
+    }
 }

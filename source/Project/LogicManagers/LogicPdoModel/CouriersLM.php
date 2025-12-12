@@ -203,6 +203,59 @@ class CouriersLM
 
         return $couriers_array;
     }
+
+    public static function getCouriersNotUser($user_id): array
+    {
+
+        $builder = Couriers::newQueryBuilder()
+            ->select([
+                '*',
+                'u.name as username',
+                'u.role as role',
+                'u.email as email',
+                'u.password as password',
+                'u.id as user_id',
+                'u.created_at as created_at',
+            ])
+            ->leftJoin('users u')
+            ->on([
+                'u.id = user_id',
+            ])
+            ->where([
+                'user_id != ' . $user_id,
+            ])
+            ->orderBy('u.created_at', 'DESC');
+
+
+        $couriers_array = [];
+        $couriers = PdoConnector::execute($builder);
+
+        if (!$couriers) {
+            return [];
+        }
+
+
+        foreach ($couriers as $courier) {
+            $decoded = openssl_decrypt(base64_decode($courier->password), Config::METHOD, Config::ENCRYPTION);
+            $couriers_array[] = [
+                'id' => $courier->id,
+                'email' => $courier->email,
+                'role' => $courier->role,
+                'name' => $courier->username,
+                'password' => $decoded,
+                'balance_sum' => $courier->current_balance,
+                'user_id' => $courier->user_id,
+                'created_at' => $courier->created_at,
+
+            ];
+        }
+
+
+        //Logger::log(print_r($builder->build(), true), 'clients_array');
+
+        return $couriers_array;
+    }
+
     public static function getCouriersId($id)
     {
         $builder = Couriers::newQueryBuilder()

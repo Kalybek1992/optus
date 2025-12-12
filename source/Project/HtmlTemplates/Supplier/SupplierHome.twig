@@ -150,6 +150,11 @@
                                     </div>
                                 </div>
 
+                                <!-- Баланс по компаниям отправителя -->
+                                <div class="text-center text-sm font-semibold text-gray-600 py-2">
+                                    Баланс по компаниям отправителя
+                                </div>
+
                                 {% for bc in company.balance %}
                                     <div class="space-y-4 py-4 {% if not loop.last %}border-b border-green-300{% endif %}">
 
@@ -193,7 +198,7 @@
                                         <div class="flex flex-col sm:flex-row gap-4 pt-2">
                                             <button
                                                     class="btn btn-sm flex-1 bg-green-600 hover:bg-green-700 text-white border-none mx-2"
-                                                    data-distribute-id="{{ company.id }}"
+                                                    data-distribute-id="{{ bc.id }}"
                                                     data-distribute-sender-id="{{ bc.sender_legal_id }}"
                                                     data-company="{{ company.company_name }}"
                                                     data-bank="{{ company.bank_name }}"
@@ -204,7 +209,7 @@
                                             </button>
                                             <button
                                                     class="btn btn-sm flex-1 bg-green-100 hover:bg-green-200 text-green-700 border-none mx-2"
-                                                    data-return-id="{{ company.id }}"
+                                                    data-return-id="{{ bc.id }}"
                                                     data-distribute-sender-id="{{ bc.sender_legal_id }}"
                                                     data-bank="{{ company.bank_name }}"
                                                     data-inn="{{ company.inn }}"
@@ -647,7 +652,7 @@
             });
 
             // -----------------------------------
-            // 2) Распределение суммы по компании
+            // 2) создать отгрузку
             // -----------------------------------
 
             const distributeButtons = document.querySelectorAll('button[data-distribute-id]');
@@ -724,8 +729,7 @@
                 }
 
                 const postData = {
-                    legal_id: distributeSelectedCompanyId,
-                    sender_legal_id: distributeSelectedCompanysenderId,
+                    balance_id : distributeSelectedCompanyId,
                     manager_id: managerId,
                     amount: amount,
                     comment: comment,
@@ -901,8 +905,7 @@
                 }
 
                 const postData = {
-                    legal_id: returnSelectedCompanyId,
-                    sender_legal_id: distributeSelectedCompanysenderId,
+                    balance_id: returnSelectedCompanyId,
                     manager_id: managerId,
                     amount: amount,
                     comment: comment,

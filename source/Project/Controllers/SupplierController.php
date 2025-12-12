@@ -166,8 +166,7 @@ class SupplierController extends BaseController
 
     public function distributeAmount(): array
     {
-        $legal_id = InformationDC::get('legal_id');
-        $sender_legal_id = InformationDC::get('sender_legal_id');
+        $balance_id = InformationDC::get('balance_id');
         $manager_id = InformationDC::get('manager_id');
         $suplier = InformationDC::get('suplier');
         $comment = InformationDC::get('comment');
@@ -176,10 +175,11 @@ class SupplierController extends BaseController
         $date_obj = DateTime::createFromFormat('d.m.Y', $date);
         $supplier_id = $suplier['supplier_id'];
 
-        $get_entities = LegalEntitiesLM::getEntitiesSupplierBalance($legal_id, $supplier_id, $sender_legal_id);
+
+        $get_balance = SupplierBalanceLM::getSupplierBalanceId($balance_id);
         $manager = ManagersLM::getManagerId($manager_id);
 
-        if (!$get_entities) {
+        if (!$get_balance) {
             return ApiViewer::getErrorBody(['value' => 'no_legal_id']);
         }
 
@@ -194,7 +194,6 @@ class SupplierController extends BaseController
             'amount' => $amount,
             'date' => $date_obj->format('Y-m-d H:i:s'),
             'description' => 'Отгрузка для менеджера - ' . $manager->username,
-            'from_account_id' => $get_entities->id,
             'status' => 'processed'
         ]);
 
@@ -211,12 +210,13 @@ class SupplierController extends BaseController
             'supplier_id' => $supplier_id,
             'date' => $date_obj->format('Y-m-d'),
         ];
+
         EndOfDaySettlementLM::updateEndOfDayTransactions($update_end_of_day);
 
-        $new_balance = $get_entities->balance - $amount;
+        $new_balance = $get_balance->amount - $amount;
         SupplierBalanceLM::updateSupplierBalance([
             ' amount =' .  $new_balance,
-        ], $legal_id, $sender_legal_id);
+        ], $balance_id);
 
 
         return ApiViewer::getOkBody(['success' => 'ok']);
@@ -277,8 +277,7 @@ class SupplierController extends BaseController
 
     public function createReturnManager(): array
     {
-        $legal_id = InformationDC::get('legal_id');
-        $sender_legal_id = InformationDC::get('sender_legal_id');
+        $balance_id = InformationDC::get('balance_id');
         $manager_id = InformationDC::get('manager_id');
         $suplier = InformationDC::get('suplier');
         $comment = InformationDC::get('comment');
@@ -288,16 +287,19 @@ class SupplierController extends BaseController
         $date_obj = DateTime::createFromFormat('d.m.Y', $date);
         $supplier_id = $suplier['supplier_id'];
 
-        $get_entities = LegalEntitiesLM::getEntitiesSupplierBalance($legal_id, $supplier_id, $sender_legal_id);
+        $get_balance = SupplierBalanceLM::getSupplierBalanceId($balance_id);
         $manager = ManagersLM::getManagerId($manager_id);
 
-        if (!$get_entities) {
+        if (!$get_balance) {
             return ApiViewer::getErrorBody(['value' => 'no_legal_id']);
         }
 
         if (!$manager) {
             return ApiViewer::getErrorBody(['value' => 'no_manager']);
         }
+
+        $recipient = LegalEntitiesLM::getEntitiesInn($get_balance->recipient_inn);
+        $sender = LegalEntitiesLM::getEntitiesInn($get_balance->sender_inn);
 
         $translation_max_id = TransactionsLM::getTranslationMaxId();
         TransactionsLM::insertNewTransactions([
@@ -306,8 +308,8 @@ class SupplierController extends BaseController
             'amount' => $amount,
             'date' => $date_obj->format('Y-m-d H:i:s'),
             'description' => 'Возврат отгрузки менеджера - ' . $manager->username,
-            'from_account_id' => $get_entities->id,
-            'to_account_id' => $sender_legal_id,
+            'from_account_id' => $recipient->id,
+            'to_account_id' => $sender->id,
             'status' => 'processed'
         ]);
 
@@ -328,19 +330,19 @@ class SupplierController extends BaseController
         EndOfDaySettlementLM::updateEndOfDayTransactions($update_end_of_day);
 
         if ($return_type == 'cash') {
-            $balance = $get_entities->balance;
+            $balance = $get_balance->amount;
             $new_balance = $balance + $amount;
             SupplierBalanceLM::updateSupplierBalance([
                 'amount =' .  $new_balance,
-            ], $legal_id, $sender_legal_id);
+            ], $balance_id);
         }
 
         if ($return_type == 'wheel') {
-            $balance = $get_entities->stock_balance;
+            $balance = $get_balance->stock_balance;
             $new_balance = $balance + $amount;
             SupplierBalanceLM::updateSupplierBalance([
                 'stock_balance =' .  $new_balance,
-            ], $legal_id, $sender_legal_id);
+            ], $balance_id);
         }
 
         //Logger::log(print_r($new_balance, true), 'distributeAmount');
@@ -594,7 +596,7 @@ class SupplierController extends BaseController
 
         SupplierBalanceLM::updateSupplierBalance([
             'stock_balance =' .  $bank_accounts_stock_balance,
-        ], $finances->from_account_id, $finances->to_account_id);
+        ], $finances->supplier_balance_id);
 
         CompanyFinancesLM::updateCompanyFinancesId([
             'return_type =' . 'return_wheel',

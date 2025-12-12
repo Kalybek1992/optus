@@ -935,7 +935,6 @@ class TransactionController extends BaseController
         return ApiViewer::getOkBody(['success' => 'ok']);
     }
 
-
     public function mutualSettlement(): array
     {
         $role_id = InformationDC::get('role_id');

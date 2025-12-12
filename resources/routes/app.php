@@ -537,6 +537,14 @@ return [
                 new ApiKeyCourierMiddleware
             ]
         ],
+        '/courier/issueaanothercourier' => [
+            'validation' => [
+                'captcha_response' => ['required' => false]
+            ],
+            'middlewares' => [
+                new ApiKeyCourierMiddleware
+            ]
+        ],
         '/transaction/distributioncommoditymoney' => [
             'validation' => [
                 'captcha_response' => ['required' => false]
@@ -1448,11 +1456,7 @@ return [
         ],
         '/supplier/distributeamount' => [
             'validation' => [
-                'legal_id' => [
-                    'required' => true,
-                    'custom_logic' => fn($a) => is_numeric($a) && $a > 0
-                ],
-                'sender_legal_id' => [
+                'balance_id' => [
                     'required' => true,
                     'custom_logic' => fn($a) => is_numeric($a) && $a > 0
                 ],
@@ -1478,7 +1482,7 @@ return [
         ],
         '/supplier/createreturnmanager' => [
             'validation' => [
-                'legal_id' => [
+                'balance_id' => [
                     'required' => true,
                     'custom_logic' => fn($a) => is_numeric($a) && $a > 0
                 ],

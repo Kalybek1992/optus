@@ -75,6 +75,19 @@ class LegalEntitiesLM
         return PdoConnector::execute($builder);
     }
 
+    public static function getBankAccount(string $select)
+    {
+        $builder = LegalEntities::newQueryBuilder()
+            ->select([
+                '*',
+            ])
+            ->where([
+                'account ="' . $select . '"'
+            ]);
+
+        return PdoConnector::execute($builder);
+    }
+
     public static function getDebtsSupplierGoods($suppliers_id): array
     {
 
@@ -413,6 +426,21 @@ class LegalEntitiesLM
             ])
             ->limit(1);
 
+
+        return PdoConnector::execute($builder)[0] ?? null;
+    }
+
+    public static function getEntitiesInn($inn)
+    {
+        $builder = LegalEntities::newQueryBuilder()
+            ->select([
+                '*',
+
+            ])
+            ->where([
+                'inn =' . $inn,
+            ])
+            ->limit(1);
 
         return PdoConnector::execute($builder)[0] ?? null;
     }
@@ -2171,16 +2199,28 @@ class LegalEntitiesLM
 
         $legal_entities = PdoConnector::execute($builder);
         $legal_entities_arr = [];
-
+        $added_inns = [];
 
         foreach ($legal_entities as $entities) {
-            $balance = SupplierBalanceLM::getSupplierBalanceCompany($entities->id);
+            if (!in_array($entities->inn, $added_inns)) {
+                $legal_entities_arr[] = [
+                    'id' => $entities->id,
+                    'company_name' => $entities->company_name,
+                    'bank_name' => $entities->bank_name,
+                    'inn' => $entities->inn,
+                ];
+                $added_inns[] = $entities->inn;
+            }
+        }
+
+        foreach ($legal_entities_arr as $key => $legal_entity) {
+            $balance = SupplierBalanceLM::getSupplierBalanceCompany($legal_entity['inn']);
+
             $supplier_balance = [];
 
             foreach ($balance as $balance_item) {
                 $supplier_balance[] = [
                     'id' => $balance_item->id,
-                    'sender_legal_id' => $balance_item->sender_legal_id,
                     'balance' => $balance_item->amount,
                     'stock_balance' => $balance_item->stock_balance,
                     'inn' => $balance_item->inn,
@@ -2188,15 +2228,8 @@ class LegalEntitiesLM
                 ];
             }
 
-            $legal_entities_arr[] = [
-                'id' => $entities->id,
-                'company_name' => $entities->company_name,
-                'bank_name' => $entities->bank_name,
-                'inn' => $entities->inn,
-                'balance' => $supplier_balance,
-            ];
+            $legal_entities_arr[$key]['balance'] = $supplier_balance;
         }
-
 
         return $legal_entities_arr;
     }

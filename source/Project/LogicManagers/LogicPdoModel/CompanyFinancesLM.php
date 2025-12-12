@@ -388,6 +388,7 @@ class CompanyFinancesLM
                 'bo.recipient_bank_name as bank_name',
                 'bo.return_account as return_account',
                 'u_supplier.name as supplier_name',
+                'u_courier.name as courier_name',
             ])
             ->leftJoin('suppliers s')
             ->on([
@@ -396,6 +397,14 @@ class CompanyFinancesLM
             ->leftJoin('users u_supplier')
             ->on([
                 'u_supplier.id = s.user_id',
+            ])
+            ->leftJoin('couriers с')
+            ->on([
+                'с.id = sender_courier_id',
+            ])
+            ->leftJoin('users u_courier')
+            ->on([
+                'u_courier.id = с.user_id',
             ])
             ->leftJoin('bank_order bo')
             ->on([
@@ -481,7 +490,7 @@ class CompanyFinancesLM
                 'date' => date('d.m.Y', strtotime($expense->date)),
                 'dey' => $translated_date,
                 'description' => $expense->description,
-                'supplier_name' => $expense->supplier_name ?? '',
+                'supplier_name' => $expense->supplier_name ?? $expense->courier_name ?? 'Администратор',
                 'status' => $expense->status,
                 'bank_order_id' => $expense->bank_order_id,
                 'company_name' => $expense->company_name,
@@ -523,6 +532,7 @@ class CompanyFinancesLM
                 't.date as bo_date',
                 'сс.card_number as card_number',
                 'u_supplier.name as supplier_name',
+                'u_courier.name as courier_name',
             ])
             ->leftJoin('transactions t')
             ->on([
@@ -532,9 +542,17 @@ class CompanyFinancesLM
             ->on([
                 's.id = supplier_id',
             ])
+            ->leftJoin('couriers с')
+            ->on([
+                'с.id = sender_courier_id',
+            ])
             ->leftJoin('users u_supplier')
             ->on([
                 'u_supplier.id = s.user_id',
+            ])
+            ->leftJoin('users u_courier')
+            ->on([
+                'u_courier.id = с.user_id',
             ])
             ->leftJoin('credit_cards сс')
             ->on([
@@ -558,7 +576,7 @@ class CompanyFinancesLM
                 'status' => $r->status,
                 'amount' => $r->amount,
                 'card_number' => $r->card_number,
-                'supplier_name' => $r->supplier_name ?? 'Администратор',
+                'supplier_name' => $r->supplier_name ?? $r->courier_name ?? 'Администратор',
                 'date' => $r->bo_date ? date('d.m.Y', strtotime($r->bo_date)) : '',
             ];
         }
@@ -623,18 +641,25 @@ class CompanyFinancesLM
             ->select([
                 '*',
                 't.amount as amount',
-                't.from_account_id as from_account_id',
-                't.to_account_id as to_account_id',
+                'sb.id as supplier_balance_id',
                 'sb.stock_balance as stock_balance',
             ])
             ->leftJoin('transactions t')
             ->on([
                 't.id = transaction_id',
             ])
+            ->leftJoin('legal_entities le_recipient')
+            ->on([
+                'le_recipient.id = t.from_account_id',
+            ])
+            ->leftJoin('legal_entities le_sender')
+            ->on([
+                'le_sender.id = t.to_account_id',
+            ])
             ->leftJoin('supplier_balance sb')
             ->on([
-                'sb.legal_id = t.from_account_id',
-                'sb.sender_legal_id = t.to_account_id',
+                'sb.recipient_inn = le_recipient.inn',
+                'sb.sender_inn = le_sender.inn',
             ])
             ->where([
                 'id =' . $company_finances_id,

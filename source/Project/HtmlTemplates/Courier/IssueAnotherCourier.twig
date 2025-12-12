@@ -1,0 +1,313 @@
+{% extends './Navbar/Navbar.twig' %}
+
+{% block content %}
+    <div class="w-full max-w-5xl mx-auto px-4 pb-32 my-8">
+        <h2 class="text-xl sm:text-2xl font-bold mb-6">Выдать другому курьеру</h2>
+
+        <ul class="list bg-base-100 rounded-lg shadow-md space-y-4">
+            <li class="relative p-4 bg-base-200 rounded-lg border border-gray-300 space-y-4">
+
+                <!-- Сумма -->
+                <div x-data="{
+                total: {{ stock_balances }},
+                entered: '',
+                get status() {
+                    if (!this.entered || isNaN(this.entered) || Number(this.entered) <= 0) return 'invalid';
+                    if (Number(this.entered) > this.total) return 'exceed';
+                    return 'ok';
+                }
+            }" class="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
+
+                    <div class="flex items-center text-sm sm:text-base text-gray-700 font-semibold bg-gray-100 rounded-md px-3 py-3 h-12">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                             stroke-width="1.5" stroke="currentColor" class="w-5 h-5 mr-2 text-gray-500">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                  d="M2.25 18.75a60.07 60.07 0 0 1 15.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 0 1 3 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 0 0-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 0 1-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 0 0 3 15h-.75M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm3 0h.008v.008H18V10.5Zm-12 0h.008v.008H6V10.5Z"/>
+                        </svg>
+                        Сумма: <span id="stock-balances" class="ml-2 font-mono" x-text="total"></span>
+                    </div>
+
+                    <input id="balance" type="text" x-model="entered"
+                           :class="{
+                           'border border-blue-500': status === 'ok',
+                           'border border-red-500': status === 'exceed' || status === 'invalid'
+                       }"
+                           class="h-12 w-full sm:w-32 px-3 rounded-md focus:outline-none"
+                           placeholder="Введите сумму!">
+
+                    <div class="text-sm mt-1 text-red-500" x-text="status === 'exceed' ? 'Сумма превышает доступную!' : (status === 'invalid' ? 'Введите число!' : '')">
+                    </div>
+                </div>
+
+                <!-- Дата -->
+                <div class="flex flex-col gap-2 mb-4">
+                    <span class="text-sm sm:text-lg font-bold text-gray-700 uppercase tracking-wide">Дата</span>
+
+                    <input type="text"
+                           id="date_input"
+                           placeholder="Введите дату"
+                           autocomplete="off"
+                           class="datepicker_from w-full max-w-[320px] sm:h-[56px] h-12 px-4 bg-white rounded-xl shadow-sm text-base font-semibold text-gray-700 border border-gray-200"/>
+                </div>
+
+                <!-- Выбор клиента -->
+                <div x-data="{ selectedClient: null, openClientList: false }" class="space-y-2 sm:space-y-4 relative">
+
+                    <button @click="openClientList = !openClientList"
+                            class="btn w-full sm:w-80 h-12 px-4 text-left border border-gray-300 bg-gray-50 text-gray-700 hover:bg-blue-100 rounded-md flex items-center justify-between transition text-sm sm:text-base">
+                        <template x-if="!selectedClient">
+                            <span>Выберите курьера</span>
+                        </template>
+                        <template x-if="selectedClient">
+                            <span x-text="selectedClient.name"></span>
+                        </template>
+                        <svg class="w-4 h-4 ml-2 text-gray-400" fill="none" stroke="currentColor"
+                             stroke-width="2" viewBox="0 0 24 24">
+                            <path d="M19 9l-7 7-7-7"/>
+                        </svg>
+                    </button>
+
+                    <input type="hidden" name="client_id" :value="selectedClient?.id">
+                    <input type="hidden" name="client_name" :value="selectedClient?.name">
+
+                    <div x-show="openClientList"
+                         @click.outside="openClientList = false"
+                         class="absolute mt-2 w-full sm:w-80 z-50 bg-white border border-gray-200 rounded-md shadow-lg p-2 space-y-1 transition-all duration-300 text-sm">
+                        {% for courier in couriers %}
+                            <div @click="selectedClient = { id: {{ courier.id }}, name: '{{ courier.name }}' }; openClientList = false"
+                                 class="cursor-pointer px-3 py-2 rounded-md hover:bg-gray-100 flex flex-col">
+                                <span class="font-medium text-gray-900">{{ courier.name }}</span>
+                                <span class="text-gray-600 text-xs truncate">{{ courier.email }}</span>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Комментарий -->
+                <div class="mt-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Комментарий</label>
+                    <textarea id="comments"
+                              class="textarea textarea-bordered w-full"
+                              rows="3" maxlength="256"
+                              placeholder="Введите комментарий..."></textarea>
+                </div>
+
+                <!-- Кнопка Сохранить -->
+                <div class="text-right mt-4">
+                    <label id="save_expense"
+                           class="btn w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white">Сохранить</label>
+                </div>
+
+            </li>
+        </ul>
+    </div>
+
+    <input type="checkbox" id="save_expense_modal" class="modal-toggle"/>
+    <div class="modal">
+        <div class="modal-box w-full max-w-md mx-2 sm:mx-auto p-4 sm:p-6 space-y-4 rounded-md">
+            <h1 class="text-base sm:text-lg font-bold text-gray-800 text-center sm:text-left">Распоряжение товарными деньгами</h1>
+
+            <!-- Назначение -->
+            <div>
+                <div id="modal-purpose" class="text-xs uppercase font-semibold text-gray-500 mb-1 tracking-wide"></div>
+                <div id="modal-appointment" class="bg-gray-100 px-3 py-2 rounded-md text-sm text-gray-800"></div>
+            </div>
+
+            <!-- Сумма -->
+            <div>
+                <div class="text-xs uppercase font-semibold text-gray-500 mb-1 tracking-wide">Сумма</div>
+                <div class="bg-green-100 px-3 py-2 rounded-md text-sm text-green-700 font-medium" id="modal-balance"></div>
+            </div>
+
+            <!-- Остаток -->
+            <div>
+                <div class="text-xs uppercase font-semibold text-gray-500 mb-1 tracking-wide">Остаток</div>
+                <div class="bg-green-100 px-3 py-2 rounded-md text-sm text-green-700 font-medium" id="modal-remainder"></div>
+            </div>
+
+            <!-- Дата  -->
+            <div>
+                <div class="text-xs uppercase font-semibold text-gray-500 mb-1 tracking-wide">Дата</div>
+                <div class="bg-green-100 px-3 py-2 rounded-md text-sm text-green-700 font-medium" id="modal-date"></div>
+            </div>
+
+            <!-- Комментарий -->
+            <div>
+                <div class="text-xs uppercase font-semibold text-gray-500 mb-1 tracking-wide">Комментарий</div>
+                <textarea readonly id="modal-comments"
+                          class="w-full textarea textarea-bordered bg-gray-100 text-sm text-gray-800 rounded-md"></textarea>
+            </div>
+
+            <!-- Кнопки -->
+            <div class="modal-action flex flex-col sm:flex-row gap-2 pt-2">
+                <button id="confirmExpense"
+                        class="btn w-full sm:w-auto px-6 bg-blue-600 hover:bg-blue-700 text-white">
+                    Подтвердить
+                </button>
+                <label for="save_expense_modal"
+                       class="btn w-full sm:w-auto px-6 bg-gray-300 hover:bg-gray-400 text-gray-800">
+                    Отменить
+                </label>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модалки ошибок и успеха -->
+    <dialog id="errorModal" class="modal">
+        <div class="modal-box w-full max-w-md mx-2 sm:mx-auto p-4 sm:p-6 rounded-md">
+            <h3 class="text-base sm:text-lg font-bold">Ошибка!</h3>
+            <p id="errorText" class="py-4"></p>
+            <div class="modal-action w-full flex flex-col sm:flex-row gap-2">
+                <form method="dialog" class="w-full">
+                    <button
+                            class="btn w-full sm:w-auto px-6 bg-blue-600 hover:bg-blue-700 text-white">
+                        Закрыть
+                    </button>
+                </form>
+            </div>
+        </div>
+    </dialog>
+
+    <dialog id="success_modal" class="modal">
+        <div class="modal-box w-full max-w-md mx-2 sm:mx-auto p-4 sm:p-6 rounded-md">
+            <h3 class="text-base sm:text-lg font-bold">Успех!</h3>
+            <p id="successText" class="py-4">Успешно захоронили перевод товарных денег.</p>
+            <div class="modal-action w-full flex flex-col sm:flex-row gap-2">
+                <form method="dialog" class="w-full">
+                    <a href="/courier/debtpayoutform"
+                       class="btn w-full sm:w-auto px-6 bg-blue-600 hover:bg-blue-700 text-white">
+                        Готово
+                    </a>
+                </form>
+            </div>
+        </div>
+    </dialog>
+
+
+    <script src="https://cdn.jsdelivr.net/npm/pikaday/pikaday.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pikaday/css/pikaday.css" />
+
+    <script>
+        const openErrorModal = (message) => {
+            document.getElementById('errorText').textContent = message;
+            document.getElementById('errorModal').showModal();
+        };
+
+        document.querySelectorAll('.datepicker_from').forEach(field => {
+            new Pikaday({
+                field: field,
+                format: 'DD.MM.YYYY',
+                firstDay: 1,
+                i18n: {
+                    previousMonth: 'Предыдущий',
+                    nextMonth: 'Следующий',
+                    months: ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'],
+                    weekdays: ['Воскресенье', 'Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота'],
+                    weekdaysShort: ['Вс', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб']
+                },
+                toString(date) {
+                    const day = String(date.getDate()).padStart(2, '0');
+                    const month = String(date.getMonth() + 1).padStart(2, '0');
+                    const year = date.getFullYear();
+                    return `${day}.${month}.${year}`;
+                },
+                parse(dateString) {
+                    const parts = dateString.split('.');
+                    const day = parseInt(parts[0], 10);
+                    const month = parseInt(parts[1], 10) - 1;
+                    const year = parseInt(parts[2], 10);
+                    return new Date(year, month, day);
+                }
+            });
+        });
+
+        let post = null;
+
+        document.getElementById('save_expense').addEventListener('click', () => {
+            const balanceInput = document.getElementById('balance');
+            const enteredValue = balanceInput ? balanceInput.value.trim() : '';
+            const amount = Number(enteredValue);
+            const dateInput = document.getElementById('date_input');
+            const dateValue = dateInput.value.trim();
+
+            if (!enteredValue || isNaN(amount) || amount <= 0) {
+                openErrorModal('Укажите корректную сумму!');
+                return;
+            }
+
+            const clientInput = document.querySelector('input[name="client_id"]');
+            const clientNameInput = document.querySelector('input[name="client_name"]');
+
+            if (!clientInput || !clientInput.value) {
+                openErrorModal('Выберите клиента!');
+                return;
+            }
+
+            const commentsTextarea = document.getElementById('comments');
+            const commentValue = commentsTextarea ? commentsTextarea.value.trim() : '';
+
+            if (!commentValue) {
+                openErrorModal('Введите комментарий!');
+                return;
+            }
+            if (!dateValue) {
+                openErrorModal('Укажите дату!');
+                return;
+            }
+
+            post = {
+                delivery_type: 'courier',
+                selected_id: clientInput.value,
+                amount: amount,
+                comments: commentValue,
+                date: dateValue,
+            };
+
+            // Заполняем модальное окно
+            document.getElementById('modal-purpose').textContent = 'Курьеру';
+            document.getElementById('modal-appointment').textContent = clientNameInput.value;
+            document.getElementById('modal-balance').textContent = amount;
+            document.getElementById('modal-comments').textContent = commentValue;
+            document.getElementById('modal-date').textContent = dateValue;
+
+            const stockBalances = document.getElementById('stock-balances');
+            document.getElementById('modal-remainder').textContent = (Number(stockBalances.innerText) - amount);
+
+            document.getElementById('save_expense_modal').checked = true;
+        });
+
+        document.getElementById('confirmExpense').addEventListener('click', async () => {
+            if (!post) {
+                openErrorModal('Ошибка сбора данных!');
+                return;
+            }
+
+            const result = await postData('/entities/definitionCommodityMoney', post);
+
+            document.getElementById('save_expense_modal').checked = false;
+
+            if (result === 'error') {
+                openErrorModal('Ошибка при отправке данных!');
+                return;
+            }
+
+            if (result.value === 'bad_client'){
+                openErrorModal('Клиент не найден!');
+                return;
+            }
+
+            if (result.value === 'bad_client_legal_entities'){
+                openErrorModal('У клиента не найден счет!');
+                return;
+            }
+
+            if (result.success) {
+                document.getElementById('success_modal').showModal();
+            } else {
+                openErrorModal('Не удалось отдать долк клиенту!');
+            }
+        });
+
+        document.getElementById('save_expense_modal').checked = false;
+    </script>
+{% endblock %}

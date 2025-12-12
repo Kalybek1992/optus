@@ -214,12 +214,16 @@ class UserController extends BaseController
             if ($transaction->type == 'expense') {
                 $type_of_debt = 'supplier_goods';
 
-                $key = $transaction->to_account_id . '_' . $transaction->from_account_id;
+                $recipient = LegalEntitiesLM::getEntitiesId($transaction->to_account_id);
+                $sender = LegalEntitiesLM::getEntitiesId($transaction->from_account_id);
+
+
+                $key = $recipient->inn . '_' . $sender->inn;
 
                 if (!isset($insert_new_balance[$key])) {
                     $insert_new_balance[$key] = [
-                        'legal_id' => $transaction->to_account_id,
-                        'sender_legal_id' => $transaction->from_account_id,
+                        'recipient_inn' => $recipient->inn,
+                        'sender_inn' => $sender->inn,
                         'amount' => $transaction->amount,
                     ];
                 }

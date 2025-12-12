@@ -553,10 +553,18 @@ class EntitiesController extends BaseController
         $dt = DateTime::createFromFormat('d.m.Y', $date);
         $issue_date = $dt->format('Y-m-d');
 
-        if ($user['role'] == 'courier') {
+        if ($user['role'] == 'courier' && $delivery_type == 'client') {
             $status_company_finances = 'confirm_admin';
             $type_company_finances = 'return_debit_courier';
 
+            $courier = CouriersLM::getCourierByUserId($user['id']);
+            $courier_id = $courier['id'] ?? null;
+            $balance = $courier['balance_sum'] ?? 0;
+
+            $courier_balance = $balance - $amount;
+        }
+
+        if ($user['role'] == 'courier' && $delivery_type == 'courier') {
             $courier = CouriersLM::getCourierByUserId($user['id']);
             $courier_id = $courier['id'] ?? null;
             $balance = $courier['balance_sum'] ?? 0;
@@ -608,6 +616,11 @@ class EntitiesController extends BaseController
                 'description' => 'Перевод на курьера товарных денег.',
                 'status' => 'processed'
             ]);
+
+            if ($courier_id) {
+                $insert_company_finances['sender_courier_id'] = $courier_id;
+                CouriersLM::adjustCurrentBalance($courier_id, $courier_balance);
+            }
         }
 
         if ($delivery_type == 'client') {
