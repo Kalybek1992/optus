@@ -246,6 +246,14 @@ class CourierController extends BaseController
         }
 
         if ($status == 'confirm'){
+            $client = ClientsLM::getClientId($finances->client_id);
+
+            DebtsLM::payOffClientsDebt(
+                $client['legal_id'],
+                $finances->amount,
+                $finances->transaction_id
+            );
+
             CompanyFinancesLM::updateCompanyFinancesId([
                 'status = ' . 'processed',
             ], $finances_id);
@@ -281,11 +289,6 @@ class CourierController extends BaseController
                     return ApiViewer::getErrorBody(['value' => 'bad_client_legal_entities']);
                 }
 
-                DebtsLM::payOffClientsDebt(
-                    $client['legal_id'],
-                    $finances->amount,
-                    $finances->transaction_id
-                );
 
                 CompanyFinancesLM::deleteCompanyFinancesId($finances->id);
                 TransactionsLM::deleteTransactionsId($finances->transaction_id);
@@ -295,9 +298,7 @@ class CourierController extends BaseController
                     $finances->courier_id,
                     $new_balance
                 );
-
             }
-
         }
 
 

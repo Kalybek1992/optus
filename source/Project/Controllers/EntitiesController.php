@@ -659,11 +659,13 @@ class EntitiesController extends BaseController
                 CouriersLM::adjustCurrentBalance($courier_id, $courier_balance);
             }
 
-            DebtsLM::payOffClientsDebt(
-                $client['legal_id'],
-                $amount,
-                $translation_max_id + 1
-            );
+            if (!$courier_id) {
+                DebtsLM::payOffClientsDebt(
+                    $client['legal_id'],
+                    $amount,
+                    $translation_max_id + 1
+                );
+            }
         }
 
         if (!$insert_company_finances) {

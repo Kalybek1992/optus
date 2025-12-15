@@ -980,7 +980,7 @@ class CompanyFinancesLM
         return $manager_finances_arr;
     }
 
-    public static function getWritingTransactionById(int $transaction_id): ?object
+    public static function getWritingTransactionById(int $transaction_id)
     {
         $builder = CompanyFinances::newQueryBuilder()
             ->select([
@@ -1007,6 +1007,34 @@ class CompanyFinancesLM
             ->limit(1);
 
         return PdoConnector::execute($builder)[0] ?? null;
+    }
+
+    public static function getWritingTransactionByInIds(string $transaction_id)
+    {
+        $builder = CompanyFinances::newQueryBuilder()
+            ->select([
+                '*',
+                'u.name as username',
+                't.amount as amount',
+                't.date as date',
+            ])
+            ->leftJoin('transactions t')
+            ->on([
+                't.id = transaction_id',
+            ])
+            ->leftJoin('couriers с')
+            ->on([
+                'с.id = courier_id',
+            ])
+            ->leftJoin('users u')
+            ->on([
+                'u.id =  с.user_id',
+            ])
+            ->where([
+                "transaction_id IN($transaction_id)" ,
+            ]);
+
+        return PdoConnector::execute($builder);
     }
 
     public static function getManagerFinancesSumAndType($manager_id, $date_from, $date_to)

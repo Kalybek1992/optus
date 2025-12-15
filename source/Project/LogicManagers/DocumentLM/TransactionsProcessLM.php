@@ -634,51 +634,6 @@ class TransactionsProcessLM extends DocumentExtractLM
 
 
     /**
-     * Определить покупку клиента
-     */
-    private function mutualSettlements($transaction_id, $user)
-    {
-        foreach ($this->transaction_pending as $transaction) {
-            if ($transaction->id == $transaction_id) {
-                if ($user['legal_id']) {
-
-                    $amount = $transaction->amount;
-
-                    $amount_new = DebtsLM::mutualSettlementsDebts(
-                        $user['legal_id'],
-                        $amount,
-                        $transaction->id,
-                    );
-
-                    if ($amount_new != $transaction->amount) {
-                        CompanyFinancesLM::insertTransactionsExpenses([
-                            'transaction_id' => $transaction->id,
-                            'supplier_id' => $user['id'],
-                            'comments' => 'Взаиморасчеты с поставщиком',
-                            'type' => 'debt_repayment_transaction',
-                            'status' => 'confirm_admin',
-                            'issue_date' => $transaction->date,
-                        ]);
-
-                        if ($amount_new > 0) {
-                            $new = $amount_new - ($amount_new * $transaction->percent / 100);
-
-
-                        }
-
-                    }
-
-                } else {
-                    return false;
-                }
-            }
-        }
-
-        return true;
-    }
-
-
-    /**
      * Обработка новых получателей
      */
     private function getNewExpensesBankAccounts(): void

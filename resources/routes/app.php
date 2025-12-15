@@ -1860,6 +1860,21 @@ return [
                 new ApiKeyAdminMiddleware
             ]
         ],
+        '/unloading/gettransactiondate' => [
+            'validation' => [
+                'date_from' => [
+                    'required' => true,
+                    'custom_logic' => fn($a) => is_string($a) && DateTime::createFromFormat('d.m.Y', $a) !== false || $a == null
+                ],
+                'date_to' => [
+                    'required' => false,
+                    'custom_logic' => fn($a) => is_string($a) && DateTime::createFromFormat('d.m.Y', $a) !== false || $a == null
+                ]
+            ],
+            'middlewares' => [
+                new ApiKeySupplierMiddleware
+            ]
+        ],
         '/unloading/gettransferyourself' => [
             'validation' => [
                 'date_from' => [

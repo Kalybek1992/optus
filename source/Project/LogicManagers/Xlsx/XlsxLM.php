@@ -114,21 +114,36 @@ class XlsxLM extends LogicManager
 
         // Данные транзакций
         $row = 2;
-        foreach ($transactions as $t) {
-            $sheet->setCellValue('A' . $row, $t['transaction_id']);
-            $sheet->setCellValue('B' . $row, $t['date']);
-            $sheet->setCellValue('C' . $row, $t['sender_company_name']);
-            $sheet->setCellValue('D' . $row, $t['sender_bank_name']);
-            $sheet->setCellValue('E' . $row, $t['recipient_company_name']);
-            $sheet->setCellValue('F' . $row, $t['recipient_bank_name']);
-            $sheet->setCellValue('G' . $row, $t['percent']);
-            $sheet->setCellValue('H' . $row, $t['transaction_amount']);
-            $sheet->setCellValue('I' . $row, $t['interest_income']);
-            $sheet->setCellValue('J' . $row, $t['debit_amount']);
-            $sheet->setCellValue('K' . $row, $t['issuance'] ?? '');
-            $sheet->setCellValue('L' . $row, $t['who_issued_it'] ?? '');
-            $sheet->setCellValue('M' . $row, $t['date_of_issue'] ?? '');
-            $sheet->setCellValue('N' . $row, $t['comments'] ?? '');
+        foreach ($transactions as $index => $t) {
+            $sheet->setCellValue('A' . $row, $t['transaction_id'] ?? ($index + 1));
+            $sheet->setCellValue('B' . $row, $t['date'] ?? '');
+            $sheet->setCellValue('C' . $row, $t['sender_company_name'] ?? '');
+            $sheet->setCellValue('D' . $row, $t['sender_bank_name'] ?? '');
+            $sheet->setCellValue('E' . $row, $t['recipient_company_name'] ?? '');
+            $sheet->setCellValue('F' . $row, $t['recipient_bank_name'] ?? '');
+            $sheet->setCellValue('G' . $row, $t['percent'] ?? 0);
+            $sheet->setCellValue('H' . $row, $t['transaction_amount'] ?? 0);
+            $sheet->setCellValue('I' . $row, $t['interest_income'] ?? 0);
+            $sheet->setCellValue('J' . $row, $t['debit_amount'] ?? 0);
+
+            // Работа с массивом issuance
+            if (!empty($t['issuance']) && is_array($t['issuance'])) {
+                $amounts = array_map(fn($i) => number_format($i['amount'] ?? 0, 0, ',', ' '), $t['issuance']);
+                $whoIssued = array_map(fn($i) => $i['who_issued_it'] ?? 'Админ', $t['issuance']);
+                $issueDates = array_map(fn($i) => isset($i['issue_date']) ? date('d.m.Y', strtotime($i['issue_date'])) : '', $t['issuance']);
+                $comments = array_map(fn($i) => '- ' . ($i['comments'] ?? ''), $t['issuance']);
+
+                $sheet->setCellValue('K' . $row, implode(', ', $amounts));
+                $sheet->setCellValue('L' . $row, implode(', ', $whoIssued));
+                $sheet->setCellValue('M' . $row, implode(', ', $issueDates));
+                $sheet->setCellValue('N' . $row, implode("\n\n", $comments));
+            } else {
+                $sheet->setCellValue('K' . $row, 0);
+                $sheet->setCellValue('L' . $row, 0);
+                $sheet->setCellValue('M' . $row, 0);
+                $sheet->setCellValue('N' . $row, '-');
+            }
+
             $row++;
         }
 
@@ -137,13 +152,14 @@ class XlsxLM extends LogicManager
         $sheet->setCellValue('H' . $row, $transactions_sum['sum_amount'] ?? 0);
         $sheet->setCellValue('I' . $row, $transactions_sum['sum_interest_income'] ?? 0);
         $sheet->setCellValue('J' . $row, $transactions_sum['debts_amount'] ?? 0);
+        $sheet->setCellValue('K' . $row, $transactions_sum['debts_issuance'] ?? 0);
 
-        // Можно добавить автоширину для читаемости
+        // Автоширина колонок
         foreach (range('A', 'N') as $columnID) {
             $sheet->getColumnDimension($columnID)->setAutoSize(true);
         }
 
-        // Путь и имя файла
+        // Сохраняем файл
         $upload_dir = Path::RESOURCES_DIR . "unloading/";
         $file_name = "ClientReceipts.xlsx";
         $destination = $upload_dir . $file_name;
@@ -242,6 +258,8 @@ class XlsxLM extends LogicManager
             'Сумма',
             'Комиссия деньгах',
             'Долг поставщика',
+            'Выдал товарные д-г',
+            'Дата выдачи',
             'Назначение',
         ];
 
@@ -249,6 +267,7 @@ class XlsxLM extends LogicManager
         $col = 'A';
         foreach ($headers as $header) {
             $sheet->setCellValue($col . '1', $header);
+            $sheet->getStyle($col . '1')->getFont()->setBold(true);
             $col++;
         }
 
@@ -264,24 +283,37 @@ class XlsxLM extends LogicManager
             $sheet->setCellValue('G' . $row, $t['transaction_amount'] ?? 0);
             $sheet->setCellValue('H' . $row, $t['interest_income'] ?? 0);
             $sheet->setCellValue('I' . $row, $t['total_amount'] ?? 0);
-            $sheet->setCellValue('J' . $row, $t['description'] ?? '');
+
+            // Выдал товарные деньги
+            if (!empty($t['issuance'])) {
+                $amounts = array_map(fn($i) => number_format($i['amount'], 0, ',', ' '), $t['issuance']);
+                $dates = array_map(fn($i) => date('d.m.Y', strtotime($i['issue_date'])), $t['issuance']);
+
+                $sheet->setCellValue('J' . $row, implode(', ', $amounts));
+                $sheet->setCellValue('K' . $row, implode(', ', $dates));
+            } else {
+                $sheet->setCellValue('J' . $row, 0);
+                $sheet->setCellValue('K' . $row, '-');
+            }
+
+            $sheet->setCellValue('L' . $row, $t['description'] ?? '');
             $row++;
         }
 
         // Итоговая строка
         $sheet->setCellValue('A' . $row, 'Сумма');
-        $sheet->setCellValue('B' . $row, '');
-        $sheet->setCellValue('C' . $row, '');
-        $sheet->setCellValue('D' . $row, '');
-        $sheet->setCellValue('E' . $row, '');
-        $sheet->setCellValue('F' . $row, '');
+        foreach (range('B', 'F') as $c) {
+            $sheet->setCellValue($c . $row, '');
+        }
         $sheet->setCellValue('G' . $row, $transactions_sum['sum_amount'] ?? 0);
         $sheet->setCellValue('H' . $row, $transactions_sum['sum_interest_income'] ?? 0);
         $sheet->setCellValue('I' . $row, $transactions_sum['debts_amount'] ?? 0);
-        $sheet->setCellValue('J' . $row, '');
+        $sheet->setCellValue('J' . $row, $transactions_sum['debts_issuance'] ?? 0);
+        $sheet->setCellValue('K' . $row, '');
+        $sheet->setCellValue('L' . $row, '');
 
         // Автоширина колонок
-        foreach (range('A', 'J') as $columnID) {
+        foreach (range('A', 'L') as $columnID) {
             $sheet->getColumnDimension($columnID)->setAutoSize(true);
         }
 

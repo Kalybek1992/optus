@@ -273,6 +273,59 @@ class UnloadingController extends BaseController
         return ApiViewer::getOkBody(['file' => $file_path]);
     }
 
+    public function getTransactionDate(): array
+    {
+        $suplier = InformationDC::get('suplier');
+        $supplier_id = $suplier['supplier_id'] ?? 0;
+        $date_from = InformationDC::get('date_from');
+        $date_to = InformationDC::get('date_to');
+        $limit = 120;
+
+        $transactions_count = LegalEntitiesLM::getEntitiesSuppliersTransactionsCount(
+            $supplier_id,
+            $date_from,
+            $date_to
+        );
+        $all_transactions = [];
+        $offset = 0;
+
+        $limit_count = 2500;
+        if ($transactions_count > $limit_count) {
+            return ApiViewer::getErrorBody(['message' => 'limit_reached']);
+        }
+
+        while ($offset < $transactions_count) {
+            $chunk = LegalEntitiesLM::getEntitiesSuppliersTransactions(
+                $supplier_id,
+                $offset,
+                $limit,
+                $date_from,
+                $date_to
+            );
+
+            if (!empty($chunk)) {
+                $all_transactions = array_merge($all_transactions, $chunk);
+            }
+
+            $offset += $limit;
+            usleep(500);
+        }
+
+        if (!$all_transactions) {
+            return ApiViewer::getErrorBody(['message' => 'File not found']);
+        }
+
+        $transactions_sum = LegalEntitiesLM::getEntitiesSuppliersTransactionsSum(
+            $supplier_id,
+            $date_from,
+            $date_to
+        );
+
+        $file_path = XlsxLM::suppliersSendingsDate($all_transactions, $transactions_sum);
+
+        return ApiViewer::getOkBody(['file' => $file_path]);
+    }
+
     public function getCourierFinances(): array
     {
         $date_from = InformationDC::get('date_from');
@@ -549,5 +602,6 @@ class UnloadingController extends BaseController
 
         return ApiViewer::getOkBody(['file' => $file_path]);
     }
+
 
 }

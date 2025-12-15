@@ -270,8 +270,18 @@ class TransactionController extends BaseController
 
 
         $client = ClientsLM::getClientId($client_id);
-        $transactions = LegalEntitiesLM::getEntitiesClientTransactions($client_id, $offset, $limit, $date_from, $date_to);
-        $transactions_sum = LegalEntitiesLM::getEntitiesClientTransactionsSum($client_id, $date_from, $date_to);
+        $transactions = LegalEntitiesLM::getEntitiesClientTransactions(
+            $client_id,
+            $offset,
+            $limit,
+            $date_from,
+            $date_to
+        );
+        $transactions_sum = LegalEntitiesLM::getEntitiesClientTransactionsSum(
+            $client_id,
+            $date_from,
+            $date_to
+        );
 
         $transactions_count = LegalEntitiesLM::getEntitiesClientTransactionsCount($client_id, $date_from, $date_to);
         $page_count = ceil($transactions_count / $limit);
@@ -351,12 +361,24 @@ class TransactionController extends BaseController
         $offset = $page * $limit;
 
         $supplier = SuppliersLM::getSuppliersIdDebt($supplier_id);
+        $transactions = LegalEntitiesLM::getEntitiesSuppliersTransactions(
+            $supplier_id,
+            $offset,
+            $limit,
+            $date_from,
+            $date_to
+        );
+        $transactions_sum = LegalEntitiesLM::getEntitiesSuppliersTransactionsSum(
+            $supplier_id,
+            $date_from,
+            $date_to
+        );
 
-
-        $transactions = LegalEntitiesLM::getEntitiesSuppliersTransactions($supplier_id, $offset, $limit, $date_from, $date_to);
-        $transactions_sum = LegalEntitiesLM::getEntitiesSuppliersTransactionsSum($supplier_id, $date_from, $date_to);
-
-        $transactions_count = LegalEntitiesLM::getEntitiesSuppliersTransactionsCount($supplier_id, $date_from, $date_to);
+        $transactions_count = LegalEntitiesLM::getEntitiesSuppliersTransactionsCount(
+            $supplier_id,
+            $date_from,
+            $date_to
+        );
         $page_count = ceil($transactions_count / $limit);
 
 

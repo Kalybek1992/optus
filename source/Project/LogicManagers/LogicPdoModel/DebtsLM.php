@@ -645,6 +645,7 @@ class DebtsLM
     public static function payOffClientsDebt($legal_id, $amount, $transaction_id): bool
     {
         $debts = self::getDebtsFromClientGoods($legal_id);
+        $debt_closings_insert = [];
 
         if (!$debts) {
             // Если долгов нет, создаём новый долг
@@ -684,6 +685,12 @@ class DebtsLM
                 $from_account_id = $debt->to_account_id;
                 $to_account_id = $debt->from_account_id;
 
+                $debt_closings_insert = [
+                    'debt_id' => $debt->id,
+                    'transaction_id' => $transaction_id,
+                    'amount' => $amount,
+                ];
+
             } else {
                 // Частично закрываем долг
                 $new_debt_amount = $debt_amount - $amount;
@@ -693,11 +700,20 @@ class DebtsLM
                     'writing_transaction_id = ' . $transaction_id,
                 ], $debt->id);
 
+                $debt_closings_insert = [
+                    'debt_id' => $debt->id,
+                    'transaction_id' => $transaction_id,
+                    'amount' => $amount,
+                ];
                 $amount = 0;
                 $from_account_id = $debt->to_account_id;
                 $to_account_id = $debt->from_account_id;
                 break;
             }
+        }
+
+        if ($debt_closings_insert) {
+            DebtClosingsLM::setNewDebtClosings($debt_closings_insert);
         }
 
         // Если остались лишние деньги — создаём новый долг
@@ -719,6 +735,8 @@ class DebtsLM
     public static function payOffSupplierClientServicesDebt($legal_id, $amount, $transaction_id): bool
     {
         $debts = self::getDebtsFromClientDebtSuppliers($legal_id);
+        $debt_closings_insert = [];
+
         //Если нету никаких долгов
         if (!$debts) {
             $our_account_id = LegalEntitiesLM::getOurAccountOneId();
@@ -759,6 +777,12 @@ class DebtsLM
                 $from_account_id = $debt->to_account_id;
                 $to_account_id = $debt->from_account_id;
 
+                $debt_closings_insert = [
+                    'debt_id' => $debt->id,
+                    'transaction_id' => $transaction_id,
+                    'amount' => $amount,
+                ];
+
             } else {
                 // Частично закрываем долг
                 $new_debt_amount = $debt_amount - $amount;
@@ -768,11 +792,21 @@ class DebtsLM
                     'writing_transaction_id = ' . $transaction_id,
                 ], $debt->id);
 
+                $debt_closings_insert = [
+                    'debt_id' => $debt->id,
+                    'transaction_id' => $transaction_id,
+                    'amount' => $amount,
+                ];
+
                 $amount = 0;
                 $from_account_id = $debt->to_account_id;
                 $to_account_id = $debt->from_account_id;
                 break;
             }
+        }
+
+        if ($debt_closings_insert) {
+           DebtClosingsLM::setNewDebtClosings($debt_closings_insert);
         }
 
         if ($amount > 0 && $from_account_id != null && $to_account_id != null) {
@@ -793,7 +827,6 @@ class DebtsLM
     public static function mutualSettlementsDebts($legal_id, $amount, $transaction_id)
     {
         $debts = self::getDebtsCompanyMutual($legal_id);
-
 
         //Если нету никаких долгов
         if (!$debts) {
@@ -910,6 +943,7 @@ class DebtsLM
     public static function payOffCompaniesDebt($legal_id, $amount, $transaction_id):bool
     {
         $debts = self::getDebtsFromCompanies($legal_id);
+        $debt_closings_insert = [];
 
         // Если долгов нет — создаём новый долг
         if (!$debts) {
@@ -949,6 +983,12 @@ class DebtsLM
                 $from_account_id = $debt->to_account_id;
                 $to_account_id = $debt->from_account_id;
 
+                $debt_closings_insert = [
+                    'debt_id' => $debt->id,
+                    'transaction_id' => $transaction_id,
+                    'amount' => $amount,
+                ];
+
             } else {
                 // Частично закрываем долг
                 $new_debt_amount = $debt_amount - $amount;
@@ -961,9 +1001,19 @@ class DebtsLM
                 $from_account_id = $debt->to_account_id;
                 $to_account_id = $debt->from_account_id;
 
+                $debt_closings_insert = [
+                    'debt_id' => $debt->id,
+                    'transaction_id' => $transaction_id,
+                    'amount' => $amount,
+                ];
+
                 $amount = 0;
                 break;
             }
+        }
+
+        if ($debt_closings_insert){
+            DebtClosingsLM::setNewDebtClosings($debt_closings_insert);
         }
 
         // Если остались лишние деньги — создаём новый долг

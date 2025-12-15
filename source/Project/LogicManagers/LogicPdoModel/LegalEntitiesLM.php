@@ -5,14 +5,7 @@ namespace Source\Project\LogicManagers\LogicPdoModel;
 use DateTime;
 use Source\Base\Core\Logger;
 use Source\Project\Connectors\PdoConnector;
-use Source\Project\Models\BankAccounts;
-use Source\Project\Models\BankOrder;
-use Source\Project\Models\Clients;
-use Source\Project\Models\ClientServices;
 use Source\Project\Models\LegalEntities;
-use Source\Project\Models\Transactions;
-use Source\Project\Models\Users;
-
 
 /**
  *
@@ -223,11 +216,11 @@ class LegalEntitiesLM
                 $inn = '';
                 $formatted_date = '';
 
-                if ($transaction->recipient_our_account){
+                if ($transaction->recipient_our_account) {
                     $our_bank_name = $transaction->bank_name_recipient ?? '';
                     $our_company_name = $transaction->company_name_recipient ?? '';
                 }
-                if ($transaction->sender_our_account){
+                if ($transaction->sender_our_account) {
                     $our_bank_name = $transaction->bank_name_sender ?? '';
                     $our_company_name = $transaction->company_name_sender ?? '';
                 }
@@ -506,7 +499,7 @@ class LegalEntitiesLM
             ->from('legal_entities as le')
             ->leftJoin('uploaded_log ul')
             ->on([
-                'ul.id = le.id',
+                'ul.legal_id = le.id',
             ])
             ->where([
                 'le.our_account =' . 1,
@@ -522,25 +515,33 @@ class LegalEntitiesLM
         }
 
         foreach ($our_account as $account) {
-            // Форматируем дату создания
-
-            if (!empty($account->date_created)) {
+            $date_created = '';
+            if ($account->date_created) {
                 $dt = DateTime::createFromFormat('Y-m-d', $account->date_created);
                 $date_created = $dt ? $dt->format('d.m.Y') : date('d.m.Y');
-            } else {
-                $date_created = date('d.m.Y');
             }
 
             $is_expired = false;
-            if (!empty($account->uploaded_date)) {
-                $upload_date = new DateTime($account->uploaded_date);
-                $today = new DateTime('today');
+            if ($account->uploaded_date) {
+                $upload_date_time = new DateTime($account->uploaded_date);
                 $now = new DateTime();
+                $upload_date = (clone $upload_date_time)->setTime(0, 0, 0);
+                $today = (clone $now)->setTime(0, 0, 0);
+                $days_passed = $upload_date->diff($today)->days;
 
-                if ($today->format('Y-m-d') > $upload_date->format('Y-m-d') && $now->format('H:i') >= '11:00') {
+                if ($days_passed > 1) {
                     $is_expired = true;
+                } elseif ($days_passed === 1) {
+                    if ((int)$now->format('H') >= 11) {
+                        $is_expired = true;
+                    }
                 }
             }
+
+            if (!$account->uploaded_date) {
+                $is_expired = true;
+            }
+
 
             // Рассчитываем проценты
             $total_received_interest = $account->total_received ?? 0;
@@ -792,6 +793,9 @@ class LegalEntitiesLM
                 'd.amount as debit_amount',
                 'd.id as debit_id',
                 'd.status as debit_status',
+                'GROUP_CONCAT(dc.id ORDER BY dc.id) as debit_closing_ids',
+                'GROUP_CONCAT(dc.transaction_id ORDER BY dc.id) as debit_closing_transaction_ids',
+                'GROUP_CONCAT(dc.amount ORDER BY dc.id) as debit_closing_amounts'
             ]);
 
         if ($date_from) {
@@ -861,6 +865,13 @@ class LegalEntitiesLM
         }
 
         $builder
+            ->leftJoin('debt_closings dc')
+            ->on([
+                "dc.debt_id = d.id",
+                "d.transaction_id = t.id",
+            ]);
+
+        $builder
             ->groupBy('t.id')
             ->orderBy('t.date', 'DESC')
             ->limit($limit)
@@ -874,13 +885,20 @@ class LegalEntitiesLM
         }
 
         foreach ($transactions as $transaction) {
-            $company_finances = '';
-            $date_of_issue = '';
+            $issuance = [];
 
-            if ($transaction->writing_transaction_id) {
-                $company_finances = CompanyFinancesLM::getWritingTransactionById($transaction->writing_transaction_id);
-                if ($company_finances->issue_date ?? null) {
-                    $date_of_issue = date('d.m.Y', strtotime($company_finances->issue_date));
+            if ($transaction->debit_closing_ids) {
+                $company_finances = CompanyFinancesLM::getWritingTransactionByInIds(
+                    $transaction->debit_closing_transaction_ids
+                );
+
+                foreach ($company_finances as $company_finance) {
+                    $issuance[] = [
+                        'amount' => $company_finance->amount,
+                        'issue_date' => $company_finance->issue_date,
+                        'comments' => $company_finance->comments,
+                        'who_issued_it' => $company_finance->username ?? 'Админ'
+                    ];
                 }
             }
 
@@ -898,10 +916,7 @@ class LegalEntitiesLM
                 'sender_company_name' => $transaction->sender_company_name,
                 'recipient_bank_name' => $transaction->recipient_bank_name,
                 'recipient_company_name' => $transaction->recipient_company_name,
-                'issuance' => $company_finances->amount ?? '',
-                'who_issued_it' => $company_finances->username ?? '',
-                'date_of_issue' => $date_of_issue,
-                'comments' => $company_finances->comments ?? '',
+                'issuance' => $issuance,
             ];
         }
 
@@ -984,6 +999,7 @@ class LegalEntitiesLM
                 'SUM(t.amount) as sum_amount',
                 'SUM(t.interest_income) as sum_interest_income',
                 'SUM(d.amount) as debt_amount',
+                'SUM(dc.amount) as debts_issuance',
             ])
             ->from('legal_entities le');
 
@@ -1025,7 +1041,6 @@ class LegalEntitiesLM
         }
 
 
-
         if ($supplier_client_id) {
             $builder
                 ->leftJoin('debts d')
@@ -1033,6 +1048,11 @@ class LegalEntitiesLM
                     "d.transaction_id = t.id",
                     "d.status = 'active'",
                     "d.type_of_debt = 'сlient_debt_supplier'",
+                ])
+                ->leftJoin('debt_closings dc')
+                ->on([
+                    "dc.debt_id = d.id",
+                    "dc.transaction_id = t.id",
                 ])
                 ->where([
                     'le.supplier_client_id =' . $supplier_client_id
@@ -1046,11 +1066,17 @@ class LegalEntitiesLM
                     "d.status = 'active'",
                     "d.type_of_debt = 'client_goods'",
                 ])
+                ->leftJoin('debt_closings dc')
+                ->on([
+                    "dc.debt_id = d.id",
+                    "d.transaction_id = t.id",
+                ])
                 ->where([
                     'le.client_id =' . $client_id
                 ])
                 ->groupBy('le.client_id');
         }
+
 
         $builder
             ->limit(1);
@@ -1064,7 +1090,9 @@ class LegalEntitiesLM
         $transactions_sum = [
             'sum_amount' => $sum_amount,
             'sum_interest_income' => $sum_interest_income,
+            'debt' => $debt_amounts - $sum_interest_income,
             'debts_amount' => $debt_amounts,
+            'debts_issuance' => $transactions->debts_issuance ?? 0,
         ];
 
         //Logger::log(print_r($builder->build(), true), 'clientReceiptsDate');
@@ -1594,6 +1622,9 @@ class LegalEntitiesLM
                 'le.id as legal_id',
                 'le.bank_name as recipient_bank_name',
                 'le.company_name as recipient_company_name',
+                'GROUP_CONCAT(dc.id ORDER BY dc.id) as debit_closing_ids',
+                'GROUP_CONCAT(dc.transaction_id ORDER BY dc.id) as debit_closing_transaction_ids',
+                'GROUP_CONCAT(dc.amount ORDER BY dc.id) as debit_closing_amounts'
             ]);
 
         if ($date_from && !$date_to) {
@@ -1629,6 +1660,11 @@ class LegalEntitiesLM
                 "d.transaction_id = t.id",
                 "d.type_of_debt = 'supplier_goods'",
             ])
+            ->leftJoin('debt_closings dc')
+            ->on([
+                "dc.debt_id = d.id",
+                "d.transaction_id = t.id",
+            ])
             ->innerJoin('legal_entities le')
             ->on([
                 "le.id = t.from_account_id",
@@ -1661,6 +1697,22 @@ class LegalEntitiesLM
         }
 
         foreach ($transactions as $transaction) {
+            $issuance = [];
+
+            if ($transaction->debit_closing_ids) {
+                $company_finances = CompanyFinancesLM::getWritingTransactionByInIds(
+                    $transaction->debit_closing_transaction_ids
+                );
+
+                foreach ($company_finances as $company_finance) {
+                    $issuance[] = [
+                        'amount' => $company_finance->amount,
+                        'issue_date' => $company_finance->issue_date,
+                        'comments' => $company_finance->comments,
+                    ];
+                }
+            }
+
             $transactions_arr[] = [
                 'transaction_id' => $transaction->transaction_id,
                 'legal_id' => $transaction->legal_id,
@@ -1675,6 +1727,7 @@ class LegalEntitiesLM
                 'recipient_bank_name' => $transaction->recipient_bank_name,
                 'recipient_company_name' => $transaction->recipient_company_name,
                 'transaction_amount_sum' => $transaction->transaction_amount_sum,
+                'issuance' => $issuance,
             ];
         }
 
@@ -1787,6 +1840,8 @@ class LegalEntitiesLM
             ->select([
                 'SUM(t.amount) as sum_amount',
                 'SUM(t.interest_income) as sum_interest_income',
+                'SUM(d.amount) as debts_amount',
+                'SUM(dc.amount) as debts_issuance',
             ]);
 
         if ($date_from) {
@@ -1839,6 +1894,18 @@ class LegalEntitiesLM
         }
 
         $builder
+            ->innerJoin('debts d')
+            ->on([
+                "d.transaction_id = t.id",
+                "d.type_of_debt = 'supplier_goods'",
+            ])
+            ->leftJoin('debt_closings dc')
+            ->on([
+                "dc.debt_id = d.id",
+                "d.transaction_id = t.id",
+            ]);
+
+        $builder
             ->groupBy('supplier_id');
 
         $transactions = PdoConnector::execute($builder)[0] ?? [];
@@ -1850,6 +1917,7 @@ class LegalEntitiesLM
             'sum_amount' => $sum_amount,
             'sum_interest_income' => $sum_interest_income,
             'debts_amount' => $sum_amount - $sum_interest_income,
+            'debts_issuance' => $transactions->debts_issuance,
         ];
 
 
