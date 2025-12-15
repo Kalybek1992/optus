@@ -1917,7 +1917,7 @@ class LegalEntitiesLM
             'sum_amount' => $sum_amount,
             'sum_interest_income' => $sum_interest_income,
             'debts_amount' => $sum_amount - $sum_interest_income,
-            'debts_issuance' => $transactions->debts_issuance,
+            'debts_issuance' => $transactions->debts_issuance ?? 0,
         ];
 
 

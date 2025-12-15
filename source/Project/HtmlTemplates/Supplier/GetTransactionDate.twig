@@ -9,6 +9,27 @@
         <div class="space-y-4 pl-4 mb-8">
             <!-- Кнопка скачать -->
             <div>
+                <!-- Даты "ОТ- ДО-" в одну линию с инпутами -->
+                <div class="flex items-center gap-2 mb-[20px]">
+                    <!-- Дата "от" -->
+                    <label class="text-sm font-medium text-gray-600">ОТ-</label>
+                    <input id="from" type="text" placeholder="Дата начала" autocomplete="off" readonly
+                           class="datepicker_from w-40 h-10 p-2 bg-white rounded-lg border border-gray-200 text-sm font-semibold text-gray-700 shadow-sm cursor-pointer"/>
+
+                    <!-- Дата "до" -->
+                    <label class="text-sm font-medium text-gray-600 ml-2">ДО-</label>
+                    <input id="to" type="text" placeholder="Дата окончания" autocomplete="off" readonly
+                           class="datepicker_to w-40 h-10 p-2 bg-white rounded-lg border border-gray-200 text-sm font-semibold text-gray-700 shadow-sm cursor-pointer"/>
+
+                    <!-- Кнопка "Все отправки" -->
+                    <div class="search-sending-to-supplier flex flex-col">
+                        <button type="button"
+                                class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2 px-4 rounded-lg shadow-sm transition-colors duration-200 h-10">
+                            Все отправки
+                        </button>
+                    </div>
+                </div>
+
                 <button
                         id="receipt-button"
                         onclick="downloadTableUniversal()"
@@ -42,7 +63,7 @@
 
             <!-- Заголовок темы таблицы -->
             <div class="text-center text-sm font-semibold text-gray-700">
-                Все отправки поставщику {{ date_from }} по {{ date_to ?? '--.--.----' }}
+                 Все отправки поставщику {{ date_from }} по {{ date_to ?? '--.--.----' }}
                 <div class="mx-auto w-1/2 border-t border-gray-300 mt-7 mb-7"></div>
             </div>
 
@@ -279,7 +300,7 @@
         }
 
         const pickerFrom = new Pikaday({
-            field: document.getElementById('datepicker_from'),
+            field: document.getElementById('from'),
             format: 'DD.MM.YYYY', // Русский формат даты
             firstDay: 1,
             i18n: {
@@ -306,7 +327,7 @@
         });
 
         const pickerTo = new Pikaday({
-            field: document.getElementById('datepicker_to'),
+            field: document.getElementById('to'),
             format: 'DD.MM.YYYY', // Русский формат даты
             firstDay: 1,
             i18n: {
@@ -333,29 +354,29 @@
         });
 
 
-        document.getElementById('searchFilters').addEventListener('click', () => {
-            const category = document.getElementById('category')?.textContent.trim();
-            const dateFrom = document.getElementById('datepicker_from');
-            const datepickerTo = document.getElementById('datepicker_to');
-
-            if (!category && !dateFrom.value && !datepickerTo.value) {
-                showCornerModal('Выберите фильтр');
-                return;
-            }
-
-            if (!dateFrom.value && datepickerTo.value) {
-                showCornerModal('Выберите начало даты!');
-                return;
-            }
+        document.querySelectorAll('.search-sending-to-supplier').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const dateFrom = document.getElementById('from');
+                const dateTo = document.getElementById('to');
 
 
-            const params = new URLSearchParams();
+                if (!dateFrom.value && !dateTo.value) {
+                    showCornerModal('Выберите фильтр');
+                    return;
+                }
 
-            if (category) params.append('category', category);
-            if (dateFrom.value) params.append('date_from', dateFrom.value);
-            if (datepickerTo.value) params.append('date_to', datepickerTo.value);
 
-            window.location.href = `/supplier/getExpenses?${params.toString()}`;
+                if (!dateFrom.value && dateTo.value) {
+                    showCornerModal('Выберите начало даты!');
+                    return;
+                }
+
+                const params = new URLSearchParams();
+                if (dateFrom.value) params.append('date_from', dateFrom.value);
+                if (dateTo.value)   params.append('date_to', dateTo.value);
+
+                window.location.href = `/supplier/getTransactionDate?${params.toString()}`;
+            });
         });
     </script>
 
