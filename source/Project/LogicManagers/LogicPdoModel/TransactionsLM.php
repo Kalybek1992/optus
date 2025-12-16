@@ -122,7 +122,7 @@ class TransactionsLM
         }
 
 
-        Logger::log(print_r($builder->build(), true), 'transaction');
+        //Logger::log(print_r($builder->build(), true), 'transaction');
         return PdoConnector::execute($builder);
     }
 

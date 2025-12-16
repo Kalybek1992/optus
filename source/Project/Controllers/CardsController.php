@@ -46,8 +46,7 @@ class CardsController extends BaseController
         ]);
 
 
-        Logger::log(print_r($entities, true), 'addCard');
-
+        //Logger::log(print_r($entities, true), 'addCard');
 
         return ApiViewer::getOkBody([
             'success' => 'ok',

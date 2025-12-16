@@ -73,7 +73,7 @@ class HomeController extends BaseController
 
 
 
-        Logger::log(print_r($mutual_settlements, true), 'adminHomePage');
+        //Logger::log(print_r($mutual_settlements, true), 'adminHomePage');
         //var_dump($balance);
 
         return $this->twig->render('AdminHomePage.twig', [
@@ -118,7 +118,7 @@ class HomeController extends BaseController
         $supplier_companies = LegalEntitiesLM::getLegalSupplierCompany($supplier->suppliers_id);
         $supplier_debts = DebtsLM::getDebtSupplierPage($supplier->suppliers_id);
 
-        //Logger::log(print_r($user, true), 'supplier_users');
+        Logger::log(print_r($user, true), 'supplierHomePage');
 
         return $this->twig->render('Supplier/SupplierHome.twig', [
             'supplier' => $user,

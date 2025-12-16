@@ -66,10 +66,10 @@ class TransactionController extends BaseController
         DebtsLM::editDebtTransactionId($transaction_id, $old_profit, $new_profit);
 
 
-        Logger::log(print_r("Возврат старой прибыли: $old_profit", true), 'changePercentage');
-        Logger::log(print_r("Новый процент: $new_percent%", true), 'changePercentage');
-        Logger::log(print_r("Новая прибыль: $new_profit", true), 'changePercentage');
-        Logger::log(print_r("--------------------------------------------", true), 'changePercentage');
+        //Logger::log(print_r("Возврат старой прибыли: $old_profit", true), 'changePercentage');
+        //Logger::log(print_r("Новый процент: $new_percent%", true), 'changePercentage');
+        //Logger::log(print_r("Новая прибыль: $new_profit", true), 'changePercentage');
+        //Logger::log(print_r("--------------------------------------------", true), 'changePercentage');
 
 
         return ApiViewer::getOkBody(['success' => 'ok']);
