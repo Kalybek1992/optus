@@ -113,6 +113,10 @@ class DocumentExtractLM
         $this->mapBankExchange();
         $this->mapSectionOrder();
 
+        if (!$this->document_all_inn && !$this->document_all_number){
+            $this->result_document_processing = 'no_extracts_files';
+        }
+
         if (!$this->bank_order && !$this->payment_order){
             $this->result_document_processing = 'no_extracts_files';
         }
@@ -130,7 +134,6 @@ class DocumentExtractLM
     private function checkingUploadedDocuments(): void
     {
         $this->getSelectInOrder();
-
 
         $loaded_transactions = UploadedDocumentsLM::getBankAccounts(
             $this->document_all_inn,

@@ -9,22 +9,26 @@
         <div class="space-y-4 pl-4 mb-8">
             <!-- Кнопка скачать -->
             <div>
-                <!-- Даты "ОТ- ДО-" в одну линию с инпутами -->
-                <div class="flex items-center gap-2 mb-[20px]">
+                <!-- Даты "ОТ- ДО-" и кнопка в одну линию на десктопе, вертикально на мобильном -->
+                <div class="flex flex-col sm:flex-row items-start sm:items-center gap-2 mb-5">
                     <!-- Дата "от" -->
-                    <label class="text-sm font-medium text-gray-600">ОТ-</label>
-                    <input id="from" type="text" placeholder="Дата начала" autocomplete="off" readonly
-                           class="datepicker_from w-40 h-10 p-2 bg-white rounded-lg border border-gray-200 text-sm font-semibold text-gray-700 shadow-sm cursor-pointer"/>
+                    <div class="flex items-center gap-2 w-full sm:w-auto">
+                        <label class="text-sm font-medium text-gray-600">ОТ-</label>
+                        <input id="from" type="text" placeholder="Дата начала" autocomplete="off" readonly
+                               class="datepicker_from w-full sm:w-40 h-10 p-2 bg-white rounded-lg border border-gray-200 text-sm font-semibold text-gray-700 shadow-sm cursor-pointer"/>
+                    </div>
 
                     <!-- Дата "до" -->
-                    <label class="text-sm font-medium text-gray-600 ml-2">ДО-</label>
-                    <input id="to" type="text" placeholder="Дата окончания" autocomplete="off" readonly
-                           class="datepicker_to w-40 h-10 p-2 bg-white rounded-lg border border-gray-200 text-sm font-semibold text-gray-700 shadow-sm cursor-pointer"/>
+                    <div class="flex items-center gap-2 w-full sm:w-auto">
+                        <label class="text-sm font-medium text-gray-600">ДО-</label>
+                        <input id="to" type="text" placeholder="Дата окончания" autocomplete="off" readonly
+                               class="datepicker_to w-full sm:w-40 h-10 p-2 bg-white rounded-lg border border-gray-200 text-sm font-semibold text-gray-700 shadow-sm cursor-pointer"/>
+                    </div>
 
                     <!-- Кнопка "Все отправки" -->
-                    <div class="search-sending-to-supplier flex flex-col">
+                    <div class="w-full sm:w-auto mt-2 sm:mt-0">
                         <button type="button"
-                                class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2 px-4 rounded-lg shadow-sm transition-colors duration-200 h-10">
+                                class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2 px-4 rounded-lg shadow-sm transition-colors duration-200 w-full sm:w-auto h-10">
                             Все отправки
                         </button>
                     </div>

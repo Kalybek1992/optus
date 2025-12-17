@@ -158,7 +158,7 @@ class CompanyFinancesLM
         $type_condition = [
             'company' => "(company_finances.type = 'expense' OR company_finances.type = 'expense_stock_balances' OR company_finances.type = 'courier_expense')",
             'supplier_expense' => "company_finances.type = 'expense_stock_balances_supplier'",
-            'supplier_debit' => "company_finances.type = 'debt_repayment_companies_supplier' OR company_finances.type = 'debt_repayment_client_supplier'",
+            'supplier_debit' => "company_finances.type = 'debt_repayment_сompanies_supplier' OR company_finances.type = 'debt_repayment_client_supplier'",
             'stock_balances' => "company_finances.type = 'stock_balances'"
         ][$type];
 
@@ -193,12 +193,21 @@ class CompanyFinancesLM
                 'le.bank_name as sender_bank_name',
                 'le.company_name as sender_company_name',
                 'u_client.name as client_name',
+                'cs_users.name as courier_name',
             ])
             ->leftJoin('clients c')
             ->on($clients)
             ->leftJoin('users u_client')
             ->on([
                 'u_client.id = c.user_id',
+            ])
+            ->leftJoin('couriers cs')
+            ->on([
+                'cs.id = courier_id',
+            ])
+            ->leftJoin('users cs_users')
+            ->on([
+                'cs_users.id = cs.user_id',
             ])
             ->leftJoin('bank_order bo')
             ->on([
@@ -230,7 +239,6 @@ class CompanyFinancesLM
                     "company_finances.category LIKE CONCAT('$category', '%')",
                     "t.date BETWEEN '$date_from' AND '$date_to'",
                     $type_condition,
-                    "company_finances.status = 'processed'"
                 ]);
         }
 
@@ -239,7 +247,6 @@ class CompanyFinancesLM
                 ->where([
                     "t.date BETWEEN '$date_from' AND '$date_to'",
                     $type_condition,
-                    "company_finances.status = 'processed'"
                 ]);
         }
 
@@ -248,7 +255,6 @@ class CompanyFinancesLM
                 ->where([
                     "t.date >='" . $date_from . "'",
                     $type_condition,
-                    "company_finances.status = 'processed'"
                 ]);
         }
 
@@ -257,7 +263,6 @@ class CompanyFinancesLM
                 ->where([
                     "company_finances.category LIKE CONCAT('$category', '%')",
                     $type_condition,
-                    "company_finances.status = 'processed'"
                 ]);
         }
 
@@ -265,7 +270,6 @@ class CompanyFinancesLM
             $builder
                 ->where([
                     $type_condition,
-                    "company_finances.status = 'processed'"
                 ]);
         }
 
@@ -287,6 +291,7 @@ class CompanyFinancesLM
         $expenses_arr = [];
 
         foreach ($expenses as $expense) {
+            $recipient = $expense->client_name ?? $expense->courier_name ?? 'Компания';
 
             $expenses_arr[] = [
                 'id' => $expense->id,
@@ -300,7 +305,7 @@ class CompanyFinancesLM
                 'sender_bank_name' => $expense->sender_bank_name ?? '',
                 'sender_company_name' => $expense->sender_company_name ?? '',
                 'status' => $expense->status,
-                'client_name' => $expense->client_name ?? '',
+                'client_name' => $recipient,
                 'type' => $expense->type,
                 'return_account' => $expense->return_account,
                 'bank_order_id' => $expense->bank_order_id,

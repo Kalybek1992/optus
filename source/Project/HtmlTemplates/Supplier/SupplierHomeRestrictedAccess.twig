@@ -31,34 +31,39 @@
                 Финансы поставщика
             </h2>
 
-            <div class="flex items-center justify-center gap-4 flex-wrap">
+            <div class="flex flex-col md:flex-row items-center justify-center gap-4 flex-wrap">
+
                 <!-- Сумма долгов -->
-                <div class="flex flex-col items-center p-4 bg-emerald-50 border border-emerald-200 rounded-xl shadow-sm">
+                <div class="flex flex-col items-center p-4 bg-emerald-50 border border-emerald-200 rounded-xl shadow-sm w-full md:w-auto">
                     <div class="text-sm text-gray-500">Долг перед компанией</div>
                     <div class="text-lg font-bold text-emerald-600">{{ debts.supplier_goods|number_format(0, ',', ' ') }} ₽</div>
                 </div>
 
                 <!-- Даты "ОТ- ДО-" в одну линию с инпутами -->
-                <div class="flex items-center gap-2">
+                <div class="flex flex-col sm:flex-row items-center gap-2 w-full md:w-auto">
                     <!-- Дата "от" -->
                     <label class="text-sm font-medium text-gray-600">ОТ-</label>
                     <input id="from" type="text" placeholder="Дата начала" autocomplete="off" readonly
-                           class="datepicker_from w-40 h-10 p-2 bg-white rounded-lg border border-gray-200 text-sm font-semibold text-gray-700 shadow-sm cursor-pointer"/>
+                           class="datepicker_from w-full sm:w-40 h-10 p-2 bg-white rounded-lg border border-gray-200 text-sm font-semibold text-gray-700 shadow-sm cursor-pointer"/>
 
                     <!-- Дата "до" -->
-                    <label class="text-sm font-medium text-gray-600 ml-2">ДО-</label>
+                    <label class="text-sm font-medium text-gray-600 sm:ml-2">ДО-</label>
                     <input id="to" type="text" placeholder="Дата окончания" autocomplete="off" readonly
-                           class="datepicker_to w-40 h-10 p-2 bg-white rounded-lg border border-gray-200 text-sm font-semibold text-gray-700 shadow-sm cursor-pointer"/>
+                           class="datepicker_to w-full sm:w-40 h-10 p-2 bg-white rounded-lg border border-gray-200 text-sm font-semibold text-gray-700 shadow-sm cursor-pointer"/>
                 </div>
 
                 <!-- Кнопка "Все отправки" -->
-                <div class="search-sending-to-supplier flex flex-col">
+                <div class="search-sending-to-supplier flex flex-col w-full md:w-auto">
                     <button type="button"
-                            class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2 px-4 rounded-lg shadow-sm transition-colors duration-200 h-10">
+                            class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2 px-4 rounded-lg shadow-sm transition-colors duration-200 w-full md:w-auto h-10">
                         Все отправки
                     </button>
                 </div>
+
             </div>
+
+
+
             <div class="w-full max-w-5xl mx-auto px-4 my-8">
                 <ul class="list bg-base-100 rounded-lg shadow-md space-y-4">
                             <li class="relative p-4 bg-base-200 rounded-lg">
@@ -112,39 +117,41 @@
                         <div x-data="{ selected: null, openCourierList: false, selectedCourier: null }" class="space-y-4">
 
                             <!-- Закрыть долг компании -->
-                            <div class="flex items-center gap-2">
+                            <div class="flex flex-col sm:flex-row gap-2 w-full">
                                 <input type="radio" id="radio_debt" name="delivery_type" value="debt"
-                                       class="hidden peer/debt" x-model="selected">
+                                       class="hidden peer/debt" x-model="selected" @change="select('debt')">
                                 <label for="radio_debt"
-                                       class="w-48 h-12 flex items-center justify-center border rounded-xl cursor-pointer
-                                               bg-white text-green-700
-                                               peer-checked/debt:bg-emerald-600 peer-checked/debt:text-white
-                                               hover:peer-checked/debt:bg-emerald-700 transition">
+                                       class="w-full sm:w-48 h-12 flex items-center justify-center border rounded-xl cursor-pointer
+                                  bg-white text-green-700
+                                  peer-checked/debt:bg-emerald-600 peer-checked/debt:text-white
+                                  hover:peer-checked/debt:bg-emerald-700 transition">
                                     Закрыть долг компании
                                 </label>
                             </div>
 
                             <!-- Передать курьеру -->
-                            <div class="flex items-center gap-2">
+                            <div class="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+                                <!-- Радио кнопка -->
                                 <input type="radio" id="radio_courier" name="delivery_type" value="courier"
-                                       class="hidden peer/courier" x-model="selected">
+                                       class="hidden peer/courier" x-model="selected" @change="select('courier')">
                                 <label for="radio_courier"
-                                       class="w-48 h-12 flex items-center justify-center border rounded-xl cursor-pointer
-                                               bg-white text-green-700
-                                               peer-checked/courier:bg-emerald-600 peer-checked/courier:text-white
-                                               hover:peer-checked/courier:bg-emerald-700 transition">
+                                       class="w-full sm:w-48 h-12 flex items-center justify-center border rounded-xl cursor-pointer
+                                          bg-white text-green-700
+                                          peer-checked/courier:bg-emerald-600 peer-checked/courier:text-white
+                                          hover:peer-checked/courier:bg-emerald-700 transition">
                                     Передать курьеру
                                 </label>
 
-                                <div class="relative" x-show="selected === 'courier'" x-transition>
+                                <!-- Селектор курьера -->
+                                <div class="relative w-full sm:w-80 mt-2 sm:mt-0" x-show="selected === 'courier'" x-transition>
                                     {% if couriers is empty %}
                                         <a href="javascript:void(0)"
-                                           class="w-80 h-12 flex items-center justify-center border rounded-xl px-4 bg-white text-green-700 border-green-500 cursor-not-allowed">
+                                           class="w-full h-12 flex items-center justify-center border rounded-xl px-4 bg-white text-green-700 border-green-500 cursor-not-allowed">
                                             Курьеры отсутствуют
                                         </a>
                                     {% else %}
                                         <button @click="openCourierList = !openCourierList"
-                                                class="w-80 h-12 flex items-center justify-between border rounded-xl px-4 bg-white text-green-700 border-green-500 hover:bg-green-50 transition">
+                                                class="w-full h-12 flex items-center justify-between border rounded-xl px-4 bg-white text-green-700 border-green-500 hover:bg-green-50 transition">
                                             <template x-if="!selectedCourier">
                                                 <span>Выберите курьера</span>
                                             </template>
@@ -162,7 +169,7 @@
 
                                         <div x-show="openCourierList"
                                              @click.outside="openCourierList = false"
-                                             class="absolute mt-2 w-80 z-50 bg-white border border-green-200 rounded-xl shadow-sm p-2 space-y-1 transition duration-200">
+                                             class="absolute mt-2 w-full sm:w-80 z-50 bg-white border border-green-200 rounded-xl shadow-sm p-2 space-y-1 transition-all duration-300">
                                             {% for courier in couriers %}
                                                 <div @click="selectedCourier = { id: {{ courier.id }}, name: '{{ courier.name }}' }; openCourierList = false"
                                                      class="cursor-pointer px-4 py-2 rounded-md hover:bg-green-50 transition text-sm flex flex-col">

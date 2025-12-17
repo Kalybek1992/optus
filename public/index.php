@@ -39,20 +39,6 @@ try {
     $router = new AppRouter();
     $response_set = $router->route($request);
 
-    //$error_controller = new ErrorController();
-    //$time_from = '23:50'; $time_to = '00:10'; $current_time = date('H:i');
-    //if ($time_from < $time_to) {
-    //    $in_range = ($current_time >= $time_from && $current_time <= $time_to);
-    //} else {
-    //    $in_range = ($current_time >= $time_from || $current_time <= $time_to);
-    //}
-
-    //if ($in_range) {
-    //    $body = $error_controller->timeBlocking($time_from, $time_to);
-    //    $response->setBody($body);
-    //    $response->sendHtmlExit();
-    //}
-
     if (is_array($response_set)) {
         $response->setBody(json_encode($response_set));
         $response->sendExit();

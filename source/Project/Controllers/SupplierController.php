@@ -187,6 +187,8 @@ class SupplierController extends BaseController
             return ApiViewer::getErrorBody(['value' => 'no_manager']);
         }
 
+        $legal = LegalEntitiesLM::getEntitiesInn($get_balance->sender_inn);
+
         $translation_max_id = TransactionsLM::getTranslationMaxId();
         TransactionsLM::insertNewTransactions([
             'id' => $translation_max_id + 1,
@@ -194,6 +196,7 @@ class SupplierController extends BaseController
             'amount' => $amount,
             'date' => $date_obj->format('Y-m-d H:i:s'),
             'description' => 'Отгрузка для менеджера - ' . $manager->username,
+            'from_account_id' => $legal->id,
             'status' => 'processed'
         ]);
 
@@ -725,7 +728,7 @@ class SupplierController extends BaseController
                 'type' => 'internal_transfer',
                 'amount' => $amount,
                 'date' => date('Y-m-d H:i:s'),
-                'description' => 'Закрытие долга компании поставщиком передав курьеру.' . $courier['name'],
+                'description' => 'Закрытие долга компании поставщиком передав курьеру. ' . $courier['name'],
                 'status' => 'processed'
             ]);
 
@@ -847,8 +850,6 @@ class SupplierController extends BaseController
         );
         $page_count = ceil($transactions_count / $limit);
 
-
-        //Logger::log(print_r($transactions_count, true), 'clientReceiptsDate');
 
         return $this->twig->render('Supplier/ClientReceiptsDate.twig', [
             'page' => $page + 1,
@@ -1076,6 +1077,8 @@ class SupplierController extends BaseController
 
         $users = SuppliersLM::getSuppliersUsers($role, $supplier_id, $offset, $limit);
 
+        Logger::log(print_r($users, true), 'supplier');
+
         if (!$users) {
             return $this->twig->render('User/NoClients.twig');
         }
@@ -1108,7 +1111,7 @@ class SupplierController extends BaseController
 
         $transactions_min_date = TransactionsLM::getTransactionsMinDate($legal_id);
 
-        if ($transactions_min_date) {
+        if ($transactions_min_date && $legal->manager_id) {
             $update_end_of_day[] = [
                 'manager_id' => $legal->manager_id,
                 'supplier_id' => $supplier_id,

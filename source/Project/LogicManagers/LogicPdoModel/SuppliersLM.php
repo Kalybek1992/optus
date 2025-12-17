@@ -469,9 +469,8 @@ class SuppliersLM
             $bank_accounts = null;
             $debit_amount_sum = $supplier->debit_amount ?? 0;
 
-            if ($supplier->bank_account ?? false) {
+            if ($supplier->inn ?? false) {
                 $bank_accounts = [
-                    'account' => $supplier->bank_account,
                     'inn' => $supplier->inn,
                     'company_name' => $supplier->company_name,
                     'debit_amount' => $debit_amount_sum,

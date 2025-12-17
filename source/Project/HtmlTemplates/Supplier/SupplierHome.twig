@@ -4,19 +4,24 @@
 
     <div class="max-w-7xl mx-auto p-8 space-y-10">
         <!-- Заголовок -->
-        <div class="text-center">
-            <h1 class="text-3xl font-bold text-gray-800 mb-2">Кабинет поставщика</h1>
-            <p class="text-gray-500 text-sm mb-2">Управляйте своими финансами, компаниями и операциями</p>
+        <div class="text-center px-4">
+            <h1 class="text-xl sm:text-3xl font-bold text-gray-800 mb-1 sm:mb-2">
+                Кабинет поставщика
+            </h1>
+
+            <p class="text-xs sm:text-sm text-gray-500 mb-1 sm:mb-2">
+                Управляйте своими финансами, компаниями и операциями
+            </p>
 
             <!-- Имя поставщика -->
-            <div class="text-lg font-semibold text-gray-700">
+            <div class="text-base sm:text-lg font-semibold text-gray-700">
                 {{ supplier.name }}
             </div>
         </div>
 
         <!-- === Новый блок: Управление поставщиком === -->
-        <div class="bg-white shadow-sm rounded-2xl p-6 border border-gray-100 mt-8">
-            <h2 class="text-2xl font-semibold text-gray-800 mb-6 flex items-center gap-2">
+        <div class="bg-white shadow-sm rounded-2xl p-4 sm:p-6 border border-gray-100 mt-6 sm:mt-8">
+            <h2 class="text-lg sm:text-2xl font-semibold text-gray-800 mb-4 sm:mb-6 flex items-center gap-2">
                 <svg xmlns="http://www.w3.org/2000/svg"
                      viewBox="0 0 24 24"
                      fill="none"
@@ -24,7 +29,7 @@
                      stroke-width="2.25"
                      stroke-linecap="round"
                      stroke-linejoin="round"
-                     class="w-6 h-6 text-emerald-600"
+                     class="w-5 h-5 sm:w-6 sm:h-6 text-emerald-600"
                      aria-hidden="true">
                     <path d="M8.25 18.75a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 0 1-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m3 0h1.125c.621 0 1.129-.504 1.09-1.124a17.902 17.902 0 0 0-3.213-9.193 2.056 2.056 0 0 0-1.58-.86H14.25M16.5 18.75h-2.25m0-11.177v-.958c0-.568-.422-1.048-.987-1.106a48.554 48.554 0 0 0-10.026 0 1.106 1.106 0 0 0-.987 1.106v7.635m12-6.677v6.677m0 4.5v-4.5m0 0h-12" />
                 </svg>
@@ -32,76 +37,109 @@
             </h2>
 
             <!-- Суммы долгов -->
-            <div class="flex flex-wrap justify-center gap-4 mb-6">
-                <a href="/supplier/stockBalanceCommodity" class="flex flex-col items-center  p-4 bg-emerald-50 border border-emerald-200 rounded-xl shadow-sm">
-                    <div class="text-sm text-gray-500">Товарный баланс</div>
-                    <div class="text-lg font-bold text-emerald-600">{{ stock_balance|number_format(0, ',', ' ') }} ₽</div>
-                </a>
-                <div class="flex flex-col items-center p-4 bg-emerald-50 border border-emerald-200 rounded-xl shadow-sm">
-                    <div class="text-sm text-gray-500">Долг транзитный</div>
-                    <div class="text-lg font-bold text-emerald-600">{{ debts.client_services|number_format(0, ',', ' ') }} ₽</div>
-                </div>
-                <div class="flex flex-col items-center p-4 bg-emerald-50 border border-emerald-200 rounded-xl shadow-sm">
-                    <div class="text-sm text-gray-500">Долг перед компанией</div>
-                    <div class="text-lg font-bold text-emerald-600">{{ debts.supplier_goods|number_format(0, ',', ' ') }} ₽</div>
-                </div>
-                <div class="flex flex-col items-center  p-4 bg-emerald-50 border border-emerald-200 rounded-xl shadow-sm">
-                    <div class="text-sm text-gray-500">Долг клиентам</div>
-                    <div class="text-lg font-bold text-emerald-600">{{ debts.client_debt_supplier|number_format(0, ',', ' ') }} ₽</div>
-                </div>
-
-
-                <div class="flex flex-wrap justify-center gap-6" x-data="reportPanel()">
-                    <div class="flex flex-col items-center w-52">
-                        <a href="#"
-                           id="openMovedCashModal"
-                           class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2 px-6 rounded-lg transition-colors duration-200 w-full text-center shadow-sm">
-                            Создать кеш
-                        </a>
-
-                        <select id="movedCashManager" class="select select-sm w-full border border-gray-300 mt-2 pl-1">
-                            <option value="" selected>Не выбран</option>
-                            {% for manager in supplier_users %}
-                                {% if manager.role == 'manager' %}
-                                    <option value="{{ manager.role_id }}">{{ manager.username }}</option>
-                                {% endif %}
-                            {% endfor %}
-                        </select>
+            <div class="flex flex-wrap justify-center gap-3 sm:gap-4 mb-4 sm:mb-6">
+                <a href="/supplier/stockBalanceCommodity"
+                   class="flex flex-col items-center p-3 sm:p-4 bg-emerald-50 border border-emerald-200 rounded-xl shadow-sm">
+                    <div class="text-xs sm:text-sm text-gray-500">Товарный баланс</div>
+                    <div class="text-base sm:text-lg font-bold text-emerald-600">
+                        {{ stock_balance|number_format(0, ',', ' ') }} ₽
                     </div>
+                </a>
+
+                <div class="flex flex-col items-center p-3 sm:p-4 bg-emerald-50 border border-emerald-200 rounded-xl shadow-sm">
+                    <div class="text-xs sm:text-sm text-gray-500">Долг транзитный</div>
+                    <div class="text-base sm:text-lg font-bold text-emerald-600">
+                        {{ debts.client_services|number_format(0, ',', ' ') }} ₽
+                    </div>
+                </div>
+
+                <div class="flex flex-col items-center p-3 sm:p-4 bg-emerald-50 border border-emerald-200 rounded-xl shadow-sm">
+                    <div class="text-xs sm:text-sm text-gray-500">Долг перед компанией</div>
+                    <div class="text-base sm:text-lg font-bold text-emerald-600">
+                        {{ debts.supplier_goods|number_format(0, ',', ' ') }} ₽
+                    </div>
+                </div>
+
+                <div class="flex flex-col items-center p-3 sm:p-4 bg-emerald-50 border border-emerald-200 rounded-xl shadow-sm">
+                    <div class="text-xs sm:text-sm text-gray-500">Долг клиентам</div>
+                    <div class="text-base sm:text-lg font-bold text-emerald-600">
+                        {{ debts.client_debt_supplier|number_format(0, ',', ' ') }} ₽
+                    </div>
+                </div>
+            </div>
+
+            <!-- Кеш -->
+            <div class="flex flex-wrap justify-center gap-4 sm:gap-6" x-data="reportPanel()">
+                <div class="flex flex-col items-center w-full sm:w-52">
+                    <a href="#"
+                       id="openMovedCashModal"
+                       class="bg-emerald-600 hover:bg-emerald-700 text-white text-sm sm:text-base font-semibold py-2 px-4 sm:px-6 rounded-lg transition-colors duration-200 w-full text-center shadow-sm">
+                        Создать кеш
+                    </a>
+
+                    <select id="movedCashManager"
+                            class="select select-sm w-full border border-gray-300 mt-2 pl-1 text-sm">
+                        <option value="" selected>Не выбран</option>
+                        {% for manager in supplier_users %}
+                            {% if manager.role == 'manager' %}
+                                <option value="{{ manager.role_id }}">{{ manager.username }}</option>
+                            {% endif %}
+                        {% endfor %}
+                    </select>
                 </div>
             </div>
         </div>
 
         <!-- Раздел: Транзит (Клиентские услуги) -->
         {% if no_managers is not empty %}
-            <div class="bg-white shadow-sm rounded-2xl p-4 sm:p-6 border border-gray-100 mt-8">
-                <h2 class="text-xl sm:text-2xl font-semibold text-gray-800 mb-4 sm:mb-6">
-                    Транзит <span class="text-gray-500 text-base sm:text-lg">(клиентские услуги)</span>
+            <div class="bg-white shadow-sm rounded-2xl p-4 sm:p-6 border border-gray-100 mt-6 sm:mt-8">
+                <h2 class="text-lg sm:text-2xl font-semibold text-gray-800 mb-4 sm:mb-6">
+                    Транзит
+                    <span class="block sm:inline text-sm sm:text-lg text-gray-500">
+                (клиентские услуги)
+            </span>
                 </h2>
 
                 <div class="overflow-x-auto">
                     <table class="min-w-full text-xs sm:text-sm text-left border-t border-gray-200 table-auto">
-                        <thead class="bg-gray-50 text-gray-700">
-                            <tr class="border-b">
-                                <th class="py-2 px-2 sm:px-4 font-medium">Дата</th>
-                                <th class="py-2 px-2 sm:px-4 font-medium">Компания</th>
-                                <th class="py-2 px-2 sm:px-4 font-medium w-72 sm:w-80 break-words">Назначение</th>
-                                <th class="py-2 px-2 sm:px-4 font-medium w-28 sm:w-36 text-right hidden sm:table-cell">Сумма (₽)</th>
-                                <th class="py-2 px-2 sm:px-4 font-medium w-40 sm:w-48 hidden sm:table-cell">Менеджер</th>
-                            </tr>
+                        <thead class="bg-gray-50 text-gray-700 hidden sm:table-header-group">
+                        <tr class="border-b">
+                            <th class="py-2 px-4 font-medium">Дата</th>
+                            <th class="py-2 px-4 font-medium">Компания</th>
+                            <th class="py-2 px-4 font-medium w-80 break-words">Назначение</th>
+                            <th class="py-2 px-4 font-medium w-36 text-right">Сумма (₽)</th>
+                            <th class="py-2 px-4 font-medium w-48">Менеджер</th>
+                        </tr>
                         </thead>
 
                         <tbody class="text-gray-700">
                         {% for item in no_managers %}
-                            <tr class="hover:bg-gray-50 transition align-top flex flex-col sm:table-row mb-2 sm:mb-0">
-                                <td class="py-2 px-2 sm:px-4">{{ item.date|date('d.m.Y') }}</td>
-                                <td class="py-2 px-2 sm:px-4">{{ item.company_name }}</td>
-                                <td class="py-2 px-2 sm:px-4 w-72 sm:w-80 break-words">{{ item.description }}</td>
-                                <td class="py-2 px-2 sm:px-4 font-semibold text-green-600 text-right sm:text-right">
+                            <tr class="border border-gray-200 rounded-xl mb-3 sm:mb-0 sm:border-0 hover:bg-gray-50 transition flex flex-col sm:table-row align-top">
+
+                                <td class="py-2 px-3 sm:px-4">
+                                    <span class="sm:hidden text-gray-400 text-xs block">Дата</span>
+                                    {{ item.date|date('d.m.Y') }}
+                                </td>
+
+                                <td class="py-2 px-3 sm:px-4">
+                                    <span class="sm:hidden text-gray-400 text-xs block">Компания</span>
+                                    {{ item.company_name }}
+                                </td>
+
+                                <td class="py-2 px-3 sm:px-4 break-words">
+                                    <span class="sm:hidden text-gray-400 text-xs block">Назначение</span>
+                                    {{ item.description }}
+                                </td>
+
+                                <td class="py-2 px-3 sm:px-4 font-semibold text-green-600 sm:text-right">
+                                    <span class="sm:hidden text-gray-400 text-xs block">Сумма</span>
                                     {{ item.amount|number_format(0, ',', ' ') }} ₽
                                 </td>
-                                <td class="py-2 px-2 sm:px-4">
-                                    <select class="select select-sm w-full border border-gray-300 pl-1" data-legal-id="{{ item.id }}">
+
+                                <td class="py-2 px-3 sm:px-4">
+                                    <span class="sm:hidden text-gray-400 text-xs block mb-1">Менеджер</span>
+                                    <select class="select select-sm w-full border border-gray-300 pl-1"
+                                            data-legal-id="{{ item.id }}">
                                         <option value="" selected>Не выбран</option>
                                         {% for user in supplier_users %}
                                             <option value="{{ user.role_id }}|{{ user.role }}">
@@ -110,6 +148,7 @@
                                         {% endfor %}
                                     </select>
                                 </td>
+
                             </tr>
                         {% endfor %}
                         </tbody>
@@ -196,19 +235,18 @@
 
                                         <!-- Кнопки -->
                                         <div class="flex flex-col sm:flex-row gap-4 pt-2">
-                                            <button
-                                                    class="btn btn-sm flex-1 bg-green-600 hover:bg-green-700 text-white border-none mx-2"
+                                            <button class="btn btn-sm flex-1 bg-green-600 hover:bg-green-700 text-white border-none mx-2 py-3 sm:py-1"
                                                     data-distribute-id="{{ bc.id }}"
                                                     data-distribute-sender-id="{{ bc.sender_legal_id }}"
                                                     data-company="{{ company.company_name }}"
                                                     data-bank="{{ company.bank_name }}"
                                                     data-inn="{{ company.inn }}"
-                                                    data-balance="{{ bc.balance}}"
+                                                    data-balance="{{ bc.balance }}"
                                             >
                                                 Создать отгрузку
                                             </button>
-                                            <button
-                                                    class="btn btn-sm flex-1 bg-green-100 hover:bg-green-200 text-green-700 border-none mx-2"
+
+                                            <button class="btn btn-sm flex-1 bg-green-100 hover:bg-green-200 text-green-700 border-none mx-2 py-3 sm:py-1"
                                                     data-return-id="{{ bc.id }}"
                                                     data-distribute-sender-id="{{ bc.sender_legal_id }}"
                                                     data-bank="{{ company.bank_name }}"

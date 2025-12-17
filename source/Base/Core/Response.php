@@ -90,7 +90,7 @@ class Response implements ResponseInterface
     }
 
 
-    public function sendHtmlExit(int $statusCode = 200): void
+    #[NoReturn] public function sendHtmlExit(int $statusCode = 200): void
     {
         $this->setHeader('Content-Type', 'text/html; charset=UTF-8')
             ->setStatusCode($statusCode)

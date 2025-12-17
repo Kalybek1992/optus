@@ -33,33 +33,45 @@
                     Транзит <span class="text-gray-500 text-base sm:text-lg">(клиентские услуги)</span>
                 </h2>
 
-                <!-- Заголовок темы таблицы -->
+                <!-- Заголовок -->
                 <div class="text-center text-sm font-semibold text-gray-700">
                     Клиентские услуги {{ date ?? '--.--.----' }}
                     <div class="mx-auto w-1/2 border-t border-gray-300 mt-7 mb-7"></div>
                 </div>
 
-
                 <div class="overflow-x-auto">
                     <table class="min-w-full text-xs sm:text-sm text-left border-t border-gray-200 table-auto">
-                        <thead class="bg-gray-50 text-gray-700">
+                        <thead class="bg-gray-50 text-gray-700 hidden sm:table-header-group">
                         <tr class="border-b">
-                            <th class="py-2 px-2 sm:px-4 font-medium">Дата</th>
-                            <th class="py-2 px-2 sm:px-4 font-medium">Компания</th>
-                            <th class="py-2 px-2 sm:px-4 font-medium w-72 sm:w-80 break-words">Назначение</th>
-                            <th class="py-2 px-2 sm:px-4 font-medium w-28 sm:w-36 text-right hidden sm:table-cell">Сумма
-                                (₽)
-                            </th>
+                            <th class="py-2 px-4 font-medium">Дата</th>
+                            <th class="py-2 px-4 font-medium">Компания</th>
+                            <th class="py-2 px-4 font-medium w-80 break-words">Назначение</th>
+                            <th class="py-2 px-4 font-medium w-36 text-right">Сумма (₽)</th>
                         </tr>
                         </thead>
 
                         <tbody class="text-gray-700">
                         {% for item in transactions %}
-                            <tr class="hover:bg-gray-50 transition align-top flex flex-col sm:table-row mb-2 sm:mb-0">
-                                <td class="py-2 px-2 sm:px-4">{{ item.date|date('d.m.Y') }}</td>
-                                <td class="py-2 px-2 sm:px-4">{{ item.sender_company_name }}</td>
-                                <td class="py-2 px-2 sm:px-4 w-72 sm:w-80 break-words">{{ item.description }}</td>
-                                <td class="py-2 px-2 sm:px-4 font-semibold text-green-600 text-right sm:text-right">
+                            <tr class="border-b last:border-b-0 sm:border-b hover:bg-gray-50 transition
+                               flex flex-col sm:table-row gap-1 sm:gap-0 p-3 sm:p-0">
+
+                                <td class="py-1 sm:py-2 sm:px-4">
+                                    <span class="sm:hidden text-gray-400 text-xs">Дата</span>
+                                    {{ item.date|date('d.m.Y') }}
+                                </td>
+
+                                <td class="py-1 sm:py-2 sm:px-4">
+                                    <span class="sm:hidden text-gray-400 text-xs">Компания</span>
+                                    {{ item.sender_company_name }}
+                                </td>
+
+                                <td class="py-1 sm:py-2 sm:px-4 break-words">
+                                    <span class="sm:hidden text-gray-400 text-xs">Назначение</span>
+                                    {{ item.description }}
+                                </td>
+
+                                <td class="py-1 sm:py-2 sm:px-4 font-semibold text-green-600 sm:text-right">
+                                    <span class="sm:hidden text-gray-400 text-xs">Сумма</span>
                                     {{ item.transaction_amount|number_format(0, ',', ' ') }} ₽
                                 </td>
                             </tr>
@@ -67,37 +79,41 @@
                         </tbody>
                     </table>
 
-                    <!-- Продолжение таблицы: персиковый блок с итогами -->
-                    <div class="bg-[#FFE5B4] border border-amber-200 border-t-0 rounded-b-2xl shadow-sm p-6 -mt-1">
-                        <div class="space-y-3">
-                            <div class="flex justify-between items-center border-b border-amber-300 pb-2">
-                                <span class="text-gray-800 font-medium">Сумма всего Б/Н, которое зашло в этот день</span>
-                                <span class="text-gray-900 font-semibold">{{ today_report.customer_service_manager }} ₽</span>
+                    <!-- ИТОГИ -->
+                    <div class="bg-[#FFE5B4] border border-amber-200 rounded-2xl shadow-sm p-4 sm:p-6 mt-4">
+                        <div class="space-y-3 text-sm sm:text-base">
+                            <div class="flex justify-between border-b border-amber-300 pb-2">
+                                <span>Сумма всего Б/Н за день</span>
+                                <span class="font-semibold">{{ today_report.customer_service_manager }} ₽</span>
                             </div>
 
-                            <div class="flex justify-between items-center border-b border-amber-300 pb-2">
-                                <span class="text-gray-800 font-medium">Долг в Б/Н переходящий (с прошлого дня)</span>
-                                <span class="text-gray-900 font-semibold">{{ today_report.debt_client_services }} ₽</span>
+                            <div class="flex justify-between border-b border-amber-300 pb-2">
+                                <span>Долг с прошлого дня</span>
+                                <span class="font-semibold">{{ today_report.debt_client_services }} ₽</span>
                             </div>
 
-                            <div class="flex justify-between items-center border-b border-amber-300 pb-2">
-                                <span class="text-gray-800 font-medium">Были возвраты со счёта компании</span>
-                                <span class="text-gray-900 font-semibold">{{ today_report.shipping_return_sum }} ₽</span>
+                            <div class="flex justify-between border-b border-amber-300 pb-2">
+                                <span>Возвраты</span>
+                                <span class="font-semibold">{{ today_report.shipping_return_sum }} ₽</span>
                             </div>
 
-                            <div class="flex justify-between items-center border-b border-amber-300 pb-2">
-                                <span class="text-gray-800 font-medium">Остаток транзитных денег после всех вычетов</span>
-                                <span class="text-red-600 font-semibold">{{ today_report.transit_balance_after_deductions }} ₽</span>
+                            <div class="flex justify-between border-b border-amber-300 pb-2">
+                                <span>Остаток после вычетов</span>
+                                <span class="font-semibold text-red-600">
+                            {{ today_report.transit_balance_after_deductions }} ₽
+                        </span>
                             </div>
 
-                            <div class="flex justify-between items-center border-b border-amber-300 pb-2">
-                                <span class="text-gray-800 font-medium">Комиссия за услугу</span>
-                                <span class="text-gray-900 font-semibold">{{ today_report.transactions_percents }}</span>
+                            <div class="flex justify-between border-b border-amber-300 pb-2">
+                                <span>Комиссия</span>
+                                <span class="font-semibold">{{ today_report.transactions_percents }}</span>
                             </div>
 
-                            <div class="flex justify-between items-center">
-                                <span class="text-gray-800 font-medium">Сумма к отгрузке (с учётом комиссии)</span>
-                                <span class="text-red-600 font-semibold">{{ today_report.net_shipment_amount }} ₽</span>
+                            <div class="flex justify-between">
+                                <span>Сумма к отгрузке</span>
+                                <span class="font-semibold text-red-600">
+                            {{ today_report.net_shipment_amount }} ₽
+                        </span>
                             </div>
                         </div>
                     </div>
@@ -105,54 +121,56 @@
             </div>
         {% else %}
             <div class="bg-white shadow-sm rounded-2xl p-4 sm:p-6 border border-gray-100 mt-8">
-                <h2 class="text-xl sm:text-2xl font-semibold text-gray-800 mb-4 sm:mb-6">
-                    Транзит <span class="text-gray-500 text-base sm:text-lg">(клиентские услуги)</span>
+                <h2 class="text-xl sm:text-2xl font-semibold text-gray-800 mb-4">
+                    Транзит <span class="text-gray-500 text-base">(клиентские услуги)</span>
                 </h2>
 
-                <!-- Заголовок темы таблицы -->
                 <div class="text-center text-sm font-semibold text-gray-700">
                     Клиентские услуги {{ date ?? '--.--.----' }}
                     <div class="mx-auto w-1/2 border-t border-gray-300 mt-7 mb-7"></div>
                 </div>
 
-                <div class="overflow-x-auto">
-                    <!-- Продолжение таблицы: персиковый блок с итогами -->
-                    <div class="bg-[#FFE5B4] border border-amber-200 border-t-0 rounded-b-2xl shadow-sm p-6 -mt-1">
-                        <div class="space-y-3">
-                            <div class="flex justify-between items-center border-b border-amber-300 pb-2">
-                                <span class="text-gray-800 font-medium">Сумма всего Б/Н, которое зашло в этот день</span>
-                                <span class="text-gray-900 font-semibold">{{ today_report.customer_service_manager }} ₽</span>
-                            </div>
+                <!-- ИТОГИ БЕЗ ТАБЛИЦЫ -->
+                <div class="bg-[#FFE5B4] border border-amber-200 rounded-2xl shadow-sm p-4 sm:p-6">
+                    <div class="space-y-3 text-sm sm:text-base">
+                        <div class="flex justify-between border-b border-amber-300 pb-2">
+                            <span>Сумма всего Б/Н за день</span>
+                            <span class="font-semibold">{{ today_report.customer_service_manager }} ₽</span>
+                        </div>
 
-                            <div class="flex justify-between items-center border-b border-amber-300 pb-2">
-                                <span class="text-gray-800 font-medium">Долг в Б/Н переходящий (с прошлого дня)</span>
-                                <span class="text-gray-900 font-semibold">{{ today_report.debt_client_services }} ₽</span>
-                            </div>
+                        <div class="flex justify-between border-b border-amber-300 pb-2">
+                            <span>Долг с прошлого дня</span>
+                            <span class="font-semibold">{{ today_report.debt_client_services }} ₽</span>
+                        </div>
 
-                            <div class="flex justify-between items-center border-b border-amber-300 pb-2">
-                                <span class="text-gray-800 font-medium">Были возвраты со счёта компании</span>
-                                <span class="text-gray-900 font-semibold">{{ today_report.shipping_return_sum }} ₽</span>
-                            </div>
+                        <div class="flex justify-between border-b border-amber-300 pb-2">
+                            <span>Возвраты</span>
+                            <span class="font-semibold">{{ today_report.shipping_return_sum }} ₽</span>
+                        </div>
 
-                            <div class="flex justify-between items-center border-b border-amber-300 pb-2">
-                                <span class="text-gray-800 font-medium">Остаток транзитных денег после всех вычетов</span>
-                                <span class="text-red-600 font-semibold">{{ today_report.transit_balance_after_deductions }} ₽</span>
-                            </div>
+                        <div class="flex justify-between border-b border-amber-300 pb-2">
+                            <span>Остаток после вычетов</span>
+                            <span class="font-semibold text-red-600">
+                        {{ today_report.transit_balance_after_deductions }} ₽
+                    </span>
+                        </div>
 
-                            <div class="flex justify-between items-center border-b border-amber-300 pb-2">
-                                <span class="text-gray-800 font-medium">Комиссия за услугу</span>
-                                <span class="text-gray-900 font-semibold">{{ today_report.transactions_percents }}</span>
-                            </div>
+                        <div class="flex justify-between border-b border-amber-300 pb-2">
+                            <span>Комиссия</span>
+                            <span class="font-semibold">{{ today_report.transactions_percents }}</span>
+                        </div>
 
-                            <div class="flex justify-between items-center">
-                                <span class="text-gray-800 font-medium">Сумма к отгрузке (с учётом комиссии)</span>
-                                <span class="text-red-600 font-semibold">{{ today_report.net_shipment_amount }} ₽</span>
-                            </div>
+                        <div class="flex justify-between">
+                            <span>Сумма к отгрузке</span>
+                            <span class="font-semibold text-red-600">
+                        {{ today_report.net_shipment_amount }} ₽
+                    </span>
                         </div>
                     </div>
                 </div>
             </div>
         {% endif %}
+
 
         <!-- Раздел: Отгрузка товара на менеджера -->
         {% if manager_finances is not empty %}
@@ -161,7 +179,6 @@
                     Отгрузка товара на менеджера
                 </h2>
 
-                <!-- Заголовок темы таблицы -->
                 <div class="text-center text-sm font-semibold text-gray-700">
                     Отгрузка товара менеджеру {{ date ?? '--.--.----' }}
                     <div class="mx-auto w-1/2 border-t border-gray-300 mt-7 mb-7"></div>
@@ -169,56 +186,72 @@
 
                 <div class="overflow-x-auto">
                     <table class="min-w-full text-xs sm:text-sm text-left border-t border-gray-200 table-auto">
-                        <thead class="bg-gray-50 text-gray-700">
+                        <thead class="bg-gray-50 text-gray-700 hidden sm:table-header-group">
                         <tr class="border-b">
-                            <th class="py-2 px-2 sm:px-4 font-medium">Дата отгрузки</th>
-                            <th class="py-2 px-2 sm:px-4 font-medium">Компания</th>
-                            <th class="py-2 px-2 sm:px-4 font-medium w-72 sm:w-80 break-words">Комментарии</th>
-                            <th class="py-2 px-2 sm:px-4 font-medium w-28 sm:w-36 text-right hidden sm:table-cell">Сумма
-                                (₽)
-                            </th>
+                            <th class="py-2 px-4 font-medium">Дата отгрузки</th>
+                            <th class="py-2 px-4 font-medium">Компания</th>
+                            <th class="py-2 px-4 font-medium w-80 break-words">Комментарии</th>
+                            <th class="py-2 px-4 font-medium w-36 text-right">Сумма (₽)</th>
                         </tr>
                         </thead>
 
                         <tbody class="text-gray-700">
                         {% for item in manager_finances %}
-                            <tr class="hover:bg-gray-50 transition align-top flex flex-col sm:table-row mb-2 sm:mb-0">
-                                <td class="py-2 px-2 sm:px-4">{{ item.date|date('d.m.Y') }}</td>
-                                <td class="py-2 px-2 sm:px-4">{{ item.company_name ?? 'Неизвестно' }}</td>
-                                <td class="py-2 px-2 sm:px-4 w-72 sm:w-80 break-words">{{ item.comments }}</td>
-                                <td class="py-2 px-2 sm:px-4 font-semibold text-green-600 text-right sm:text-right">
+                            <tr class="border-b last:border-b-0 hover:bg-gray-50 transition
+                               flex flex-col sm:table-row gap-1 sm:gap-0 p-3 sm:p-0">
+
+                                <td class="py-1 sm:py-2 sm:px-4">
+                                    <span class="sm:hidden text-gray-400 text-xs">Дата</span>
+                                    {{ item.date|date('d.m.Y') }}
+                                </td>
+
+                                <td class="py-1 sm:py-2 sm:px-4">
+                                    <span class="sm:hidden text-gray-400 text-xs">Компания</span>
+                                    {{ item.company_name ?? 'Неизвестно' }}
+                                </td>
+
+                                <td class="py-1 sm:py-2 sm:px-4 break-words">
+                                    <span class="sm:hidden text-gray-400 text-xs">Комментарий</span>
+                                    {{ item.comments }}
+                                </td>
+
+                                <td class="py-1 sm:py-2 sm:px-4 font-semibold text-green-600 sm:text-right">
+                                    <span class="sm:hidden text-gray-400 text-xs">Сумма</span>
                                     {{ item.amount|number_format(0, ',', ' ') }} ₽
                                 </td>
                             </tr>
                         {% endfor %}
                         </tbody>
                     </table>
-                    <!-- Продолжение таблицы: дополнительный персиковый блок -->
-                    <div class="bg-[#FFE5B4] border border-amber-200 border-t-0 rounded-b-2xl shadow-sm p-6 -mt-1">
-                        <div class="space-y-3">
-                            <div class="flex justify-between items-center border-b border-amber-300 pb-2">
-                                <span class="text-gray-800 font-medium">Сумма отгрузки</span>
-                                <span class="text-gray-900 font-semibold">{{ today_report.shipping_manager_sum }} ₽</span>
+
+                    <!-- ИТОГИ -->
+                    <div class="bg-[#FFE5B4] border border-amber-200 rounded-2xl shadow-sm p-4 sm:p-6 mt-4">
+                        <div class="space-y-3 text-sm sm:text-base">
+                            <div class="flex justify-between border-b border-amber-300 pb-2">
+                                <span>Сумма отгрузки</span>
+                                <span class="font-semibold">{{ today_report.shipping_manager_sum }} ₽</span>
                             </div>
 
-                            <div class="flex justify-between items-center border-b border-amber-300 pb-2">
-                                <span class="text-gray-800 font-medium">Возврат (комментарий: выбор склада, на который вернули)</span>
-                                <span class="text-gray-900 font-semibold">{{ today_report.return_to_warehouse }} ₽</span>
+                            <div class="flex justify-between border-b border-amber-300 pb-2">
+                                <span>Возврат</span>
+                                <span class="font-semibold">{{ today_report.return_to_warehouse }} ₽</span>
                             </div>
 
-                            <div class="flex justify-between items-center border-b border-amber-300 pb-2">
-                                <span class="text-gray-800 font-medium">Долг по отгрузке за прошлый день (№3 сценарий)</span>
-                                <span class="text-gray-900 font-semibold">{{ today_report.scenario_3 }} ₽</span>
+                            <div class="flex justify-between border-b border-amber-300 pb-2">
+                                <span>Долг за прошлый день</span>
+                                <span class="font-semibold">{{ today_report.scenario_3 }} ₽</span>
                             </div>
 
-                            <div class="flex justify-between items-center border-b border-amber-300 pb-2">
-                                <span class="text-gray-800 font-medium">Наш долг перед менеджером в Б/Н</span>
-                                <span class="text-red-600 font-semibold">{{ today_report.noncash_manager_debt }} ₽</span>
+                            <div class="flex justify-between border-b border-amber-300 pb-2">
+                                <span>Наш долг перед менеджером</span>
+                                <span class="font-semibold text-red-600">
+                            {{ today_report.noncash_manager_debt }} ₽
+                        </span>
                             </div>
 
-                            <div class="flex justify-between items-center">
-                                <span class="text-gray-800 font-medium">Менеджер отгрузил товар в долг</span>
-                                <span class="text-gray-900 font-semibold">{{ today_report.debt_goods_shipped }} ₽</span>
+                            <div class="flex justify-between">
+                                <span>Товар отгружен в долг</span>
+                                <span class="font-semibold">{{ today_report.debt_goods_shipped }} ₽</span>
                             </div>
                         </div>
                     </div>
@@ -226,49 +259,49 @@
             </div>
         {% else %}
             <div class="bg-white shadow-sm rounded-2xl p-4 sm:p-6 border border-gray-100 mt-8">
-                <h2 class="text-xl sm:text-2xl font-semibold text-gray-800 mb-4 sm:mb-6">
+                <h2 class="text-xl sm:text-2xl font-semibold text-gray-800 mb-4">
                     Отгрузка товара на менеджера
                 </h2>
 
-                <!-- Заголовок темы таблицы -->
                 <div class="text-center text-sm font-semibold text-gray-700">
                     Отгрузка товара менеджеру {{ date ?? '--.--.----' }}
                     <div class="mx-auto w-1/2 border-t border-gray-300 mt-7 mb-7"></div>
                 </div>
 
-                <div class="overflow-x-auto">
-                    <!-- Продолжение таблицы: дополнительный персиковый блок -->
-                    <div class="bg-[#FFE5B4] border border-amber-200 border-t-0 rounded-b-2xl shadow-sm p-6 -mt-1">
-                        <div class="space-y-3">
-                            <div class="flex justify-between items-center border-b border-amber-300 pb-2">
-                                <span class="text-gray-800 font-medium">Сумма отгрузки</span>
-                                <span class="text-gray-900 font-semibold">{{ today_report.shipping_manager_sum }} ₽</span>
-                            </div>
+                <!-- ИТОГИ БЕЗ ТАБЛИЦЫ -->
+                <div class="bg-[#FFE5B4] border border-amber-200 rounded-2xl shadow-sm p-4 sm:p-6">
+                    <div class="space-y-3 text-sm sm:text-base">
+                        <div class="flex justify-between border-b border-amber-300 pb-2">
+                            <span>Сумма отгрузки</span>
+                            <span class="font-semibold">{{ today_report.shipping_manager_sum }} ₽</span>
+                        </div>
 
-                            <div class="flex justify-between items-center border-b border-amber-300 pb-2">
-                                <span class="text-gray-800 font-medium">Возврат (комментарий: выбор склада, на который вернули)</span>
-                                <span class="text-gray-900 font-semibold">{{ today_report.return_to_warehouse }} ₽</span>
-                            </div>
+                        <div class="flex justify-between border-b border-amber-300 pb-2">
+                            <span>Возврат</span>
+                            <span class="font-semibold">{{ today_report.return_to_warehouse }} ₽</span>
+                        </div>
 
-                            <div class="flex justify-between items-center border-b border-amber-300 pb-2">
-                                <span class="text-gray-800 font-medium">Долг по отгрузке за прошлый день (№3 сценарий)</span>
-                                <span class="text-gray-900 font-semibold">{{ today_report.scenario_3 }}</span>
-                            </div>
+                        <div class="flex justify-between border-b border-amber-300 pb-2">
+                            <span>Долг за прошлый день</span>
+                            <span class="font-semibold">{{ today_report.scenario_3 }} ₽</span>
+                        </div>
 
-                            <div class="flex justify-between items-center border-b border-amber-300 pb-2">
-                                <span class="text-gray-800 font-medium">Наш долг перед менеджером в Б/Н</span>
-                                <span class="text-red-600 font-semibold">{{ today_report.noncash_manager_debt }} ₽</span>
-                            </div>
+                        <div class="flex justify-between border-b border-amber-300 pb-2">
+                            <span>Наш долг перед менеджером</span>
+                            <span class="font-semibold text-red-600">
+                        {{ today_report.noncash_manager_debt }} ₽
+                    </span>
+                        </div>
 
-                            <div class="flex justify-between items-center">
-                                <span class="text-gray-800 font-medium">Менеджер отгрузил товар в долг</span>
-                                <span class="text-gray-900 font-semibold">{{ today_report.debt_goods_shipped }} ₽</span>
-                            </div>
+                        <div class="flex justify-between">
+                            <span>Товар отгружен в долг</span>
+                            <span class="font-semibold">{{ today_report.debt_goods_shipped }} ₽</span>
                         </div>
                     </div>
                 </div>
             </div>
         {% endif %}
+
 
         <!-- Раздел: Отчет о кэше -->
         {% if manager_finances_cash is not empty %}
@@ -277,7 +310,6 @@
                     Отгрузка кеша
                 </h2>
 
-                <!-- Заголовок темы таблицы -->
                 <div class="text-center text-sm font-semibold text-gray-700">
                     Отгрузка кеша менеджеру {{ date ?? '--.--.----' }}
                     <div class="mx-auto w-1/2 border-t border-gray-300 mt-7 mb-7"></div>
@@ -285,77 +317,119 @@
 
                 <div class="overflow-x-auto">
                     <table class="min-w-full text-xs sm:text-sm text-left border-t border-gray-200 table-auto">
-                        <thead class="bg-gray-50 text-gray-700">
+                        <thead class="bg-gray-50 text-gray-700 hidden sm:table-header-group">
                         <tr class="border-b">
-                            <th class="py-2 px-2 sm:px-4 font-medium">Дата отгрузки</th>
-                            <th class="py-2 px-2 sm:px-4 font-medium">Компания</th>
-                            <th class="py-2 px-2 sm:px-4 font-medium w-72 sm:w-80 break-words">Комментарии</th>
-                            <th class="py-2 px-2 sm:px-4 font-medium w-28 sm:w-36 text-right hidden sm:table-cell">Сумма
-                                (₽)
-                            </th>
+                            <th class="py-2 px-4 font-medium">Дата отгрузки</th>
+                            <th class="py-2 px-4 font-medium">Компания</th>
+                            <th class="py-2 px-4 font-medium w-80 break-words">Комментарии</th>
+                            <th class="py-2 px-4 font-medium w-36 text-right">Сумма (₽)</th>
                         </tr>
                         </thead>
 
                         <tbody class="text-gray-700">
                         {% for item in manager_finances_cash %}
-                            <tr class="hover:bg-gray-50 transition align-top flex flex-col sm:table-row mb-2 sm:mb-0">
-                                <td class="py-2 px-2 sm:px-4">{{ item.date|date('d.m.Y') }}</td>
-                                <td class="py-2 px-2 sm:px-4">{{ item.company_name ?? 'Неизвестно' }}</td>
-                                <td class="py-2 px-2 sm:px-4 w-72 sm:w-80 break-words">{{ item.comments }}</td>
-                                <td class="py-2 px-2 sm:px-4 font-semibold text-green-600 text-right sm:text-right">
+                            <tr class="border-b last:border-b-0 hover:bg-gray-50 transition
+                               flex flex-col sm:table-row gap-1 sm:gap-0 p-3 sm:p-0">
+
+                                <td class="py-1 sm:py-2 sm:px-4">
+                                    <span class="sm:hidden text-gray-400 text-xs">Дата</span>
+                                    {{ item.date|date('d.m.Y') }}
+                                </td>
+
+                                <td class="py-1 sm:py-2 sm:px-4">
+                                    <span class="sm:hidden text-gray-400 text-xs">Компания</span>
+                                    {{ item.company_name ?? 'Неизвестно' }}
+                                </td>
+
+                                <td class="py-1 sm:py-2 sm:px-4 break-words">
+                                    <span class="sm:hidden text-gray-400 text-xs">Комментарий</span>
+                                    {{ item.comments }}
+                                </td>
+
+                                <td class="py-1 sm:py-2 sm:px-4 font-semibold text-green-600 sm:text-right">
+                                    <span class="sm:hidden text-gray-400 text-xs">Сумма</span>
                                     {{ item.amount|number_format(0, ',', ' ') }} ₽
                                 </td>
                             </tr>
                         {% endfor %}
                         </tbody>
                     </table>
-                    <div class="bg-[#FFE5B4] border border-amber-200 border-t-0 rounded-b-2xl shadow-sm p-6 -mt-1">
-                        <div class="flex justify-between items-center">
+
+                    <!-- ИТОГО -->
+                    <div class="bg-[#FFE5B4] border border-amber-200 rounded-2xl shadow-sm p-4 sm:p-6 mt-4">
+                        <div class="flex justify-between items-center text-sm sm:text-base">
                             <span class="text-gray-800 font-medium">Всего выдано кэш</span>
-                            <span class="text-gray-900 font-semibold">{{ today_report.total_cash_issued }} ₽</span>
+                            <span class="text-gray-900 font-semibold">
+                        {{ today_report.total_cash_issued }} ₽
+                    </span>
                         </div>
                     </div>
                 </div>
             </div>
         {% else %}
             <div class="bg-white shadow-sm rounded-2xl p-4 sm:p-6 border border-gray-100 mt-8">
-                <h2 class="text-xl sm:text-2xl font-semibold text-gray-800 mb-4 sm:mb-6">
+                <h2 class="text-xl sm:text-2xl font-semibold text-gray-800 mb-4">
                     Отгрузка кеша
                 </h2>
 
-                <!-- Заголовок темы таблицы -->
                 <div class="text-center text-sm font-semibold text-gray-700">
                     Отгрузка кеша менеджеру {{ date ?? '--.--.----' }}
                     <div class="mx-auto w-1/2 border-t border-gray-300 mt-7 mb-7"></div>
                 </div>
 
-                <div class="overflow-x-auto">
-                    <div class="bg-[#FFE5B4] border border-amber-200 border-t-0 rounded-b-2xl shadow-sm p-6 -mt-1">
-                        <div class="flex justify-between items-center">
-                            <span class="text-gray-800 font-medium">Всего выдано кэш</span>
-                            <span class="text-gray-900 font-semibold">{{ today_report.total_cash_issued }} ₽</span>
-                        </div>
+                <!-- ИТОГО БЕЗ ТАБЛИЦЫ -->
+                <div class="bg-[#FFE5B4] border border-amber-200 rounded-2xl shadow-sm p-4 sm:p-6">
+                    <div class="flex justify-between items-center text-sm sm:text-base">
+                        <span class="text-gray-800 font-medium">Всего выдано кэш</span>
+                        <span class="text-gray-900 font-semibold">
+                    {{ today_report.total_cash_issued }} ₽
+                </span>
                     </div>
                 </div>
             </div>
-
         {% endif %}
 
+
         <div class="shadow-sm rounded-2xl overflow-hidden border border-gray-200">
+
             {% set keys = today_report.scenario|keys %}
             {% set last_key = keys|last %}
 
-            <!-- Верхняя строка: тема, желтая, тонкий текст -->
-            <div class="bg-yellow-300 text-gray-800 px-6 py-4">
+            <!-- Заголовок сценария -->
+            <div class="bg-yellow-300 text-gray-800
+                px-4 sm:px-6
+                py-3 sm:py-4
+                text-xs sm:text-sm
+                font-medium">
                 №{{ today_report.scenario.scenario }} СЦЕНАРИЙ — {{ today_report.scenario.topic }}
             </div>
 
             <div class="space-y-1">
                 {% for key, value in today_report.scenario %}
                     {% if key != 'scenario' and key != 'topic' %}
-                        <div class="{% if key == last_key %}bg-blue-500 text-white{% else %}bg-blue-100 text-gray-800{% endif %} flex justify-between px-6 py-2">
-                            <span class="">{{ key|capitalize }}</span>
-                            <span class="">{{ value }} ₽</span>
+                        <div
+                                class="
+                        flex justify-between items-start sm:items-center
+                        gap-2
+                        px-4 sm:px-6
+                        py-2
+                        text-xs sm:text-sm
+                        {% if key == last_key %}
+                            bg-blue-500 text-white font-semibold
+                        {% else %}
+                            bg-blue-100 text-gray-800
+                        {% endif %}
+                    "
+                        >
+                            <!-- Название -->
+                            <span class="break-words leading-tight">
+                        {{ key|capitalize }}
+                    </span>
+
+                            <!-- Сумма -->
+                            <span class="whitespace-nowrap">
+                        {{ value }} ₽
+                    </span>
                         </div>
                     {% endif %}
                 {% endfor %}

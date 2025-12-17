@@ -10,32 +10,33 @@
 
                 <!-- Указать сумму -->
                 <div x-data="{
-                        total: {{ stock_balances }},
-                        entered: '',
-                        get status() {
-                            if (!this.entered) return 'ok';
-                            if (isNaN(this.entered)) return 'invalid';
-                            return 'ok';
-                        }
-                    }" class="flex items-center gap-3 mb-4">
+                            total: {{ stock_balances }},
+                            entered: '',
+                            get status() {
+                                if (!this.entered) return 'ok';
+                                if (isNaN(this.entered)) return 'invalid';
+                                return 'ok';
+                            }
+                        }" class="flex flex-col sm:flex-row gap-3 mb-4">
 
                     <!-- Баланс -->
-                    <div class="flex items-center text-sm font-semibold px-3 py-3 h-12 rounded-lg border border-green-500 bg-white text-black font-bold w-36">
+                    <div class="flex items-center text-sm font-semibold px-3 py-3 h-12 rounded-lg border border-green-500 bg-white text-black font-bold w-full sm:w-36">
                         Сумма: <span id="stock-balances" class="ml-2 font-mono" x-text="total"></span>
                     </div>
 
                     <!-- Поле ввода -->
                     <input id="balance" type="text" x-model="entered"
                            :class="status === 'invalid'
-                            ? 'border border-red-500 text-red-500 bg-white'
-                            : 'border border-green-500 text-green-700 bg-white'"
-                           class="h-12 w-32 px-3 rounded-lg focus:outline-none transition-colors duration-200"
+                                ? 'border border-red-500 text-red-500 bg-white'
+                                : 'border border-green-500 text-green-700 bg-white'"
+                           class="h-12 w-full sm:w-32 px-3 rounded-lg focus:outline-none transition-colors duration-200"
                            placeholder="Введите сумму">
 
                     <!-- Ошибка -->
                     <div class="text-sm mt-1 text-red-500"
                          x-text="status === 'invalid' ? 'Введите число!' : ''"></div>
                 </div>
+
 
                 <!-- Дата -->
                 <div class="flex flex-col gap-2 mb-4">
@@ -92,132 +93,76 @@
                         }">
 
                     <!-- Клиент -->
-                    <div class="flex items-center gap-2">
-                        <input type="radio" id="radio_client" name="delivery_type" value="client"
-                               class="hidden peer/client" x-model="selected" @change="select('client')">
-                        <label for="radio_client"
-                               class="w-48 h-12 flex items-center justify-center border rounded-xl cursor-pointer
-                                  bg-white text-green-700
-                                  peer-checked/client:bg-emerald-600 peer-checked/client:text-white
-                                  hover:peer-checked/client:bg-emerald-700 transition">
-                            Закрыть долг клиента
-                        </label>
+                    <div class="flex flex-col sm:flex-row gap-2">
+                        <!-- Радио + кнопка выбора -->
+                        <div class="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+                            <input type="radio" id="radio_client" name="delivery_type" value="client"
+                                   class="hidden peer/client" x-model="selected" @change="select('client')">
+                            <label for="radio_client"
+                                   class="w-full sm:w-48 h-12 flex items-center justify-center border rounded-xl cursor-pointer
+                                      bg-white text-green-700
+                                      peer-checked/client:bg-emerald-600 peer-checked/client:text-white
+                                      hover:peer-checked/client:bg-emerald-700 transition">
+                                Закрыть долг клиента
+                            </label>
 
-                        <div class="relative" x-show="selected === 'client'" x-transition>
-                            {% if clients is empty %}
-                                <a href="/supplier/addUserPage?return_page=/supplier/stockBalanceCommodity"
-                                   class="w-80 h-12 flex items-center justify-between border rounded-xl px-4 bg-white text-green-700 border-green-500 hover:bg-green-50 transition">
-                                    <template x-if="!selectedClient">
-                                        <span>Создать клиента</span>
-                                    </template>
-                                    <template x-if="selectedClient">
-                                        <span x-text="selectedClient.name"></span>
-                                    </template>
-                                </a>
-                            {% else %}
-                                <button @click="openClientList = !openClientList"
-                                        class="w-80 h-12 flex items-center justify-between border rounded-xl px-4 bg-white text-green-700 border-green-500 hover:bg-green-50 transition">
-                                    <template x-if="!selectedClient">
-                                        <span>Выберите клиента</span>
-                                    </template>
-                                    <template x-if="selectedClient">
-                                        <span x-text="selectedClient.name"></span>
-                                    </template>
-                                    <svg class="w-4 h-4 ml-2 text-green-600" fill="none" stroke="currentColor"
-                                         stroke-width="2" viewBox="0 0 24 24">
-                                        <path d="M19 9l-7 7-7-7"/>
-                                    </svg>
-                                </button>
-
-                                <input type="hidden" name="client_id" :value="selectedClient?.id">
-                                <input type="hidden" name="client_name" :value="selectedClient?.name">
-
-                                <div x-show="openClientList"
-                                     @click.outside="openClientList = false"
-                                     class="absolute mt-2 w-80 z-50 bg-white border border-green-200 rounded-xl shadow-sm p-2 space-y-1 transition-all duration-300">
-                                    {% for client in clients %}
-                                        <div @click="selectedClient = { id: {{ client.id }}, name: '{{ client.name }}' }; openClientList = false"
-                                             class="cursor-pointer px-4 py-2 rounded-md hover:bg-green-50 transition text-sm flex flex-col">
-                                            <span class="font-medium text-green-700">{{ client.name }}</span>
-                                        </div>
-                                    {% endfor %}
-                                </div>
-                            {% endif %}
-                        </div>
-                    </div>
-
-                    <!-- Расход -->
-                    <div class="flex items-center gap-2">
-                        <input type="radio" id="radio_expense" name="delivery_type" value="expense"
-                               class="hidden peer/expense" x-model="selected" @change="select('expense')">
-                        <label for="radio_expense"
-                               class="w-48 h-12 flex items-center justify-center border rounded-xl cursor-pointer
-                      bg-white text-green-700
-                      peer-checked/expense:bg-emerald-600 peer-checked/expense:text-white
-                      hover:peer-checked/expense:bg-emerald-700 transition">
-                            Определить как расход
-                        </label>
-
-                        <div class="relative" x-show="selected === 'expense'" x-transition>
-                            <div class="flex items-center justify-between w-full max-w-xl">
-                                <div x-data="{ open: false, level: 0, path: [] }" class="relative w-full">
-                                    <button @click="open = !open"
-                                            class="w-full h-12 text-left border rounded-xl px-5 bg-white text-green-700 border-green-500 hover:bg-green-100 transition flex items-center">
-                                        <template x-if="path.length === 0">
-                                            <span>Выберите категорию расхода</span>
+                            <div class="relative w-full sm:w-80 mt-2 sm:mt-0" x-show="selected === 'client'" x-transition>
+                                {% if clients is empty %}
+                                    <a href="/supplier/addUserPage?return_page=/supplier/stockBalanceCommodity"
+                                       class="w-80 h-12 flex items-center justify-between border rounded-xl px-4 bg-white text-green-700 border-green-500 hover:bg-green-50 transition">
+                                        <template x-if="!selectedClient">
+                                            <span>Создать клиента</span>
                                         </template>
-                                        <template x-if="path.length > 0">
-                                            <span id="category" x-text="path.join(' > ')"></span>
+                                        <template x-if="selectedClient">
+                                            <span x-text="selectedClient.name"></span>
                                         </template>
+                                    </a>
+                                {% else %}
+                                    <button @click="openClientList = !openClientList"
+                                            class="w-80 h-12 flex items-center justify-between border rounded-xl px-4 bg-white text-green-700 border-green-500 hover:bg-green-50 transition">
+                                        <template x-if="!selectedClient">
+                                            <span>Выберите клиента</span>
+                                        </template>
+                                        <template x-if="selectedClient">
+                                            <span x-text="selectedClient.name"></span>
+                                        </template>
+                                        <svg class="w-4 h-4 ml-2 text-green-600" fill="none" stroke="currentColor"
+                                             stroke-width="2" viewBox="0 0 24 24">
+                                            <path d="M19 9l-7 7-7-7"/>
+                                        </svg>
                                     </button>
 
-                                    <div x-show="open"
-                                         @click.outside="open = false"
-                                         class="absolute mt-2 w-full  rounded-xl shadow-xl p-4 space-y-3 transition-all">
-                                        <div x-show="level > 0" class="mb-2">
-                                            <button @click="level--; path.pop()" class="text-sm hover:underline">←
-                                                Назад
-                                            </button>
-                                        </div>
+                                    <input type="hidden" name="client_id" :value="selectedClient?.id">
+                                    <input type="hidden" name="client_name" :value="selectedClient?.name">
 
-                                        {{ categories_html|raw }}
+                                    <div x-show="openClientList"
+                                         @click.outside="openClientList = false"
+                                         class="absolute mt-2 w-80 z-50 bg-white border border-green-200 rounded-xl shadow-sm p-2 space-y-1 transition-all duration-300">
+                                        {% for client in clients %}
+                                            <div @click="selectedClient = { id: {{ client.id }}, name: '{{ client.name }}' }; openClientList = false"
+                                                 class="cursor-pointer px-4 py-2 rounded-md hover:bg-green-50 transition text-sm flex flex-col">
+                                                <span class="font-medium text-green-700">{{ client.name }}</span>
+                                            </div>
+                                        {% endfor %}
                                     </div>
-                                </div>
-
-                                <a href="/categories/supplierCategories?return_page=/supplier/stockBalanceCommodity"
-                                   class="ml-4 text-sm font-semibold text-green-600 hover:underline whitespace-nowrap">
-                                    + Создать категорию
-                                </a>
+                                {% endif %}
                             </div>
                         </div>
                     </div>
 
-                    <!-- Закрыть долг компании -->
-                    <div class="flex items-center gap-2">
-                        <input type="radio" id="radio_debt" name="delivery_type" value="debt"
-                               class="hidden peer/debt" x-model="selected" @change="select('debt')">
-                        <label for="radio_debt"
-                               class="w-48 h-12 flex items-center justify-center border rounded-xl cursor-pointer
-                                  bg-white text-green-700
-                                  peer-checked/debt:bg-emerald-600 peer-checked/debt:text-white
-                                  hover:peer-checked/debt:bg-emerald-700 transition">
-                            Закрыть долг компании
-                        </label>
-                    </div>
-
                     <!-- Курьер -->
-                    <div class="flex items-center gap-2">
+                    <div class="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
                         <input type="radio" id="radio_courier" name="delivery_type" value="courier"
                                class="hidden peer/courier" x-model="selected" @change="select('courier')">
                         <label for="radio_courier"
-                               class="w-48 h-12 flex items-center justify-center border rounded-xl cursor-pointer
-                                  bg-white text-green-700
-                                  peer-checked/courier:bg-emerald-600 peer-checked/courier:text-white
-                                  hover:peer-checked/courier:bg-emerald-700 transition">
+                               class="w-full sm:w-48 h-12 flex items-center justify-center border rounded-xl cursor-pointer
+                                      bg-white text-green-700
+                                      peer-checked/courier:bg-emerald-600 peer-checked/courier:text-white
+                                      hover:peer-checked/courier:bg-emerald-700 transition">
                             Передать курьеру
                         </label>
 
-                        <div class="relative" x-show="selected === 'courier'" x-transition>
+                        <div class="relative w-full sm:w-80 mt-2 sm:mt-0" x-show="selected === 'courier'" x-transition>
                             {% if couriers is empty %}
                                 <a href="javascript:void(0)"
                                    class="w-80 h-12 flex items-center justify-center border rounded-xl px-4 bg-white text-green-700 border-green-500 cursor-not-allowed">
@@ -254,6 +199,64 @@
                             {% endif %}
                         </div>
                     </div>
+
+                    <!-- Расход -->
+                    <div class="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+                        <input type="radio" id="radio_expense" name="delivery_type" value="expense"
+                               class="hidden peer/expense" x-model="selected" @change="select('expense')">
+                        <label for="radio_expense"
+                               class="w-full sm:w-48 h-12 flex items-center justify-center border rounded-xl cursor-pointer
+                              bg-white text-green-700
+                              peer-checked/expense:bg-emerald-600 peer-checked/expense:text-white
+                              hover:peer-checked/expense:bg-emerald-700 transition">
+                            Определить как расход
+                        </label>
+
+                        <div class="relative w-full sm:w-[calc(100%-12rem)] mt-2 sm:mt-0" x-show="selected === 'expense'" x-transition>
+                            <div class="flex flex-col sm:flex-row gap-2 w-full max-w-xl">
+                                <div x-data="{ open: false, level: 0, path: [] }" class="relative w-full">
+                                    <button @click="open = !open"
+                                            class="w-full h-12 text-left border rounded-xl px-5 bg-white text-green-700 border-green-500 hover:bg-green-100 transition flex items-center">
+                                        <template x-if="path.length === 0">
+                                            <span>Выберите категорию расхода</span>
+                                        </template>
+                                        <template x-if="path.length > 0">
+                                            <span id="category" x-text="path.join(' > ')"></span>
+                                        </template>
+                                    </button>
+
+                                    <div x-show="open"
+                                         @click.outside="open = false"
+                                         class="absolute mt-2 w-full rounded-xl shadow-xl p-4 space-y-3 transition-all">
+                                        <div x-show="level > 0" class="mb-2">
+                                            <button @click="level--; path.pop()" class="text-sm hover:underline">← Назад</button>
+                                        </div>
+
+                                        {{ categories_html|raw }}
+                                    </div>
+                                </div>
+
+                                <a href="/categories/supplierCategories?return_page=/supplier/stockBalanceCommodity"
+                                   class="w-full sm:w-auto text-sm font-semibold text-green-600 hover:underline whitespace-nowrap mt-2 sm:mt-0">
+                                    + Создать категорию
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Закрыть долг компании -->
+                    <div class="flex flex-col sm:flex-row gap-2 w-full">
+                        <input type="radio" id="radio_debt" name="delivery_type" value="debt"
+                               class="hidden peer/debt" x-model="selected" @change="select('debt')">
+                        <label for="radio_debt"
+                               class="w-full sm:w-48 h-12 flex items-center justify-center border rounded-xl cursor-pointer
+                                  bg-white text-green-700
+                                  peer-checked/debt:bg-emerald-600 peer-checked/debt:text-white
+                                  hover:peer-checked/debt:bg-emerald-700 transition">
+                            Закрыть долг компании
+                        </label>
+                    </div>
+
 
                     <!-- Комментарий -->
                     <div>

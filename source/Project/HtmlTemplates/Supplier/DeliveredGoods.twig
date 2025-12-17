@@ -1,6 +1,7 @@
 {% extends './Navbar/Navbar.twig' %}
 
 {% block content %}
+
     <div class="max-w-7xl mx-auto p-8 space-y-10">
         <!-- Заголовок -->
         <div class="text-center">
@@ -52,37 +53,57 @@
 
         <!-- Раздел: Транзит (Клиентские услуги) -->
         {% if manager_finances is not empty %}
-            <div class="bg-white shadow-sm rounded-2xl p-4 sm:p-6 border border-gray-100 mt-8">
-                <h2 class="text-xl sm:text-2xl font-semibold text-gray-800 mb-4 sm:mb-6">
-                    Отгрузка товара на менеджера <span class="text-gray-500 text-base sm:text-lg">{{ manager }}</span>
+            <div class="bg-white shadow-sm rounded-2xl p-4 sm:p-6 border border-gray-100 mt-6 sm:mt-8">
+                <h2 class="text-lg sm:text-2xl font-semibold text-gray-800 mb-4 sm:mb-6">
+                    Отгрузка товара на менеджера
+                    <span class="block sm:inline text-sm sm:text-lg text-gray-500">
+                {{ manager }}
+            </span>
                 </h2>
 
-                <!-- Заголовок темы таблицы -->
-                <div class="text-center text-sm font-semibold text-gray-700">
+                <!-- Заголовок темы -->
+                <div class="text-center text-xs sm:text-sm font-semibold text-gray-700">
                     Отгрузка товара менеджеру с {{ date_from ?? '--.--.----' }} по {{ date_to ?? '--.--.----' }}
-                    <div class="mx-auto w-1/2 border-t border-gray-300 mt-7 mb-7"></div>
+                    <div class="mx-auto w-1/2 border-t border-gray-300 mt-4 sm:mt-7 mb-4 sm:mb-7"></div>
                 </div>
 
                 <div class="overflow-x-auto">
                     <table class="min-w-full text-xs sm:text-sm text-left border-t border-gray-200 table-auto">
-                        <thead class="bg-gray-50 text-gray-700">
+                        <thead class="bg-gray-50 text-gray-700 hidden sm:table-header-group">
                         <tr class="border-b">
-                            <th class="py-2 px-2 sm:px-4 font-medium">Дата отгрузки</th>
-                            <th class="py-2 px-2 sm:px-4 font-medium">Компания</th>
-                            <th class="py-2 px-2 sm:px-4 font-medium w-72 sm:w-80 break-words">Комментарии</th>
-                            <th class="py-2 px-2 sm:px-4 font-medium w-28 sm:w-36 text-right hidden sm:table-cell">Сумма (₽)</th>
+                            <th class="py-2 px-4 font-medium">Дата отгрузки</th>
+                            <th class="py-2 px-4 font-medium">Компания</th>
+                            <th class="py-2 px-4 font-medium w-80 break-words">Комментарии</th>
+                            <th class="py-2 px-4 font-medium w-36 text-right">Сумма (₽)</th>
                         </tr>
                         </thead>
 
                         <tbody class="text-gray-700">
                         {% for item in manager_finances %}
-                            <tr class="hover:bg-gray-50 transition align-top flex flex-col sm:table-row mb-2 sm:mb-0">
-                                <td class="py-2 px-2 sm:px-4">{{ item.date|date('d.m.Y') }}</td>
-                                <td class="py-2 px-2 sm:px-4">{{ item.company_name ?? 'Неизвестно' }}</td>
-                                <td class="py-2 px-2 sm:px-4 w-72 sm:w-80 break-words">{{ item.comments }}</td>
-                                <td class="py-2 px-2 sm:px-4 font-semibold text-green-600 text-right sm:text-right">
+                            <tr class="border border-gray-200 rounded-xl mb-3 sm:mb-0 sm:border-0
+                               hover:bg-gray-50 transition
+                               flex flex-col sm:table-row align-top">
+
+                                <td class="py-2 px-3 sm:px-4">
+                                    <span class="sm:hidden block text-gray-400 text-xs">Дата отгрузки</span>
+                                    {{ item.date|date('d.m.Y') }}
+                                </td>
+
+                                <td class="py-2 px-3 sm:px-4">
+                                    <span class="sm:hidden block text-gray-400 text-xs">Компания</span>
+                                    {{ item.company_name ?? 'Неизвестно' }}
+                                </td>
+
+                                <td class="py-2 px-3 sm:px-4 break-words">
+                                    <span class="sm:hidden block text-gray-400 text-xs">Комментарии</span>
+                                    {{ item.comments }}
+                                </td>
+
+                                <td class="py-2 px-3 sm:px-4 font-semibold text-green-600 sm:text-right">
+                                    <span class="sm:hidden block text-gray-400 text-xs">Сумма</span>
                                     {{ item.amount|number_format(0, ',', ' ') }} ₽
                                 </td>
+
                             </tr>
                         {% endfor %}
                         </tbody>
@@ -90,12 +111,15 @@
                 </div>
             </div>
         {% else %}
-            <div class="bg-white shadow-sm rounded-2xl p-6 text-center text-gray-600 border border-gray-100 mt-8">
-                <h2 class="text-xl font-semibold mb-2">Данные не найдены</h2>
-                <p class="text-sm text-gray-500">Похоже, по выбранным параметрам нет записей. Попробуйте изменить условия поиска.</p>
+            <div class="bg-white shadow-sm rounded-2xl p-4 sm:p-6 text-center text-gray-600 border border-gray-100 mt-6 sm:mt-8">
+                <h2 class="text-lg sm:text-xl font-semibold mb-2">Данные не найдены</h2>
+                <p class="text-xs sm:text-sm text-gray-500">
+                    Похоже, по выбранным параметрам нет записей. Попробуйте изменить условия поиска.
+                </p>
             </div>
         {% endif %}
     </div>
+
 
     <div class="flex items-center justify-center py-6">
         {% include './Pagination/Pagination.twig' %}
