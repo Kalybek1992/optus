@@ -56,4 +56,16 @@ class UploadedLogLM
         return PdoConnector::execute($builder);
     }
 
+    public static function getAccountsUploadedMaxid(): int
+    {
+        $builder = UploadedLog::newQueryBuilder()
+            ->select([
+                'MAX(id) as max_id',
+            ])
+            ->limit(1);
+
+
+        return PdoConnector::execute($builder)[0]->max_id ?? 1;
+    }
+
 }

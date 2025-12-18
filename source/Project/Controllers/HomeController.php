@@ -14,11 +14,13 @@ use Source\Project\LogicManagers\LogicPdoModel\CouriersLM;
 use Source\Project\LogicManagers\LogicPdoModel\DebtsLM;
 use Source\Project\LogicManagers\LogicPdoModel\LegalEntitiesLM;
 use Source\Project\LogicManagers\LogicPdoModel\ManagersLM;
+use Source\Project\LogicManagers\LogicPdoModel\StatementLogLM;
 use Source\Project\LogicManagers\LogicPdoModel\StockBalancesLM;
 use Source\Project\LogicManagers\LogicPdoModel\SuppliersLM;
 use Source\Project\LogicManagers\LogicPdoModel\TaskPlannerLM;
 use Source\Project\LogicManagers\LogicPdoModel\TransactionsLM;
 use Source\Project\LogicManagers\LogicPdoModel\UsersLM;
+use Source\Project\Models\StatementLog;
 
 
 class HomeController extends BaseController
@@ -56,8 +58,8 @@ class HomeController extends BaseController
         $confirmation = CompanyFinancesLM::confirmationCostsCourier();
         $task_planner = TaskPlannerLM::getAllTaskPlan();
         $legal_entitie = LegalEntitiesLM::getNonOurCompanies();
+        $error_uploads = StatementLogLM::getStatementLogStatusError();
         $mutual_settlements = [];
-
 
         if ($finance['company_client_services_debt'] > 0) {
             $mutual_settlements = array_merge($mutual_settlements, ClientServicesLM::getClientServicesDebitCompany());
@@ -72,8 +74,8 @@ class HomeController extends BaseController
         }
 
 
+        Logger::log(print_r($error_uploads, true), 'adminHomePage');
 
-        //Logger::log(print_r($mutual_settlements, true), 'adminHomePage');
         //var_dump($balance);
 
         return $this->twig->render('AdminHomePage.twig', [
@@ -90,6 +92,7 @@ class HomeController extends BaseController
             'task_planner' => $task_planner,
             'legal_entitie' => $legal_entitie,
             'mutual_settlements' => $mutual_settlements,
+            'error_uploads' => $error_uploads,
             'role' => 'admin'
         ]);
     }
@@ -117,8 +120,8 @@ class HomeController extends BaseController
         $supplier_users = ManagersLM::getManagersOrAll($supplier->suppliers_id);
         $supplier_companies = LegalEntitiesLM::getLegalSupplierCompany($supplier->suppliers_id);
         $supplier_debts = DebtsLM::getDebtSupplierPage($supplier->suppliers_id);
+        $not_accepted = CompanyFinancesLM::getFinancesSumNotAcceptedSupplier($supplier->suppliers_id);
 
-        Logger::log(print_r($user, true), 'supplierHomePage');
 
         return $this->twig->render('Supplier/SupplierHome.twig', [
             'supplier' => $user,
@@ -127,6 +130,7 @@ class HomeController extends BaseController
             'companies' => $supplier_companies,
             'debts' => $supplier_debts,
             'stock_balance' => $supplier->stock_balance ?? 0,
+            'not_accepted' => $not_accepted,
             'role' => 'supplier'
         ]);
     }

@@ -33,10 +33,16 @@ class FileController extends BaseController
         $file = RequestDC::get('file');
         $filename = basename($file['name']);
         $upload_dir = Path::RESOURCES_DIR . '/uploads/';
+
+        if (!is_dir($upload_dir)) {
+            mkdir($upload_dir, 0775, true);
+        }
+
         $new_file_name = time() . '.txt';
         $destination = $upload_dir . $new_file_name;
         $get_bank_accounts = [];
         $transactions_account = [];
+        $unknown_accounts = LegalEntitiesLM::getEntitiesNulCount();
 
         if (!pathinfo($filename, PATHINFO_EXTENSION) == 'txt') {
             return ApiViewer::getErrorBody(['value' => 'error_file_format']);
@@ -54,6 +60,10 @@ class FileController extends BaseController
         $lines = array_filter(array_map('trim', $lines));
         $document = new TransactionsProcessLM($lines);
 
+        if ($unknown_accounts > 0) {
+            unlink($destination);
+            return ApiViewer::getErrorBody(['value' => 'unknown_accounts']);
+        }
 
         if ($document->result_document_processing === 'no_extracts_files') {
             unlink($destination);
@@ -84,37 +94,21 @@ class FileController extends BaseController
             ->setNewTransactionsBankOrder()
             ->setLoadedTransactions()
             ->updateKnownLegalEntitiesTotals()
-            ->lastStatementDownload($new_file_name);
+            ->lastStatementDownload($new_file_name)
+            ->stepUpdateStatus();
 
-
-        //Logger::log(print_r($inset_loaded_transactions, true), 'inset_loaded_transactions');
-        //Logger::log(print_r($map_section, true), 'map_section');
-        //Logger::log(print_r($transaction_insert, true), 'transaction_insert');
-
-
-        //EndOfDaySettlementLM::updateEndOfDayTransactions($date_update_report_supplier);
-
-        $transactions_count = $document->transactions_count;
-        $new_bank_accounts_count = $document->new_bank_accounts_count;
-        $bank_order_count = $document->bank_order_count;
-        $customer_client_returns_count = $document->customer_client_returns_count;
-        $customer_supplier_returns_count = $document->customer_supplier_returns_count;
-        $customer_client_services_returns_count = $document->customer_client_services_returns_count;
-        $goods_supplier = $document->goods_supplier;
-        $goods_client = $document->goods_client;
-        $goods_client_service = $document->goods_client_service;
 
         return ApiViewer::getOkBody([
             'success' => 'ok',
-            'transactions_count' => $transactions_count,
-            'bank_order_count' => $bank_order_count,
-            'new_bank_accounts_count' => $new_bank_accounts_count,
-            'customer_client_returns_count' => $customer_client_returns_count,
-            'customer_supplier_returns_count' => $customer_supplier_returns_count,
-            'customer_client_services_returns_count' => $customer_client_services_returns_count,
-            'goods_supplier' => $goods_supplier,
-            'goods_client' => $goods_client,
-            'goods_client_service' => $goods_client_service,
+            'transactions_count' => $document->transactions_count,
+            'bank_order_count' => $document->bank_order_count,
+            'new_bank_accounts_count' => $document->new_bank_accounts_count,
+            'customer_client_returns_count' => $document->customer_client_returns_count,
+            'customer_supplier_returns_count' => $document->customer_supplier_returns_count,
+            'customer_client_services_returns_count' => $document->customer_client_services_returns_count,
+            'goods_supplier' => $document->goods_supplier,
+            'goods_client' => $document->goods_client,
+            'goods_client_service' => $document->goods_client_service,
         ]);
     }
 }

@@ -13,6 +13,7 @@ use Source\Project\LogicManagers\LogicPdoModel\CompanyFinancesLM;
 use Source\Project\LogicManagers\LogicPdoModel\DebtsLM;
 use Source\Project\LogicManagers\LogicPdoModel\EndOfDaySettlementLM;
 use Source\Project\LogicManagers\LogicPdoModel\LegalEntitiesLM;
+use Source\Project\LogicManagers\LogicPdoModel\StatementLogLM;
 use Source\Project\LogicManagers\LogicPdoModel\SupplierBalanceLM;
 use Source\Project\LogicManagers\LogicPdoModel\SuppliersLM;
 use Source\Project\LogicManagers\LogicPdoModel\TransactionsLM;
@@ -62,16 +63,19 @@ class TransactionsProcessLM extends DocumentExtractLM
 
     public int $goods_supplier = 0;
 
+    public int $statement_log_id = 0;
+
     public int $goods_client_service = 0;
 
     public float $income_sum = 0;
 
     public float $expense_sum = 0;
 
-    public array $debts_repaid_company = [];
+    private array $statement_log_step = [];
 
     public function __construct(array $lines, $section_document = 'СекцияДокумент')
     {
+        $this->stepStart();
         parent::__construct($lines, $section_document);
         $this->transactions_count = count($this->payment_order);
         $this->bank_order_count = count($this->bank_order);
@@ -93,26 +97,32 @@ class TransactionsProcessLM extends DocumentExtractLM
             }
         }
 
-        if ($this->expenses) {
+        if (isset($this->expenses[0])) {
+            $row = $this->expenses[0];
             $this->our_account = [
-                'company_name' => $this->expenses[0]['company_name'],
-                'inn' => $this->expenses[0]['inn'],
-                'bank_name' => $this->expenses[0]['bank_name'],
-                'account' => $this->expenses[0]['bank_account'],
+                'company_name' => $row['company_name'],
+                'inn' => $row['inn'],
+                'bank_name' => $row['bank_name'],
+                'account' => $row['bank_account'],
                 'our_account' => 1,
             ];
+            $this->our_account_number = $row['bank_account'];
+        }
 
-            $this->our_account_number = $this->expenses[0]['bank_account'];
-        } elseif ($this->income) {
+        if (!isset($this->our_account) && isset($this->income[0])) {
+            $row = $this->income[0];
             $this->our_account = [
-                'company_name' => $this->income[0]['company_name_recipient'],
-                'inn' => $this->income[0]['inn_recipient'],
-                'bank_name' => $this->income[0]['bank_name_recipient'],
-                'account' => $this->income[0]['bank_account_recipient'],
+                'company_name' => $row['company_name_recipient'],
+                'inn' => $row['inn_recipient'],
+                'bank_name' => $row['bank_name_recipient'],
+                'account' => $row['bank_account_recipient'],
                 'our_account' => 1,
             ];
+            $this->our_account_number = $row['bank_account_recipient'];
+        }
 
-            $this->our_account_number = $this->income[0]['bank_account_recipient'];
+        if (!isset($this->our_account)) {
+            throw new LogicException('OR-аккаунт не определён ни через expenses, ни через income');
         }
 
 
@@ -144,6 +154,10 @@ class TransactionsProcessLM extends DocumentExtractLM
         if (!$our_account) {
             $this->our_account['id'] = LegalEntitiesLM::getLegalEntitiesMaxId() + 1;
             LegalEntitiesLM::setNewLegalEntitie($this->our_account);
+
+            $this->statement_log_step['add_or_new_account'] = $this->our_account['id'];
+
+            $this->stepUpdate();
             $our_account = LegalEntitiesLM::getBankAccount($this->our_account_number);
         }
 
@@ -159,6 +173,9 @@ class TransactionsProcessLM extends DocumentExtractLM
                 'date_created' => $account->date_created,
             ];
         }
+
+        $this->statement_log_step['or_account'] = $this->our_account['id'];
+        $this->stepUpdate();
 
 //        Logger::log(
 //            'getOurAccounts = this->our_account ' . print_r($this->our_account, true),
@@ -205,7 +222,6 @@ class TransactionsProcessLM extends DocumentExtractLM
         }
 
 
-
         $account_implode = $this->getBankAccountImplode();
         if ($account_implode != '') {
             $this->db_bank_accounts = LegalEntitiesLM::getBankAccounts($account_implode . ", '" . $this->our_account_number . "'");
@@ -223,6 +239,8 @@ class TransactionsProcessLM extends DocumentExtractLM
     public function setNewTransactions(): static
     {
         $unique_manager_dates = [];
+        $transaction_max_id = TransactionsLM::getTranslationMaxId();
+        $statement_log = [];
 
         foreach ($this->payment_order as $transaction) {
             $from_account_id = '';
@@ -282,6 +300,7 @@ class TransactionsProcessLM extends DocumentExtractLM
             }
 
             $this->transactions[] = [
+                'id' => $transaction_max_id += 1,
                 'type' => $type,
                 'amount' => $transaction['balance'],
                 'percent' => $percent,
@@ -291,6 +310,10 @@ class TransactionsProcessLM extends DocumentExtractLM
                 'from_account_id' => $from_account_id,
                 'to_account_id' => $to_account_id,
                 'status' => 'pending'
+            ];
+
+            $statement_log[] = [
+                'id' => $transaction_max_id,
             ];
         }
 
@@ -307,13 +330,16 @@ class TransactionsProcessLM extends DocumentExtractLM
 
         if ($this->transactions) {
             TransactionsLM::insertNewTransactions($this->transactions);
+            $this->statement_log_step['add_new_transactions'] = $statement_log;
+
+            $this->stepUpdate();
             $this->transaction_pending = TransactionsLM::getTransactionsStatusPending();
         }
 
-        Logger::log(
-            'setNewTransactions = this->transaction_pending ' . print_r($this->transaction_pending, true),
-            'TransactionsProcess'
-        );
+//        Logger::log(
+//            'setNewTransactions = this->transaction_pending ' . print_r($this->transaction_pending, true),
+//            'TransactionsProcess'
+//        );
 
         return $this;
     }
@@ -325,6 +351,8 @@ class TransactionsProcessLM extends DocumentExtractLM
 
     public function closeClientsDebt(): static
     {
+        $close_clients_debt = [];
+
         foreach ($this->transaction_pending as $key => $transaction) {
 
             if ($transaction->type == 'return') {
@@ -352,14 +380,24 @@ class TransactionsProcessLM extends DocumentExtractLM
                         $transaction->id
                     );
 
+                    $close_clients_debt[] = [
+                        'transaction_id' => $transaction->id,
+                    ];
+
                     $this->customer_client_returns_count++;
-                    Logger::log(
-                        'closeClientsDebt = amount ' . print_r($transaction->amount, true),
-                        'TransactionsProcess'
-                    );
+//                    Logger::log(
+//                        'closeClientsDebt = amount ' . print_r($transaction->amount, true),
+//                        'TransactionsProcess'
+//                    );
                 }
             }
         }
+
+        if ($close_clients_debt) {
+            $this->statement_log_step['close_clients_debt'] = $close_clients_debt;
+            $this->stepUpdate();
+        }
+
 
         return $this;
     }
@@ -370,6 +408,8 @@ class TransactionsProcessLM extends DocumentExtractLM
 
     public function closeClientServicesDebt(): static
     {
+        $close_clients_debt = [];
+
         foreach ($this->transaction_pending as $key => $transaction) {
 
             if ($transaction->type == 'return_client_services') {
@@ -400,12 +440,21 @@ class TransactionsProcessLM extends DocumentExtractLM
 
                     $this->customer_client_services_returns_count++;
 
-                    Logger::log(
-                        'closeClientServicesDebt = amount ' . print_r($transaction->amount, true),
-                        'TransactionsProcess'
-                    );
+                    $close_clients_debt[] = [
+                        'transaction_id' => $transaction->id,
+                    ];
+
+//                    Logger::log(
+//                        'closeClientServicesDebt = amount ' . print_r($transaction->amount, true),
+//                        'TransactionsProcess'
+//                    );
                 }
             }
+        }
+
+        if ($close_clients_debt) {
+            $this->statement_log_step['close_client_services_debt'] = $close_clients_debt;
+            $this->stepUpdate();
         }
 
         return $this;
@@ -417,6 +466,8 @@ class TransactionsProcessLM extends DocumentExtractLM
 
     public function closeSupplierDebt(): static
     {
+        $close_supplier_debt = [];
+
         foreach ($this->transaction_pending as $key => $transaction) {
 
             if ($transaction->type == 'return_supplier') {
@@ -438,21 +489,31 @@ class TransactionsProcessLM extends DocumentExtractLM
                     $percent = $transaction->sender_percent;
                     $result = $amount - ($amount * $percent / 100);
 
-                    DebtsLM::returnOffSuppliersDebt(
+                    DebtsLM::payOffCompaniesDebt(
                         $supplier['legal_id'],
                         $result,
                         $transaction->id,
                     );
 
                     $this->customer_supplier_returns_count++;
+                    $close_supplier_debt[] = [
+                        'transaction_id' => $transaction->id,
+                    ];
 
-                    Logger::log(
-                        'closeSupplierDebt = amount ' . print_r($transaction->amount, true),
-                        'TransactionsProcess'
-                    );
+//                    Logger::log(
+//                        'closeSupplierDebt = amount ' . print_r($transaction->amount, true),
+//                        'TransactionsProcess'
+//                    );
                 }
             }
         }
+
+        if ($close_supplier_debt) {
+            $this->statement_log_step['close_supplier_debt'] = $close_supplier_debt;
+            $this->stepUpdate();
+        }
+
+
         return $this;
     }
 
@@ -463,6 +524,7 @@ class TransactionsProcessLM extends DocumentExtractLM
     public function updateBalanceSupplier(): static
     {
         $insert_new_balance = [];
+        $update_balance_supplier = [];
 
         foreach ($this->transaction_pending as $transaction) {
             if ($transaction->recipient_supplier_id && $transaction->type == 'expense') {
@@ -472,7 +534,6 @@ class TransactionsProcessLM extends DocumentExtractLM
                 );
 
                 if (!$supplier_balance) {
-
                     $key = $transaction->recipient_inn . '_' . $transaction->sender_inn;
 
                     if (!isset($insert_new_balance[$key])) {
@@ -481,6 +542,7 @@ class TransactionsProcessLM extends DocumentExtractLM
                             'sender_inn' => $transaction->sender_inn,
                             'amount' => $transaction->amount,
                         ];
+
                     } else {
                         $insert_new_balance[$key]['amount'] += $transaction->amount;
                     }
@@ -488,12 +550,25 @@ class TransactionsProcessLM extends DocumentExtractLM
 
                 if ($supplier_balance) {
                     $new_balance = $supplier_balance->amount + $transaction->amount;
-                    SupplierBalanceLM::updateSupplierBalance(
-                        [
-                            'amount = ' . $new_balance,
-                        ],
-                        $supplier_balance->id,
-                    );
+                    try {
+                        SupplierBalanceLM::updateSupplierBalance(
+                            [
+                                'amount = ' . $new_balance,
+                            ],
+                            $supplier_balance->id,
+                        );
+
+                        $update_balance_supplier[] = [
+                            'id' => $supplier_balance->id,
+                            'amount' => $new_balance,
+                        ];
+                    } catch (Throwable $e) {
+                        if ($update_balance_supplier) {
+                            $this->statement_log_step['update_balance_supplier'] = $update_balance_supplier;
+                            $this->stepUpdate();
+                        }
+                        throw new RuntimeException('error update supplier balance');
+                    }
                 }
             }
         }
@@ -501,12 +576,21 @@ class TransactionsProcessLM extends DocumentExtractLM
         if ($insert_new_balance) {
             $insert_new_balance = array_values($insert_new_balance);
             SupplierBalanceLM::setNewSupplierBalance($insert_new_balance);
+
+            $this->statement_log_step['insert_new_balance'] = $insert_new_balance;
+
+            $this->stepUpdate();
         }
 
-        Logger::log(
-            'updateBalanceSupplie = insert_new_balance ' . print_r($insert_new_balance, true),
-            'TransactionsProcess'
-        );
+        if ($update_balance_supplier) {
+            $this->statement_log_step['update_balance_supplier'] = $update_balance_supplier;
+            $this->stepUpdate();
+        }
+
+//        Logger::log(
+//            'updateBalanceSupplie = insert_new_balance ' . print_r($insert_new_balance, true),
+//            'TransactionsProcess'
+//        );
 
         return $this;
     }
@@ -523,10 +607,16 @@ class TransactionsProcessLM extends DocumentExtractLM
 
         if ($this->expenditure_on_goods) {
             DebtsLM::setNewDebts($this->expenditure_on_goods);
+
+            $this->statement_log_step['expenditure_on_goods'] = $this->expenditure_on_goods;
+            $this->stepUpdate();
         }
 
         if ($this->date_update_report_supplier) {
             EndOfDaySettlementLM::updateEndOfDayTransactions($this->date_update_report_supplier);
+
+            $this->statement_log_step['end_of_day_settlement'] = $this->date_update_report_supplier;
+            $this->stepUpdate();
         }
 
         TransactionsLM::updateTransactionsStatusPending();
@@ -679,9 +769,11 @@ class TransactionsProcessLM extends DocumentExtractLM
     {
         $legal_entities_insert = [];
         $legal_entities_max = LegalEntitiesLM::getLegalEntitiesMaxId();
+        $statement = [];
 
         foreach ($this->new_bank_accounts as $key => $value) {
             $legal_entities_max += 1;
+
             $legal_entities_insert[] = [
                 'id' => $legal_entities_max,
                 'inn' => $value['inn'],
@@ -689,11 +781,14 @@ class TransactionsProcessLM extends DocumentExtractLM
                 'company_name' => $value['company_name'],
                 'account' => $value['account'],
             ];
+
+            $statement[] = $legal_entities_max;
         }
 
+        $this->statement_log_step['add_new_accounts'] = $statement;
         $this->new_bank_accounts = $legal_entities_insert;
-
         LegalEntitiesLM::setNewLegalEntitie($this->new_bank_accounts);
+        $this->stepUpdate();
     }
 
 
@@ -703,15 +798,19 @@ class TransactionsProcessLM extends DocumentExtractLM
     public function setNewTransactionsBankOrder(): static
     {
         $id = $this->our_account['id'];
+        $statement = [];
 
         if ($id && $this->bank_order) {
 
+            $order_max_id = BankOrderLM::getBankOrderMaxId();
             foreach ($this->bank_order as $key => $bank_order) {
                 $transaction_type = $this->detectTransactionType($bank_order['type']);
                 $date = $this->parseDateToMysqlFormat($bank_order['date']);
 
                 if ($bank_order['balance']) {
+                    $order_max_id += 1;
                     $this->new_bank_order[] = [
+                        'id' => $order_max_id,
                         'type' => $transaction_type,
                         'amount' => $bank_order['balance'],
                         'date' => $date ?? 0,
@@ -721,6 +820,7 @@ class TransactionsProcessLM extends DocumentExtractLM
                         'recipient_company_name' => $bank_order['company_name_recipient'] ?? 0,
                         'recipient_bank_name' => $bank_order['bank_name_recipient'] ?? 0,
                     ];
+                    $statement[] = $order_max_id += 1;
                 } else {
                     unset($this->bank_order[$key]);
                 }
@@ -729,6 +829,9 @@ class TransactionsProcessLM extends DocumentExtractLM
 
         if ($this->new_bank_order) {
             BankOrderLM::insertNewBankOrder($this->new_bank_order);
+
+            $this->statement_log_step['new_bank_orders'] = $statement;
+            $this->stepUpdate();
         }
 
         return $this;
@@ -746,7 +849,6 @@ class TransactionsProcessLM extends DocumentExtractLM
 
         $loaded_transactions = [];
 
-
         foreach ($data as $bank_order) {
             $loaded_transactions[] = [
                 'inn' => $bank_order['inn'],
@@ -755,8 +857,11 @@ class TransactionsProcessLM extends DocumentExtractLM
             ];
         }
 
-
         UploadedDocumentsLM::insertNewLoadedTransactions($loaded_transactions);
+
+        $this->statement_log_step['uploaded_documents'] = $loaded_transactions;
+
+        $this->stepUpdate();
 
         return $this;
     }
@@ -785,13 +890,12 @@ class TransactionsProcessLM extends DocumentExtractLM
         $remove_duplicates = array_unique($select_bank_account);
         $array_values = array_values($remove_duplicates);
 
-        $quoted_values = array_map(function($val) {
+        $quoted_values = array_map(function ($val) {
             return "'" . $val . "'";
         }, $array_values);
 
         return implode(', ', $quoted_values);
     }
-
 
 
     private function parseDateToMysqlFormat(string $raw_date): ?string
@@ -875,6 +979,15 @@ class TransactionsProcessLM extends DocumentExtractLM
             ], $our_account_id);
         }
 
+        $this->statement_log_step['update_known_legal_entities_totals'] = [
+            'total_received' => $this->our_account['total_received'] ?? 0,
+            'total_written_off' => $this->our_account['total_written_off'] ?? 0,
+            'final_remainder' => $this->our_account['final_remainder'] ?? 0,
+            'date_created' => $this->our_account['date_created'] ?? 0,
+        ];
+
+        $this->stepUpdate();
+
         return $this;
     }
 
@@ -894,9 +1007,11 @@ class TransactionsProcessLM extends DocumentExtractLM
         $goods_supplier = $this->goods_supplier;
         $goods_client = $this->goods_client;
         $goods_client_service = $this->goods_client_service;
+        $max_id = UploadedLogLM::getAccountsUploadedMaxid() + 1;
 
 
         $insert_uploaded_log = [
+            'id' => $max_id,
             'legal_id' => $our_account_id,
             'transactions_count' => $transactions_count,
             'new_accounts_count' => $new_bank_accounts_count,
@@ -915,6 +1030,38 @@ class TransactionsProcessLM extends DocumentExtractLM
 
         UploadedLogLM::insertUploadedLog($insert_uploaded_log);
 
+        $this->statement_log_step['last_statement_download'] = $max_id;
+
+        $this->stepUpdate();
+
         return $this;
     }
+
+    public function stepStart(): void
+    {
+        $this->statement_log_id = StatementLogLM::getStatementLogMaxId();
+
+        StatementLogLM::setNewStatementLog([
+            'id' => $this->statement_log_id,
+        ]);
+    }
+
+    public function stepUpdate(): void
+    {
+        $steps_string = serialize($this->statement_log_step);
+
+        StatementLogLM::updateStatementLog([
+            'steps = "' . $steps_string . '"'
+        ], $this->statement_log_id);
+    }
+
+
+    public function stepUpdateStatus(): void
+    {
+        StatementLogLM::updateStatementLog([
+            'status = ' . 1
+        ], $this->statement_log_id);
+    }
+
+
 }

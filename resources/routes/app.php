@@ -1970,5 +1970,16 @@ return [
                 new MutualSettlementMiddleware,
             ]
         ],
+        '/rollback/rollbackerrorupload' => [
+            'validation' => [
+                'id' => [
+                    'required' => true,
+                    'custom_logic' => fn($a) => is_numeric($a) && $a > 0
+                ]
+            ],
+            'middlewares' => [
+                new ApiKeyAdminMiddleware
+            ]
+        ],
     ]
 ];

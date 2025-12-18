@@ -81,6 +81,18 @@
                 document.getElementById('mutual_settlement_modal').checked = true;
             };
 
+            window.rollbackErrorUpload = async (button) => {
+                const result = await postData('/rollback/rollbackErrorUpload', {
+                    id: button.dataset.id,
+                });
+
+                if (!result.success) {
+                    return openErrorModal('Не удалось отменить частично загруженную выписку. Пожалуйста, обновите страницу и попробуйте снова.');
+                }
+
+                location.reload();
+            };
+
 
             document
                 .getElementById('confirmMutualSettlement')

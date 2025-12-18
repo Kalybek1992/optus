@@ -78,10 +78,13 @@ uploadButton.addEventListener('click', async function () {
                 openErrorModal('Неправильный формат файла!!!');
                 break;
             case 'non_json_response':
-                openErrorModal('Неправильный формат ответа попробуйте еще раз пожалуйста!!!');
+                location.reload();
                 break;
-            case 'network_error' || 'failed_to_save_file':
-                openErrorModal('Зpапрос не отправили попробуйте еще раз пожалуйста!!!');
+            case 'unknown_accounts':
+                openErrorModal('Сперва распределите неизвестные счета, если их не видите обновите страницу!!!');
+                break;
+            case 'network_error':
+                location.reload();
                 break;
             case 'failed_to_save_file':
                 openErrorModal('Не удалось сохранить файл, попробуйте еще раз!!!');

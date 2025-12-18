@@ -339,7 +339,6 @@ class TransactionController extends BaseController
         $page_count = ceil($transactions_count / $limit);
 
 
-
         return $this->twig->render('Transaction/ClientServicesReceiptsDate.twig', [
             'page' => $page + 1,
             'transactions' => $transactions,
@@ -933,14 +932,6 @@ class TransactionController extends BaseController
                     'status' => 'processed',
                     'return_account' => 1
                 ];
-
-                $old_balance = LegalEntitiesLM::getOurAccountBalance($transaction->from_account_id);
-
-                if ($old_balance) {
-                    BankAccountsLM::updateBankAccounts([
-                        'balance =' . $old_balance - $transaction->amount,
-                    ], $transaction->from_account_id);
-                }
 
                 TransactionsLM::updateTransactionsId([
                     'to_account_id =' . '<NULL>',

@@ -460,7 +460,7 @@ class LegalEntitiesLM
         return PdoConnector::execute($builder)[0] ?? null;
     }
 
-    public static function getOurAccountBalance($id)
+    public static function getOurAccountId($id)
     {
         $builder = LegalEntities::newQueryBuilder()
             ->select()
@@ -471,7 +471,7 @@ class LegalEntitiesLM
             ->limit(1);
 
 
-        return PdoConnector::execute($builder)[0]->balance ?? null;
+        return PdoConnector::execute($builder)[0] ?? [];
     }
 
     public static function getOurAccountOneId()
@@ -1368,8 +1368,6 @@ class LegalEntitiesLM
                 ]);
         }
 
-        $builder
-            ->groupBy('legal_entities.supplier_id');
 
         $transactions = PdoConnector::execute($builder)[0] ?? [];
 
@@ -1629,7 +1627,7 @@ class LegalEntitiesLM
 
         if ($date_from && !$date_to) {
             $builder
-                ->innerJoin('transactions t')
+                ->leftJoin('transactions t')
                 ->on([
                     "t.to_account_id = id",
                     "t.date >='" . $date_from . "'",
@@ -1638,7 +1636,7 @@ class LegalEntitiesLM
 
         if ($date_from && $date_to) {
             $builder
-                ->innerJoin('transactions t')
+                ->leftJoin('transactions t')
                 ->on([
                     "t.to_account_id = id",
                     "t.date BETWEEN '" . $date_from . "'" . "AND '" . $date_to . "'",
@@ -1647,7 +1645,7 @@ class LegalEntitiesLM
 
         if (!$date_from && !$date_to) {
             $builder
-                ->innerJoin('transactions t')
+                ->leftJoin('transactions t')
                 ->on([
                     "t.to_account_id = id",
                 ]);
@@ -1655,7 +1653,7 @@ class LegalEntitiesLM
 
 
         $builder
-            ->innerJoin('debts d')
+            ->leftJoin('debts d')
             ->on([
                 "d.transaction_id = t.id",
                 "d.type_of_debt = 'supplier_goods'",
@@ -1684,7 +1682,7 @@ class LegalEntitiesLM
         }
 
         $builder
-            ->groupBy('id')
+            ->groupBy('t.id')
             ->orderBy('t.date', 'DESC')
             ->limit($limit)
             ->offset($offset);
@@ -1841,7 +1839,7 @@ class LegalEntitiesLM
                 'SUM(t.amount) as sum_amount',
                 'SUM(t.interest_income) as sum_interest_income',
                 'SUM(d.amount) as debts_amount',
-                'SUM(dc.amount) as debts_issuance',
+                'GROUP_CONCAT(d.id SEPARATOR ",") as debt_ids'
             ]);
 
         if ($date_from) {
@@ -1856,7 +1854,7 @@ class LegalEntitiesLM
 
         if ($date_from && !$date_to) {
             $builder
-                ->innerJoin('transactions t')
+                ->leftJoin('transactions t')
                 ->on([
                     "t.to_account_id = id",
                     "t.date >='" . $date_from . "'",
@@ -1865,7 +1863,7 @@ class LegalEntitiesLM
 
         if ($date_from && $date_to) {
             $builder
-                ->innerJoin('transactions t')
+                ->leftJoin('transactions t')
                 ->on([
                     "t.to_account_id = id",
                     "t.date BETWEEN '" . $date_from . "'" . "AND '" . $date_to . "'",
@@ -1874,7 +1872,7 @@ class LegalEntitiesLM
 
         if (!$date_from && !$date_to) {
             $builder
-                ->innerJoin('transactions t')
+                ->leftJoin('transactions t')
                 ->on([
                     "t.to_account_id = id",
                 ]);
@@ -1898,30 +1896,29 @@ class LegalEntitiesLM
             ->on([
                 "d.transaction_id = t.id",
                 "d.type_of_debt = 'supplier_goods'",
-            ])
-            ->leftJoin('debt_closings dc')
-            ->on([
-                "dc.debt_id = d.id",
-                "d.transaction_id = t.id",
             ]);
 
-        $builder
-            ->groupBy('supplier_id');
 
         $transactions = PdoConnector::execute($builder)[0] ?? [];
 
         $sum_amount = $transactions->sum_amount ?? 0;
         $sum_interest_income = $transactions->sum_interest_income ?? 0;
+        $debts_issuance = 0;
+
+        if ($transactions->debt_ids){
+            $debts_issuance = DebtClosingsLM::getDebtClosingsInAmaut($transactions->debt_ids);
+            $debts_issuance = $debts_issuance->sum_amount ?? 0;
+        }
 
         $transactions_sum = [
             'sum_amount' => $sum_amount,
             'sum_interest_income' => $sum_interest_income,
             'debts_amount' => $sum_amount - $sum_interest_income,
-            'debts_issuance' => $transactions->debts_issuance ?? 0,
+            'debts_issuance' => $debts_issuance,
         ];
 
 
-        //Logger::log(print_r($transactions_arr, true), 'clientReceiptsDate');
+        Logger::log(print_r($transactions, true), 'clientReceiptsDate');
 
         return $transactions_sum;
     }

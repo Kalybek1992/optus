@@ -66,6 +66,17 @@
                         {{ debts.client_debt_supplier|number_format(0, ',', ' ') }} ₽
                     </div>
                 </div>
+
+                {% if not_accepted != 0 %}
+                    <div class="flex flex-col items-center p-3 sm:p-4 bg-red-50 border border-red-200 rounded-xl shadow-sm">
+                        <div class="text-xs sm:text-sm text-red-600">
+                            Непринятый долг!
+                        </div>
+                        <div class="text-base sm:text-lg font-bold text-red-700">
+                            {{ not_accepted|number_format(0, ',', ' ') }} ₽
+                        </div>
+                    </div>
+                {% endif %}
             </div>
 
             <!-- Кеш -->

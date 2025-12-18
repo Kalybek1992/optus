@@ -14,6 +14,7 @@ use Source\Project\LogicManagers\LogicPdoModel\DebtsLM;
 use Source\Project\LogicManagers\LogicPdoModel\LegalEntitiesLM;
 use Source\Project\LogicManagers\LogicPdoModel\ManagersLM;
 use Source\Project\LogicManagers\LogicPdoModel\ShopLM;
+use Source\Project\LogicManagers\LogicPdoModel\StatementLogLM;
 use Source\Project\LogicManagers\LogicPdoModel\StockBalancesLM;
 use Source\Project\LogicManagers\LogicPdoModel\SupplierBalanceLM;
 use Source\Project\LogicManagers\LogicPdoModel\SuppliersLM;
@@ -35,6 +36,7 @@ use Source\Project\DataContainers\InformationDC;
 use Source\Project\DataContainers\VariablesDC;
 use Source\Project\Viewer\ApiViewer;
 use Source\Project\Models\EndOfDaySettlement;
+use Source\Project\Models\StatementLog;
 
 class UserController extends BaseController
 {
@@ -761,6 +763,9 @@ class UserController extends BaseController
         PdoConnector::execute($builder);
 
         $builder = SupplierBalance::newQueryBuilder()->delete();
+        PdoConnector::execute($builder);
+
+        $builder = StatementLog::newQueryBuilder()->delete();
         PdoConnector::execute($builder);
 
         $builder = StockBalances::newQueryBuilder()->update([

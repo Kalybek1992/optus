@@ -32,5 +32,19 @@ class DebtClosingsLM
         return PdoConnector::execute($builder)[0] ?? [];
     }
 
+    public static function getDebtClosingsInAmaut(string $ids)
+    {
+        $builder = DebtClosings::newQueryBuilder()
+            ->select([
+                'SUM(amount) as sum_amount'
+            ])
+            ->where([
+                "debt_id IN($ids)",
+            ])
+            ->limit(1);
+
+        return PdoConnector::execute($builder)[0] ?? [];
+    }
+
 
 }

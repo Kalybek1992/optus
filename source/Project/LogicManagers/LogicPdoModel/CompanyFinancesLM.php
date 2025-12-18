@@ -884,6 +884,27 @@ class CompanyFinancesLM
         return PdoConnector::execute($builder)[0] ?? [];
     }
 
+    public static function getFinancesSumNotAcceptedSupplier(int $supplier_id): int
+    {
+        $builder = CompanyFinances::newQueryBuilder()
+            ->select([
+                'SUM(t.amount) as amount',
+            ])
+            ->leftJoin('transactions t')
+            ->on([
+                't.id = transaction_id',
+            ])
+            ->where([
+                "supplier_id =" . $supplier_id,
+                "status != 'processed'",
+                "status != 'confirm_courier'",
+            ])
+            ->limit(1);
+
+
+        return PdoConnector::execute($builder)[0]->amount ?? 0;
+    }
+
     public static function getManagerFinances($manager_id, $offset, $limit, $date_from, $date_to, $type = 'shipping_manager', $legal_id = null): array
     {
         $builder = CompanyFinances::newQueryBuilder()

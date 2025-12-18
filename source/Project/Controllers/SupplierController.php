@@ -703,12 +703,6 @@ class SupplierController extends BaseController
                 'type' => 'debt_repayment_сompanies_supplier',
                 'status' => 'confirm_admin'
             ]);
-
-            DebtsLM::payOffCompaniesDebt(
-                $supplier['legal_id'],
-                $amount,
-                $translation_max_id + 1
-            );
         }
 
         if ($delivery_type == 'courier') {
@@ -742,6 +736,7 @@ class SupplierController extends BaseController
                 'status' => 'confirm_courier'
             ]);
 
+            // TODO Можно убрать когда у курьера появится кнопка отказать (при принятия)
             DebtsLM::payOffCompaniesDebt(
                 $supplier['legal_id'],
                 $amount,
@@ -960,6 +955,8 @@ class SupplierController extends BaseController
         }
 
         if ($status == 'confirm') {
+            $supplier = SuppliersLM::getSupplierIdLegal($finances->supplier_id);
+
             CompanyFinancesLM::updateCompanyFinancesId([
                 'status = ' . 'processed',
             ], $finances_id);
@@ -971,6 +968,12 @@ class SupplierController extends BaseController
             $stock_balance = StockBalancesLM::getStockBalances();
             $new_balance = $finances->amount + $stock_balance->balance;
 
+            DebtsLM::payOffCompaniesDebt(
+                $supplier['legal_id'],
+                $finances->amount,
+                $finances->transaction_id
+            );
+
             StockBalancesLM::updateStockBalances([
                 'balance =' . $new_balance,
                 'updated_date =' . date('Y-m-d')
@@ -978,22 +981,9 @@ class SupplierController extends BaseController
         }
 
         if ($status == 'cancel') {
-
             $supplier = SuppliersLM::getSupplierIdLegal($finances->supplier_id);
             $new_balance = $finances->amount + $supplier['stock_balance'];
 
-            if (!$supplier) {
-                return ApiViewer::getErrorBody(['value' => 'bad_client']);
-            }
-            if (!$supplier['legal_id']) {
-                return ApiViewer::getErrorBody(['value' => 'bad_client_legal_entities']);
-            }
-
-            DebtsLM::returnOffSuppliersDebt(
-                $supplier['legal_id'],
-                $finances->amount,
-                $finances->transaction_id
-            );
 
             CompanyFinancesLM::deleteCompanyFinancesId($finances->id);
             TransactionsLM::deleteTransactionsId($finances->transaction_id);
@@ -1003,7 +993,6 @@ class SupplierController extends BaseController
                 'stock_balance  =' . $new_balance,
             ], $finances->supplier_id);
         }
-
 
         return ApiViewer::getOkBody(['success' => 'ok']);
     }
