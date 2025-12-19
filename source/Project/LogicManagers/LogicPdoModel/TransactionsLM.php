@@ -44,6 +44,20 @@ class TransactionsLM
         return PdoConnector::execute($builder);
     }
 
+    public static function deleteTransactionsIds($ids)
+    {
+        $builder = Transactions::newQueryBuilder()
+            ->delete()
+            ->where([
+                "id IN($ids)",
+            ]);
+
+        //return $builder->build();
+
+
+        return PdoConnector::execute($builder);
+    }
+
     public static function insertNewTransactions(array $dataset)
     {
 

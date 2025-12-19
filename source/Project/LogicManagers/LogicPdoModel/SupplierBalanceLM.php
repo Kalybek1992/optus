@@ -79,4 +79,15 @@ class SupplierBalanceLM
     }
 
 
+    public static function deleteBalanceIds(int $ids)
+    {
+        $builder = SupplierBalance::newQueryBuilder()
+            ->delete()
+            ->where([
+                'id IN(' . $ids . ')',
+            ]);
+
+        return PdoConnector::execute($builder)[0] ?? [];
+    }
+
 }

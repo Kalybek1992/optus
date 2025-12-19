@@ -55,6 +55,16 @@ class LegalEntitiesLM
         return PdoConnector::execute($builder);
     }
 
+    public static function deleteLegalsEntitiesIds($ids)
+    {
+        $builder = LegalEntities::newQueryBuilder()
+            ->delete()
+            ->where([
+                "id IN($ids)",
+            ]);
+
+        return PdoConnector::execute($builder);
+    }
     public static function getBankAccounts(string $select)
     {
         $builder = LegalEntities::newQueryBuilder()

@@ -3,6 +3,7 @@
 namespace Source\Project\LogicManagers\LogicPdoModel;
 
 
+use Source\Base\Core\Logger;
 use Source\Project\Connectors\PdoConnector;
 use Source\Project\Models\UploadedDocuments;
 
@@ -23,6 +24,34 @@ class UploadedDocumentsLM
             ->where([
                 "inn IN($selects_inn)",
                 "document_number IN($selects_document_number)"
+            ]);
+
+
+        return PdoConnector::execute($builder);
+    }
+
+    public static function deleteUploadedDocuments(string $inn, string $document_number, string $date)
+    {
+
+        $builder = UploadedDocuments::newQueryBuilder()
+            ->delete()
+            ->where([
+                'inn IN(' . $inn . ')',
+                'document_number IN(' . $document_number . ')',
+                'date IN(' . $date . ')',
+            ]);
+
+
+        return PdoConnector::execute($builder);
+    }
+
+    public static function deleteUploadedDocumentsIds($ids)
+    {
+
+        $builder = UploadedDocuments::newQueryBuilder()
+            ->delete()
+            ->where([
+                'id IN(' . $ids . ')',
             ]);
 
 
@@ -56,6 +85,19 @@ class UploadedDocumentsLM
 
 
         return PdoConnector::execute($builder);
+    }
+
+
+    public static function getUploadedMaxId()
+    {
+        $builder = UploadedDocuments::newQueryBuilder()
+            ->select([
+                'MAX(id) as max_id',
+            ])
+            ->limit(1);
+
+
+        return PdoConnector::execute($builder)[0]->max_id ?? 1;
     }
 
 }

@@ -52,6 +52,29 @@ class DebtsLM
         return PdoConnector::execute($builder);
     }
 
+    public static function deleteTransactionIdGoods(string $transaction_id)
+    {
+        $builder = Debts::newQueryBuilder()
+            ->delete()
+            ->where([
+                'transaction_id IN(' . $transaction_id . ')',
+            ]);
+
+        return PdoConnector::execute($builder);
+    }
+
+    public static function deleteTransactionIdGoodsType(string $transaction_id, string $goods_type)
+    {
+        $builder = Debts::newQueryBuilder()
+            ->delete()
+            ->where([
+                'transaction_id IN(' . $transaction_id . ')',
+                'type_of_debt = ' . $goods_type,
+            ]);
+
+        return PdoConnector::execute($builder);
+    }
+
     public static function getDebtsFromSupplierGoods($legal_id)
     {
         $builder = Debts::newQueryBuilder()
@@ -127,6 +150,20 @@ class DebtsLM
             ]);
 
         return PdoConnector::execute($builder);
+    }
+
+    public static function getDebtId($id)
+    {
+        $builder = Debts::newQueryBuilder()
+            ->select([
+                '*'
+            ])
+            ->where([
+                "id =" . $id,
+            ])
+            ->limit(1);
+
+        return PdoConnector::execute($builder)[0] ?? [];
     }
 
     public static function updateDebtsId(array $data, $id)

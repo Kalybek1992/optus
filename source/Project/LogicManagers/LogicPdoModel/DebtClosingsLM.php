@@ -47,4 +47,29 @@ class DebtClosingsLM
     }
 
 
+    public static function getDebtClosingsInTransactionId(string $ids)
+    {
+        $builder = DebtClosings::newQueryBuilder()
+            ->select([
+                '*'
+            ])
+            ->where([
+                "transaction_id IN($ids)",
+            ]);
+
+        return PdoConnector::execute($builder) ?? [];
+    }
+
+    public static function deleteDebtClosingsInTransactionId(string $ids)
+    {
+        $builder = DebtClosings::newQueryBuilder()
+            ->delete()
+            ->where([
+                "transaction_id IN($ids)",
+            ]);
+
+        return PdoConnector::execute($builder);
+    }
+
+
 }

@@ -252,6 +252,19 @@ class BankOrderLM
     }
 
 
+    public static function deleteInBankOrders(string $ids)
+    {
+
+        $builder = BankOrder::newQueryBuilder()
+            ->delete()
+            ->where([
+                "id IN($ids)",
+            ]);
+
+        return PdoConnector::execute($builder);
+    }
+
+
     public static function getBankOrderAllDescription(string $description)
     {
 

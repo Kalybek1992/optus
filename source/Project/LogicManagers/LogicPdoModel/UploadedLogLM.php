@@ -27,6 +27,19 @@ class UploadedLogLM
         return PdoConnector::execute($builder);
     }
 
+    public static function deleteUploadedLog(int $id)
+    {
+
+        $builder = UploadedLog::newQueryBuilder()
+            ->delete()
+            ->where([
+                "id =" . $id,
+            ]);
+
+
+        return PdoConnector::execute($builder);
+    }
+
     public static function insertUploadedLog(array $dataset)
     {
         $builder = UploadedLog::newQueryBuilder()

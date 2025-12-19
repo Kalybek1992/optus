@@ -312,9 +312,7 @@ class TransactionsProcessLM extends DocumentExtractLM
                 'status' => 'pending'
             ];
 
-            $statement_log[] = [
-                'id' => $transaction_max_id,
-            ];
+            $statement_log[] = $transaction_max_id;
         }
 
 //        Logger::log(
@@ -331,8 +329,8 @@ class TransactionsProcessLM extends DocumentExtractLM
         if ($this->transactions) {
             TransactionsLM::insertNewTransactions($this->transactions);
             $this->statement_log_step['add_new_transactions'] = $statement_log;
-
             $this->stepUpdate();
+
             $this->transaction_pending = TransactionsLM::getTransactionsStatusPending();
         }
 
@@ -380,9 +378,7 @@ class TransactionsProcessLM extends DocumentExtractLM
                         $transaction->id
                     );
 
-                    $close_clients_debt[] = [
-                        'transaction_id' => $transaction->id,
-                    ];
+                    $close_clients_debt[] =  $transaction->id;
 
                     $this->customer_client_returns_count++;
 //                    Logger::log(
@@ -440,9 +436,7 @@ class TransactionsProcessLM extends DocumentExtractLM
 
                     $this->customer_client_services_returns_count++;
 
-                    $close_clients_debt[] = [
-                        'transaction_id' => $transaction->id,
-                    ];
+                    $close_clients_debt[] = $transaction->id;
 
 //                    Logger::log(
 //                        'closeClientServicesDebt = amount ' . print_r($transaction->amount, true),
@@ -496,9 +490,7 @@ class TransactionsProcessLM extends DocumentExtractLM
                     );
 
                     $this->customer_supplier_returns_count++;
-                    $close_supplier_debt[] = [
-                        'transaction_id' => $transaction->id,
-                    ];
+                    $close_supplier_debt[] = $transaction->id;
 
 //                    Logger::log(
 //                        'closeSupplierDebt = amount ' . print_r($transaction->amount, true),
@@ -604,17 +596,20 @@ class TransactionsProcessLM extends DocumentExtractLM
         $this->supplierGoods();
         $this->clientServices();
         $this->clientGoods();
+        $expenditure_on_goods = [];
+
+        foreach ($this->expenditure_on_goods as $good) {
+            $expenditure_on_goods[] = $good['transaction_id'];
+        }
 
         if ($this->expenditure_on_goods) {
             DebtsLM::setNewDebts($this->expenditure_on_goods);
-
-            $this->statement_log_step['expenditure_on_goods'] = $this->expenditure_on_goods;
+            $this->statement_log_step['expenditure_on_goods'] = $expenditure_on_goods;
             $this->stepUpdate();
         }
 
         if ($this->date_update_report_supplier) {
             EndOfDaySettlementLM::updateEndOfDayTransactions($this->date_update_report_supplier);
-
             $this->statement_log_step['end_of_day_settlement'] = $this->date_update_report_supplier;
             $this->stepUpdate();
         }
@@ -820,7 +815,7 @@ class TransactionsProcessLM extends DocumentExtractLM
                         'recipient_company_name' => $bank_order['company_name_recipient'] ?? 0,
                         'recipient_bank_name' => $bank_order['bank_name_recipient'] ?? 0,
                     ];
-                    $statement[] = $order_max_id += 1;
+                    $statement[] = $order_max_id;
                 } else {
                     unset($this->bank_order[$key]);
                 }
@@ -848,18 +843,23 @@ class TransactionsProcessLM extends DocumentExtractLM
         );
 
         $loaded_transactions = [];
+        $loaded_ids = [];
+        $max_id = UploadedDocumentsLM::getUploadedMaxId();
 
         foreach ($data as $bank_order) {
             $loaded_transactions[] = [
+                'id' => $max_id += 1,
                 'inn' => $bank_order['inn'],
                 'document_number' => $bank_order['document_number'],
                 'date' => time()
             ];
+
+            $loaded_ids[] = $max_id;
         }
 
         UploadedDocumentsLM::insertNewLoadedTransactions($loaded_transactions);
 
-        $this->statement_log_step['uploaded_documents'] = $loaded_transactions;
+        $this->statement_log_step['uploaded_documents'] = $loaded_ids;
 
         $this->stepUpdate();
 
