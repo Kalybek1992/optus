@@ -433,6 +433,42 @@ class LegalEntitiesLM
         return PdoConnector::execute($builder)[0] ?? null;
     }
 
+    public static function getEntitiesBindAccount($id)
+    {
+        $builder = LegalEntities::newQueryBuilder()
+            ->select([
+                '*',
+                's.percentage as supplier_percentage',
+                'c.percentage as client_percentage',
+                'u.name as user_name',
+                'u.role as user_role',
+            ])
+            ->leftJoin('suppliers s')
+            ->on([
+                's.id = supplier_id',
+            ])
+            ->leftJoin('clients c')
+            ->on([
+                'c.id = client_id',
+            ])
+            ->leftJoin('users u')
+            ->on([
+                'u.id = s.user_id',
+                'u.id = c.user_id',
+            ], 'OR')
+            ->where([
+                'id =' . $id,
+                "client_id IS NULL",
+                "supplier_id IS NULL",
+                "shop_id IS NULL",
+                "our_account = 0",
+            ])
+            ->limit(1);
+
+
+        return PdoConnector::execute($builder)[0] ?? null;
+    }
+
     public static function getEntitiesInn($inn)
     {
         $builder = LegalEntities::newQueryBuilder()
@@ -2278,7 +2314,7 @@ class LegalEntitiesLM
         $legal_entities_arr = [];
         $added_inns = [];
 
-        Logger::log(print_r($legal_entities, true), 'legal_entities');
+        //Logger::log(print_r($legal_entities, true), 'legal_entities');
 
         foreach ($legal_entities as $entities) {
             if (!in_array($entities->inn, $added_inns)) {
@@ -2297,7 +2333,7 @@ class LegalEntitiesLM
             $balance = SupplierBalanceLM::getSupplierBalanceCompany($legal_entity['inn']);
             $supplier_balance = [];
 
-            Logger::log(print_r($balance, true), 'balance');
+            //Logger::log(print_r($balance, true), 'balance');
 
             foreach ($balance as $balance_item) {
                 $supplier_balance[] = [

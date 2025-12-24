@@ -181,7 +181,7 @@ class UserController extends BaseController
     public function bindAccountSupplier(): array
     {
         $entity_id = InformationDC::get('entity_id');
-        $legal_entities = LegalEntitiesLM::getEntitiesId($entity_id);
+        $legal_entities = LegalEntitiesLM::getEntitiesBindAccount($entity_id);
         $user_id = VariablesDC::get('user_id');
         $percent = VariablesDC::get('percent');
         $user = UsersLM::getUserSupplier($user_id);
@@ -295,7 +295,7 @@ class UserController extends BaseController
     public function bindAccountClientServices(): array
     {
         $entity_id = InformationDC::get('entity_id');
-        $legal_entities = LegalEntitiesLM::getEntitiesId($entity_id);
+        $legal_entities = LegalEntitiesLM::getEntitiesBindAccount($entity_id);
         $user_id = VariablesDC::get('user_id');
         $percent = VariablesDC::get('percent');
         $user = UsersLM::getUserClientServices($user_id);
@@ -372,7 +372,7 @@ class UserController extends BaseController
     public function bindAccountClient(): array
     {
         $entity_id = InformationDC::get('entity_id');
-        $legal_entities = LegalEntitiesLM::getEntitiesId($entity_id);
+        $legal_entities = LegalEntitiesLM::getEntitiesBindAccount($entity_id);
 
         $user_id = VariablesDC::get('user_id');
         $user = UsersLM::getUserClients($user_id);
