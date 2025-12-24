@@ -190,6 +190,19 @@ class DebtsLM
         return PdoConnector::execute($builder);
     }
 
+    public static function updateDebtsClientSupplier(array $data, $transaction_id)
+    {
+
+        $builder = Debts::newQueryBuilder()
+            ->update($data)
+            ->where([
+                'transaction_id =' . $transaction_id,
+                'type_of_debt =' . '"сlient_debt_supplier"',
+            ]);
+
+        return PdoConnector::execute($builder);
+    }
+
     public static function getDebtsTypeSumLegalId($transaction_id)
     {
 
@@ -197,7 +210,8 @@ class DebtsLM
             ->select(['amount as amount_debit'])
             ->where([
                 'transaction_id =' . $transaction_id,
-                'status =' . '"active"'
+                'status =' . '"active"',
+                'type_of_debt !=' . '"сlient_debt_supplier"',
             ])
             ->limit(1);
 
@@ -213,7 +227,7 @@ class DebtsLM
         return PdoConnector::execute($builder);
     }
 
-    public static function editDebtTransactionId($transaction_id, $old_profit, $new_profit): bool
+    public static function editDebtTransactionId($transaction_id, $new_debit): bool
     {
         $debt = self::getDebtsTypeSumLegalId($transaction_id);
 
@@ -221,14 +235,10 @@ class DebtsLM
             return false;
         }
 
-        $new_debit = ($debt + $old_profit) - $new_profit;
-
-
         self::updateDebtsTransactionId([
             'amount =' . $new_debit,
         ], $transaction_id);
 
-        //Logger::log(print_r("Старый доход: $debt", true), 'editDebtSupplier');
 
         return true;
     }

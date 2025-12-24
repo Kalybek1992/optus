@@ -75,7 +75,6 @@ class TransactionsProcessLM extends DocumentExtractLM
 
     public function __construct(array $lines, $section_document = 'СекцияДокумент')
     {
-        $this->stepStart();
         parent::__construct($lines, $section_document);
         $this->transactions_count = count($this->payment_order);
         $this->bank_order_count = count($this->bank_order);
@@ -109,7 +108,7 @@ class TransactionsProcessLM extends DocumentExtractLM
             $this->our_account_number = $row['bank_account'];
         }
 
-        if (!isset($this->our_account) && isset($this->income[0])) {
+        if (isset($this->income[0])) {
             $row = $this->income[0];
             $this->our_account = [
                 'company_name' => $row['company_name_recipient'],
@@ -125,21 +124,17 @@ class TransactionsProcessLM extends DocumentExtractLM
             throw new LogicException('OR-аккаунт не определён ни через expenses, ни через income');
         }
 
+        $this->stepStart();
+//        Logger::log(
+//            'determineExpensesIncome = this->our_inn ' . print_r($this->our_account_number, true),
+//            'TransactionsProcess'
+//        );
+//
+//        Logger::log(
+//            'determineExpensesIncome = this->expenses ' . print_r($this->our_account, true),
+//            'TransactionsProcess'
+//        );
 
-//        Logger::log(
-//            'determineExpensesIncome = this->our_inn ' . print_r($this->our_account, true),
-//            'TransactionsProcess'
-//        );
-//
-//        Logger::log(
-//            'determineExpensesIncome = this->expenses ' . print_r($this->expenses, true),
-//            'TransactionsProcess'
-//        );
-//
-//        Logger::log(
-//            'determineExpensesIncome = this->income ' . print_r($this->income, true),
-//            'TransactionsProcess'
-//        );
 
         return $this;
     }
@@ -187,7 +182,7 @@ class TransactionsProcessLM extends DocumentExtractLM
 
 
     /**
-     * Получить известных счетов через ИНН
+     * Получить известных счетов через счета
      */
     public function getFamousCompanies(): static
     {
@@ -1054,7 +1049,6 @@ class TransactionsProcessLM extends DocumentExtractLM
             'steps = "' . $steps_string . '"'
         ], $this->statement_log_id);
     }
-
 
     public function stepUpdateStatus(): void
     {

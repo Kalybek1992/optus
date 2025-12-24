@@ -826,8 +826,10 @@ class SupplierController extends BaseController
         );
 
         foreach ($transactions as &$item) {
-            $percent = $client['percentage'] ?? 0;
+            $percent = $item['supplier_client_percent'] ?? $client['percentage'] ?? 0;
+
             $item['interest_income'] = round($item['total_amount'] * ($percent / 100), 2);
+            $item['percent'] = $percent;
         }
 
         $transactions_sum = LegalEntitiesLM::getEntitiesClientTransactionsSum(
@@ -1123,4 +1125,42 @@ class SupplierController extends BaseController
 
         return ApiViewer::getOkBody(['success' => 'ok']);
     }
+
+    public function changePercentage(): array
+    {
+        $transaction_id = InformationDC::get('transaction_id');
+        $legal_id = InformationDC::get('legal_id');
+        $percent = InformationDC::get('percent');
+
+
+        $transaction = TransactionsLM::getTransactionEntitiesId($transaction_id);
+        $legal_entities = LegalEntitiesLM::getEntitiesId($legal_id);
+
+
+        if (!$transaction && !$legal_entities) {
+            return ApiViewer::getErrorBody(['value' => 'bad_transaction']);
+        }
+
+        $transfer_amount = $transaction->amount;
+        $new_percent = $percent;
+        $new_debit = $transfer_amount - ($transfer_amount * $new_percent / 100);
+
+
+        TransactionsLM::updateTransactionsId([
+            'supplier_client_percent =' . $new_percent,
+        ], $transaction_id);
+
+        DebtsLM::updateDebtsClientSupplier([
+            'amount =' . $new_debit,
+        ], $transaction_id);
+
+        //Logger::log(print_r("Возврат старой прибыли: $old_profit", true), 'changePercentage');
+        //Logger::log(print_r("Новый процент: $new_percent%", true), 'changePercentage');
+        //Logger::log(print_r("Новая прибыль: $new_profit", true), 'changePercentage');
+        //Logger::log(print_r("--------------------------------------------", true), 'changePercentage');
+
+
+        return ApiViewer::getOkBody(['success' => 'ok']);
+    }
+
 }

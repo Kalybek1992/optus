@@ -50,10 +50,7 @@ class TransactionController extends BaseController
         $transfer_amount = $transaction->amount;
         $old_profit = $transaction->interest_income;
         $new_percent = $percent;
-
-
         $new_profit = $transfer_amount * ($new_percent / 100);
-
 
 
         TransactionsLM::updateTransactionsId([
@@ -62,9 +59,7 @@ class TransactionController extends BaseController
         ], $transaction_id);
 
 
-
-        DebtsLM::editDebtTransactionId($transaction_id, $old_profit, $new_profit);
-
+        DebtsLM::editDebtTransactionId($transaction_id, $transfer_amount - $new_profit);
 
         //Logger::log(print_r("Возврат старой прибыли: $old_profit", true), 'changePercentage');
         //Logger::log(print_r("Новый процент: $new_percent%", true), 'changePercentage');

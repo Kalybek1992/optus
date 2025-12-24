@@ -74,8 +74,7 @@ class HomeController extends BaseController
         }
 
 
-        Logger::log(print_r($error_uploads, true), 'adminHomePage');
-
+        //Logger::log(print_r($error_uploads, true), 'adminHomePage');
         //var_dump($balance);
 
         return $this->twig->render('AdminHomePage.twig', [

@@ -219,18 +219,34 @@ class UserController extends BaseController
                 $recipient = LegalEntitiesLM::getEntitiesId($transaction->to_account_id);
                 $sender = LegalEntitiesLM::getEntitiesId($transaction->from_account_id);
 
+                $supplier_balance = SupplierBalanceLM::getSupplierBalance(
+                    $recipient->inn,
+                    $sender->inn
+                );
 
-                $key = $recipient->inn . '_' . $sender->inn;
+                if (!$supplier_balance) {
+                    $key = $recipient->inn . '_' . $sender->inn;
 
-                if (!isset($insert_new_balance[$key])) {
-                    $insert_new_balance[$key] = [
-                        'recipient_inn' => $recipient->inn,
-                        'sender_inn' => $sender->inn,
-                        'amount' => $transaction->amount,
-                    ];
+                    if (!isset($insert_new_balance[$key])) {
+                        $insert_new_balance[$key] = [
+                            'recipient_inn' => $recipient->inn,
+                            'sender_inn' => $sender->inn,
+                            'amount' => $transaction->amount,
+                        ];
+                    }else{
+                        $insert_new_balance[$key]['amount'] += $transaction->amount;
+                    }
                 }
 
-                $insert_new_balance[$key]['amount'] += $transaction->amount;
+                if ($supplier_balance) {
+                    $new_balance = $supplier_balance->amount + $transaction->amount;
+                    SupplierBalanceLM::updateSupplierBalance(
+                        [
+                            'amount = ' . $new_balance,
+                        ],
+                        $supplier_balance->id,
+                    );
+                }
             }
 
             $debts[] = [

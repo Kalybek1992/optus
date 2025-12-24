@@ -693,12 +693,37 @@ class XlsxLM extends LogicManager
             $sheet->setCellValue('H' . $row, $t['transaction_amount']);
             $sheet->setCellValue('I' . $row, $t['interest_income']);
             $sheet->setCellValue('J' . $row, $t['debit_amount']);
-            $sheet->setCellValue('K' . $row, $t['issuance'] ?? '');
-            $sheet->setCellValue('L' . $row, $t['comments'] ?? '');
-            $sheet->setCellValue('M' . $row, $t['date_of_issue'] ?? '');
+
+            if (!empty($t['issuance']) && is_array($t['issuance'])) {
+
+                $amounts = [];
+                $comments = [];
+                $dates = [];
+
+                foreach ($t['issuance'] as $i) {
+                    if (!empty($i['amount'])) {
+                        $amounts[] = number_format($i['amount'], 0, ',', ' ');
+                    }
+                    if (!empty($i['comments'])) {
+                        $comments[] = $i['comments'];
+                    }
+                    if (!empty($i['issue_date'])) {
+                        $dates[] = date('d.m.Y', strtotime($i['issue_date']));
+                    }
+                }
+
+                $sheet->setCellValue('K' . $row, implode(', ', $amounts));
+                $sheet->setCellValue('L' . $row, implode(', ', $comments));
+                $sheet->setCellValue('M' . $row, implode(', ', $dates));
+
+            } else {
+                $sheet->setCellValue('K' . $row, '');
+                $sheet->setCellValue('L' . $row, '');
+                $sheet->setCellValue('M' . $row, '');
+            }
+
             $row++;
         }
-
 
         // Итоговая строка
         $sheet->setCellValue('A' . $row, 'Сумма');
@@ -706,7 +731,6 @@ class XlsxLM extends LogicManager
         $sheet->setCellValue('I' . $row, $transactions_sum['sum_interest_income'] ?? 0);
         $sheet->setCellValue('J' . $row, $transactions_sum['debts_amount'] ?? 0);
 
-        // Можно добавить автоширину для читаемости
         foreach (range('A', 'M') as $columnID) {
             $sheet->getColumnDimension($columnID)->setAutoSize(true);
         }

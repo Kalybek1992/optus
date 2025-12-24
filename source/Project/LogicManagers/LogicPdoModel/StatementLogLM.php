@@ -74,6 +74,7 @@ class StatementLogLM
                 '*'
             ])->where([
                 "status =" . 0,
+                "steps IS NOT NULL",
             ]);
 
         $statement_log = PdoConnector::execute($builder);

@@ -40,22 +40,29 @@
                                 {% endif %}
                             </div>
 
-                            <ul class="pl-8 py-1 space-y-1">
-                                {% if unknown_accounts is defined and unknown_accounts > 0 %}
-                                    <li>
-                                        <a href="entities/unknownAccounts" class="block px-2 py-1 rounded-md hover:bg-base-300">
-                                            Неизвестные счета <span class="badge ml-auto">{{ unknown_accounts }}</span>
-                                        </a>
-                                    </li>
-                                {% endif %}
-                                {% if pending_orders is defined and pending_orders > 0 %}
-                                    <li>
-                                        <a href="entities/unknownBankOrder" class="block px-2 py-1 rounded-md hover:bg-base-300">
-                                            Банковские ордера <span class="badge ml-auto">{{ pending_orders }}</span>
-                                        </a>
-                                    </li>
-                                {% endif %}
-                            </ul>
+                            {% if error_uploads is not defined or error_uploads|length == 0 %}
+                                <ul class="pl-8 py-1 space-y-1">
+                                    {% if unknown_accounts is defined and unknown_accounts > 0 %}
+                                        <li>
+                                            <a href="entities/unknownAccounts"
+                                               class="block px-2 py-1 rounded-md hover:bg-base-300">
+                                                Неизвестные счета
+                                                <span class="badge ml-auto">{{ unknown_accounts }}</span>
+                                            </a>
+                                        </li>
+                                    {% endif %}
+
+                                    {% if pending_orders is defined and pending_orders > 0 %}
+                                        <li>
+                                            <a href="entities/unknownBankOrder"
+                                               class="block px-2 py-1 rounded-md hover:bg-base-300">
+                                                Банковские ордера
+                                                <span class="badge ml-auto">{{ pending_orders }}</span>
+                                            </a>
+                                        </li>
+                                    {% endif %}
+                                </ul>
+                            {% endif %}
                         </li>
                     {% endif %}
 

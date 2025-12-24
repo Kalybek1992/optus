@@ -1033,7 +1033,6 @@ return [
                 ],
             ],
             'middlewares' => [
-                new ApiKeyAdminMiddleware,
                 new UserIdMiddleware,
             ]
         ],
@@ -1162,6 +1161,25 @@ return [
             ],
             'middlewares' => [
                 new ApiKeyAdminMiddleware,
+            ]
+        ],
+        '/supplier/changepercentage' => [
+            'validation' => [
+                'transaction_id' => [
+                    'required' => true,
+                    'custom_logic' => fn($a) => is_numeric($a) && $a > 0
+                ],
+                'legal_id' => [
+                    'required' => true,
+                    'custom_logic' => fn($a) => is_numeric($a) && $a > 0
+                ],
+                'percent' => [
+                    'required' => true,
+                    'custom_logic' => fn($a) => is_numeric($a) && $a > 0 && $a <= 100
+                ],
+            ],
+            'middlewares' => [
+                new ApiKeySupplierMiddleware,
             ]
         ],
         '/entities/addexpensesorder' => [

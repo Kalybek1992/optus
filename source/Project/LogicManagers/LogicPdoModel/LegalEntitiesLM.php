@@ -792,7 +792,8 @@ class LegalEntitiesLM
                 't.description as description',
                 't.amount as transaction_amount',
                 't.percent as transaction_percent',
-                't.interest_income as transaction_interest_income',
+                't.percent as transaction_percent',
+                't.supplier_client_percent as supplier_client_percent',
                 't.date as transaction_date',
                 't.id as transaction_id',
                 't.date as date',
@@ -926,6 +927,7 @@ class LegalEntitiesLM
                 'sender_company_name' => $transaction->sender_company_name,
                 'recipient_bank_name' => $transaction->recipient_bank_name,
                 'recipient_company_name' => $transaction->recipient_company_name,
+                'supplier_client_percent' => $transaction->supplier_client_percent,
                 'issuance' => $issuance,
             ];
         }
@@ -2276,6 +2278,8 @@ class LegalEntitiesLM
         $legal_entities_arr = [];
         $added_inns = [];
 
+        Logger::log(print_r($legal_entities, true), 'legal_entities');
+
         foreach ($legal_entities as $entities) {
             if (!in_array($entities->inn, $added_inns)) {
                 $legal_entities_arr[] = [
@@ -2288,10 +2292,12 @@ class LegalEntitiesLM
             }
         }
 
+
         foreach ($legal_entities_arr as $key => $legal_entity) {
             $balance = SupplierBalanceLM::getSupplierBalanceCompany($legal_entity['inn']);
-
             $supplier_balance = [];
+
+            Logger::log(print_r($balance, true), 'balance');
 
             foreach ($balance as $balance_item) {
                 $supplier_balance[] = [

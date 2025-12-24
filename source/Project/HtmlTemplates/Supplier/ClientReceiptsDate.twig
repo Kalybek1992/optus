@@ -38,7 +38,8 @@
                     </svg>
                     <span class="button-text">Образовать таблицу</span>
                     <!-- Лоадер скрыт изначально -->
-                    <span id="loader" class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 opacity-0 pointer-events-none">
+                    <span id="loader"
+                          class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 opacity-0 pointer-events-none">
                         <span class="loading loading-dots loading-lg"></span>
                     </span>
                 </button>
@@ -112,61 +113,77 @@
                     </thead>
 
                     <tbody class="text-sm divide-y divide-gray-100">
-                        {% for transaction in transactions %}
-                            <tr class="hover:bg-gray-50 divide-x divide-gray-200">
+                    {% for transaction in transactions %}
+                        <tr class="hover:bg-gray-50 divide-x divide-gray-200">
 
-                                <!-- Дата -->
-                                <td class="px-3 py-2">{{ transaction.date }}</td>
+                            <!-- Дата -->
+                            <td class="px-3 py-2">{{ transaction.date }}</td>
 
-                                <!-- Плательщик -->
-                                <td class="px-3 py-2 text-xs text-gray-700">{{ transaction.sender_company_name }}</td>
+                            <!-- Плательщик -->
+                            <td class="px-3 py-2 text-xs text-gray-700">{{ transaction.sender_company_name }}</td>
 
-                                <!-- Плательщик банк -->
-                                <td class="px-3 py-2 text-xs text-gray-700">{{ transaction.sender_bank_name }}</td>
+                            <!-- Плательщик банк -->
+                            <td class="px-3 py-2 text-xs text-gray-700">{{ transaction.sender_bank_name }}</td>
 
-                                <!-- Получатель -->
-                                <td class="px-3 py-2 text-xs text-gray-700">{{ transaction.recipient_company_name }}</td>
+                            <!-- Получатель -->
+                            <td class="px-3 py-2 text-xs text-gray-700">{{ transaction.recipient_company_name }}</td>
 
-                                <!-- Получатель банк -->
-                                <td class="px-3 py-2 text-xs text-gray-700">{{ transaction.recipient_bank_name }}</td>
+                            <!-- Получатель банк -->
+                            <td class="px-3 py-2 text-xs text-gray-700">{{ transaction.recipient_bank_name }}</td>
 
-                                <!-- Комиссия % -->
-                                <td class="px-3 py-2">{{ transaction.percent }}%</td>
+                            <!-- Комиссия % -->
+                            <td class="px-3 py-2">
+                                {% if transaction.issuance is not empty %}
+                                    {{ transaction.percent }}%
+                                {% else %}
+                                    <span
+                                            data-transaction-id="{{ transaction.transaction_id }}"
+                                            data-legal-id="{{ transaction.legal_id }}"
+                                            data-transaction-date="{{ transaction.date }}"
+                                            data-transaction-percent="{{ transaction.percent }}"
+                                            data-transaction-amount="{{ transaction.transaction_amount }}"
+                                            data-transaction-interest_income="{{ transaction.interest_income }}"
+                                            data-transaction-total_amount="{{ transaction.total_amount }}"
+                                            class="change-percentage cursor-pointer font-semibold text-blue-600 hover:underline font-medium">
+                                        {{ transaction.percent }}%
+                                     </span>
+                                {% endif %}
+                            </td>
 
-                                <!-- Сумма -->
-                                <td class="px-3 py-2 bg-yellow-100">{{ transaction.transaction_amount|number_format(0, ',', ' ') }}</td>
+                            <!-- Сумма -->
+                            <td class="px-3 py-2 bg-yellow-100">{{ transaction.transaction_amount|number_format(0, ',', ' ') }}</td>
 
-                                <!-- Комиссия в деньгах -->
-                                <td class="px-3 py-2 bg-purple-100">{{ transaction.interest_income|number_format(0, ',', ' ') }}</td>
+                            <!-- Комиссия в деньгах -->
+                            <td class="px-3 py-2 bg-purple-100">{{ transaction.interest_income|number_format(0, ',', ' ') }}</td>
 
-                                <!-- Долг клиенту -->
-                                <td class="px-3 py-2 bg-green-100">{{ transaction.debit_amount|number_format(0, ',', ' ') }}</td>
+                            <!-- Долг клиенту -->
+                            <td class="px-3 py-2 bg-green-100">{{ transaction.debit_amount|number_format(0, ',', ' ') }}</td>
 
-                                <!-- Сумма выдачи -->
-                                <td class="px-3 py-2 bg-lime-100">
-                                    {% if transaction.issuance is not empty %}
-                                        {{ transaction.issuance | map(i => i.amount|number_format(0, ',', ' ')) | join(', ') }}
-                                    {% else %}
-                                        0
-                                    {% endif %}
-                                </td>
+                            <!-- Сумма выдачи -->
+                            <td class="px-3 py-2 bg-lime-100">
+                                {% if transaction.issuance is not empty %}
+                                    {{ transaction.issuance | map(i => i.amount|number_format(0, ',', ' ')) | join(', ') }}
+                                {% else %}
+                                    0
+                                {% endif %}
+                            </td>
 
-                                <!-- Комментарии -->
-                                <td class="px-3 py-2 whitespace-pre-line">
-                                    {{ transaction.issuance | map(i => '- ' ~ i.comments) | join("\n\n") }}
-                                </td>
+                            <!-- Комментарии -->
+                            <td class="px-3 py-2 whitespace-pre-line">
+                                {{ transaction.issuance | map(i => '- ' ~ i.comments) | join("\n\n") }}
+                            </td>
 
-                                <!-- Дата выдачи -->
-                                <td class="px-3 py-2">
-                                    {% if transaction.issuance is not empty %}
-                                        {{ transaction.issuance | map(i => i.issue_date | date('d.m.Y')) | join(', ') }}
-                                    {% else %}
-                                        –
-                                    {% endif %}
-                                </td>
+                            <!-- Дата выдачи -->
+                            <td class="px-3 py-2">
+                                {% if transaction.issuance is not empty %}
+                                    {{ transaction.issuance | map(i => i.issue_date | date('d.m.Y')) | join(', ') }}
+                                {% else %}
+                                    –
+                                {% endif %}
+                            </td>
 
-                            </tr>
-                        {% endfor %}
+                        </tr>
+                    {% endfor %}
                     </tbody>
 
                     <tfoot class="bg-gray-100 text-xs text-gray-500 uppercase">
@@ -193,16 +210,60 @@
                 {% for transaction in transactions %}
                     <div class="border border-gray-200 rounded-lg p-3 shadow-sm bg-white text-[13px] space-y-2">
 
-                        <div><div class="text-gray-500 text-xs">Дата:</div><div class="font-medium">{{ transaction.date }}</div></div>
-                        <div><div class="text-gray-500 text-xs">Плательщик:</div><div class="text-[11px] break-all">{{ transaction.sender_company_name }}</div></div>
-                        <div><div class="text-gray-500 text-xs">Плательщик банк:</div><div class="text-[11px] break-all">{{ transaction.sender_bank_name }}</div></div>
-                        <div><div class="text-gray-500 text-xs">Получатель:</div><div class="text-[11px] break-all">{{ transaction.recipient_company_name }}</div></div>
-                        <div><div class="text-gray-500 text-xs">Получатель банк:</div><div class="text-[11px] break-all">{{ transaction.recipient_bank_name }}</div></div>
-                        <div><div class="text-gray-500 text-xs">Комиссия %:</div><div>{{ transaction.percent }}%</div></div>
-                        <div class="bg-yellow-50 px-2 py-1 rounded"><div class="text-gray-600 text-xs">Сумма:</div><div class="font-semibold">{{ transaction.transaction_amount|number_format(0, ',', ' ') }}</div></div>
-                        <div class="bg-purple-50 px-2 py-1 rounded"><div class="text-gray-600 text-xs">Комиссия ₽:</div><div class="font-semibold">{{ transaction.interest_income|number_format(0, ',', ' ') }}</div></div>
-                        <div class="bg-green-50 px-2 py-1 rounded"><div class="text-gray-600 text-xs">Долг клиенту:</div><div class="font-semibold">{{ transaction.debit_amount|number_format(0, ',', ' ') }}</div></div>
-                        <div class="bg-lime-50 px-2 py-1 rounded"><div class="text-gray-600 text-xs">Сумма выдачи:</div>
+                        <div>
+                            <div class="text-gray-500 text-xs">Дата:</div>
+                            <div class="font-medium">{{ transaction.date }}</div>
+                        </div>
+                        <div>
+                            <div class="text-gray-500 text-xs">Плательщик:</div>
+                            <div class="text-[11px] break-all">{{ transaction.sender_company_name }}</div>
+                        </div>
+                        <div>
+                            <div class="text-gray-500 text-xs">Плательщик банк:</div>
+                            <div class="text-[11px] break-all">{{ transaction.sender_bank_name }}</div>
+                        </div>
+                        <div>
+                            <div class="text-gray-500 text-xs">Получатель:</div>
+                            <div class="text-[11px] break-all">{{ transaction.recipient_company_name }}</div>
+                        </div>
+                        <div>
+                            <div class="text-gray-500 text-xs">Получатель банк:</div>
+                            <div class="text-[11px] break-all">{{ transaction.recipient_bank_name }}</div>
+                        </div>
+                        <div>
+                            <div class="text-gray-500 text-xs">Комиссия %:</div>
+                            <div>
+                                {% if transaction.issuance is not empty %}
+                                    {{ transaction.percent }}%
+                                {% else %}
+                                    <span
+                                            data-transaction-id="{{ transaction.transaction_id }}"
+                                            data-legal-id="{{ transaction.legal_id }}"
+                                            data-transaction-date="{{ transaction.date }}"
+                                            data-transaction-percent="{{ transaction.percent }}"
+                                            data-transaction-amount="{{ transaction.transaction_amount }}"
+                                            data-transaction-interest_income="{{ transaction.interest_income }}"
+                                            data-transaction-total_amount="{{ transaction.total_amount }}"
+                                            class="change-percentage cursor-pointer font-semibold text-blue-600 hover:underline font-medium">
+                                        {{ transaction.percent }}%
+                                     </span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="bg-yellow-50 px-2 py-1 rounded">
+                            <div class="text-gray-600 text-xs">Сумма:</div>
+                            <div class="font-semibold">{{ transaction.transaction_amount|number_format(0, ',', ' ') }}</div>
+                        </div>
+                        <div class="bg-purple-50 px-2 py-1 rounded">
+                            <div class="text-gray-600 text-xs">Комиссия ₽:</div>
+                            <div class="font-semibold">{{ transaction.interest_income|number_format(0, ',', ' ') }}</div>
+                        </div>
+                        <div class="bg-green-50 px-2 py-1 rounded">
+                            <div class="text-gray-600 text-xs">Долг клиенту:</div>
+                            <div class="font-semibold">{{ transaction.debit_amount|number_format(0, ',', ' ') }}</div>
+                        </div>
+                        <div class="bg-lime-50 px-2 py-1 rounded">
+                            <div class="text-gray-600 text-xs">Сумма выдачи:</div>
                             <div class="font-semibold">
                                 {% if transaction.issuance is not empty %}
                                     {{ transaction.issuance | map(i => i.amount|number_format(0, ',', ' ')) | join(', ') }}
@@ -211,7 +272,8 @@
                                 {% endif %}
                             </div>
                         </div>
-                        <div><div class="text-gray-500 text-xs">Дата выдачи:</div>
+                        <div>
+                            <div class="text-gray-500 text-xs">Дата выдачи:</div>
                             <div class="text-[11px] break-all">
                                 {% if transaction.issuance is not empty %}
                                     {{ transaction.issuance | map(i => i.issue_date | date('d.m.Y')) | join(', ') }}
@@ -220,7 +282,10 @@
                                 {% endif %}
                             </div>
                         </div>
-                        <div><div class="text-gray-500 text-xs">Комментарии:</div><div class="text-[11px] break-all">{{ transaction.comments }}</div></div>
+                        <div>
+                            <div class="text-gray-500 text-xs">Комментарии:</div>
+                            <div class="text-[11px] break-all">{{ transaction.comments }}</div>
+                        </div>
                     </div>
                 {% endfor %}
             </div>
@@ -425,7 +490,7 @@
             }
 
 
-            const result = await postData('/transaction/changePercentage', {
+            const result = await postData('/supplier/changePercentage', {
                 transaction_id: transactionId,
                 legal_id: legalId,
                 percent: percentage,
