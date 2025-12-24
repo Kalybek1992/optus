@@ -381,7 +381,6 @@ class CompanyFinancesLM
 
     public static function getCourierFinances($courier_id, $offset, $limit, $category, $date_from, $date_to)
     {
-
         $builder = CompanyFinances::newQueryBuilder()
             ->select([
                 '*',
@@ -477,7 +476,6 @@ class CompanyFinancesLM
             ->offset($offset);
 
         $expenses = PdoConnector::execute($builder);
-
         $expenses_arr = [];
 
         foreach ($expenses as $expense) {
@@ -486,6 +484,11 @@ class CompanyFinancesLM
 
             $date = new \DateTime($expense->date);
             $translated_date = $formatter->format($date);
+            $from_whom = $expense->supplier_name ?? $expense->courier_name ?? 'Администратор';
+
+            if ($expense->type == 'courier_income_other'){
+                $from_whom = 'От других источников';
+            }
 
             $expenses_arr[] = [
                 'id' => $expense->id,
@@ -495,7 +498,7 @@ class CompanyFinancesLM
                 'date' => date('d.m.Y', strtotime($expense->date)),
                 'dey' => $translated_date,
                 'description' => $expense->description,
-                'supplier_name' => $expense->supplier_name ?? $expense->courier_name ?? 'Администратор',
+                'from_whom' => $from_whom,
                 'status' => $expense->status,
                 'bank_order_id' => $expense->bank_order_id,
                 'company_name' => $expense->company_name,

@@ -52,7 +52,7 @@
                         <button @click="open = !open"
                                 class="w-full text-left bg-white border border-gray-300 px-4 py-3 rounded-md shadow-sm hover:shadow-md transition font-medium text-sm sm:text-base">
                             <template x-if="path.length === 0">
-                                <span>Выберите категорию расхода</span>
+                                <span>Выберите категорию дохода</span>
                             </template>
                             <template x-if="path.length > 0">
                                 <span id="category" x-text="path.join(' > ')"></span>

@@ -35,10 +35,19 @@
                 };
 
                 const isReturn = actionType === 'debt';
+                let title = '';
 
-                document.getElementById('modal-title').textContent = isReturn
-                    ? 'Подтвердить возврат долга курьера'
-                    : 'Подтвердить расход курьера';
+                if (actionType === 'debt'){
+                    title ='Подтвердить возврат долга курьера';
+                }
+                if (actionType === 'courier_income_other'){
+                    title ='Подтвердить доход от других источников';
+                }
+                if (actionType === 'consumption'){
+                    title ='Подтвердить расход курьера';
+                }
+
+                document.getElementById('modal-title').textContent = title;
 
                 document.getElementById('modal-label-category').textContent = isReturn ? 'Клиент' : 'Категория';
 

@@ -1446,7 +1446,7 @@ return [
                 ],
                 'action_type' => [
                     'required' => true,
-                    'custom_logic' => fn($a) => $a == 'consumption' || $a == 'debt'
+                    'custom_logic' => fn($a) => $a == 'consumption' || $a == 'debt' || $a == 'courier_income_other'
                 ],
             ],
             'middlewares' => [

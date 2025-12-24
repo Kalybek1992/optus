@@ -144,7 +144,7 @@
                             <td class="px-3 py-2">{{ finances.dey }}</td>
                             <td class="px-3 py-2 min-w-200">{{ finances.amount|number_format(0, ',', ' ') }}</td>
                             <td class="px-3 py-2">{{ finances.category }}</td>
-                            <td class="px-3 py-2">{{ finances.supplier_name }}</td>
+                            <td class="px-3 py-2">{{ finances.from_whom }}</td>
                             <td class="px-3 py-2">{{ finances.comments }}</td>
                             <td class="px-3 py-2 text-center">
                                 {% if finances.return_account == 1 %}
@@ -197,7 +197,7 @@
                     <div><div class="text-gray-500 text-xs">День:</div><div class="font-medium">{{ finances.dey }}</div></div>
                     <div><div class="text-gray-500 text-xs">Сумма:</div><div class="font-semibold">{{ finances.amount }}</div></div>
                     <div><div class="text-gray-500 text-xs">Категории:</div><div class="text-[11px] break-all">{{ finances.category }}</div></div>
-                    <div><div class="text-gray-500 text-xs">От кого:</div><div class="text-[11px] break-all">{{ finances.supplier_name }}</div></div>
+                    <div><div class="text-gray-500 text-xs">От кого:</div><div class="text-[11px] break-all">{{ finances.from_whom }}</div></div>
                     <div><div class="text-gray-500 text-xs">Комментарии:</div><div class="text-[11px] break-all">{{ finances.comments }}</div></div>
                     <div>
                         <div class="text-gray-500 text-xs">Возврат:</div>

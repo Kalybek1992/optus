@@ -246,13 +246,15 @@ class CourierController extends BaseController
         }
 
         if ($status == 'confirm'){
-            $client = ClientsLM::getClientId($finances->client_id);
+            if ($action_type == 'debt'){
+                $client = ClientsLM::getClientId($finances->client_id);
 
-            DebtsLM::payOffClientsDebt(
-                $client['legal_id'],
-                $finances->amount,
-                $finances->transaction_id
-            );
+                DebtsLM::payOffClientsDebt(
+                    $client['legal_id'],
+                    $finances->amount,
+                    $finances->transaction_id
+                );
+            }
 
             CompanyFinancesLM::updateCompanyFinancesId([
                 'status = ' . 'processed',

@@ -438,24 +438,7 @@ class LegalEntitiesLM
         $builder = LegalEntities::newQueryBuilder()
             ->select([
                 '*',
-                's.percentage as supplier_percentage',
-                'c.percentage as client_percentage',
-                'u.name as user_name',
-                'u.role as user_role',
             ])
-            ->leftJoin('suppliers s')
-            ->on([
-                's.id = supplier_id',
-            ])
-            ->leftJoin('clients c')
-            ->on([
-                'c.id = client_id',
-            ])
-            ->leftJoin('users u')
-            ->on([
-                'u.id = s.user_id',
-                'u.id = c.user_id',
-            ], 'OR')
             ->where([
                 'id =' . $id,
                 "client_id IS NULL",
