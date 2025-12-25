@@ -72,7 +72,11 @@ class CourierController extends BaseController
 
     public function incomeOtherForm(): string
     {
-        $get_categories = ExpenseCategoriesLM::getExpenseCategories();
+        $get_categories = ExpenseCategoriesLM::getExpenseCategories(
+            null,
+            1
+        );
+
         $categories_html = $get_categories ? HtmlLM::renderCategoryLevels($get_categories) : HtmlLM::renderCategoryNot();
 
         return $this->twig->render('Courier/CourierIncomeOther.twig', [

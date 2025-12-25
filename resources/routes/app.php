@@ -218,6 +218,14 @@ return [
                 new ApiKeyAddUserCategoriesMiddleware
             ]
         ],
+        '/categories/projectpage' => [
+            'validation' => [
+                'captcha_response' => ['required' => false]
+            ],
+            'middlewares' => [
+                new ApiKeyAddUserCategoriesMiddleware
+            ]
+        ],
         '/transaction/getexpenses' => [
             'validation' => [
                 'page' => [
@@ -1074,6 +1082,10 @@ return [
                 'new_category' => [
                     'required' => true,
                     'custom_logic' => fn($a) => is_string($a)
+                ],
+                'project' => [
+                    'required' => true,
+                    'custom_logic' => fn($a) => $a == 0 || $a == 1,
                 ],
             ],
             'middlewares' => [

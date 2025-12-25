@@ -21,7 +21,7 @@ class ExpenseCategoriesLM
         return PdoConnector::execute($builder);
     }
 
-    public static function getExpenseCategories($supplier_id = null): array
+    public static function getExpenseCategories($supplier_id = null, $project = 0): array
     {
         $categories_db = [];
 
@@ -40,6 +40,11 @@ class ExpenseCategoriesLM
             ->leftJoin('expense_categories c')
             ->on([
                 'r.child_id = c.id',
+            ]);
+
+        $builder
+            ->where([
+                'p.project =' . $project,
             ]);
 
         if ($supplier_id) {
@@ -87,6 +92,10 @@ class ExpenseCategoriesLM
                 ]);
         }
 
+        $builder
+            ->where([
+                'ec.project =' . $project,
+            ]);
 
         $categories_no_heir = PdoConnector::execute($builder);
 

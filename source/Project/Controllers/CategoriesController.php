@@ -35,11 +35,35 @@ class CategoriesController extends BaseController
         ]);
     }
 
+    public function projectPage(): string
+    {
+        $return_page = InformationDC::get('return_page') ?? null;
+        $get_categories = ExpenseCategoriesLM::getExpenseCategories(
+            null,
+            1
+        );
+
+        if ($get_categories) {
+            $categories_html = HtmlLM::renderCategoryLevelsAdd($get_categories);
+        } else {
+            $categories_html = [];
+        }
+        //echo 'Пик использования памяти: ' . memory_get_peak_usage() . ' байт';
+        //$level = '{ open: true, level: 1, path: [' . "'Транспорт'"  . '] }';
+        //Logger::log(print_r($categories_html, true), 'htmlCategories');
+
+
+        return $this->twig->render('Categories/Categories.twig', [
+            'categories_html' => $categories_html,
+            'return_page' => $return_page,
+        ]);
+    }
+
     public function addCategory(): array
     {
         $parent_category = InformationDC::get('parent_category');
         $new_category = InformationDC::get('new_category');
-        $parent_db = [];
+        $project = InformationDC::get('project');
 
         if ($parent_category != 'not_parent') {
             $parent_db = ExpenseCategoriesLM::getExpenseCategoriesNameParent($parent_category);
@@ -64,6 +88,7 @@ class CategoriesController extends BaseController
             if (!$new_category_db) {
                 ExpenseCategoriesLM::insertNewCategories([
                     'name' => $new_category,
+                    'project' => $project,
                 ]);
 
                 $new_category_db = ExpenseCategoriesLM::getExpenseCategoriesName($new_category);
@@ -89,7 +114,8 @@ class CategoriesController extends BaseController
 
             ExpenseCategoriesLM::insertNewCategories([
                 'name' => $new_category,
-                'is_parsed' => 1
+                'is_parsed' => 1,
+                'project' => $project,
             ]);
         }
 
