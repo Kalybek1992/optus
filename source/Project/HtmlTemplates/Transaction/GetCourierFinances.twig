@@ -37,31 +37,24 @@
             </div>
 
             <!-- Кнопка скачать -->
-            <div>
-                <button
-                        id="receipt-button"
-                        onclick="downloadTableUniversal()"
-                        class="relative flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg shadow-sm transition">
+            {% include './Unloading/DownloadTable.twig' %}
 
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
-                         stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round"
-                              d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5m0 0l5-5m-5 5V4"/>
-                    </svg>
-                    <span class="button-text">Образовать таблицу</span>
-                    <!-- Лоадер скрыт изначально -->
-                    <span id="loader" class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 opacity-0 pointer-events-none">
-                        <span class="loading loading-dots loading-lg"></span>
-                    </span>
-                </button>
-            </div>
-            <!-- Категории дата искать  -->
+            <!-- Категории дата искать -->
             <div class="w-full max-w-8xl mx-auto space-y-4">
-                <div class="flex flex-col md:flex-row md:items-center gap-4 p-4 bg-white rounded-xl shadow-sm">
+                <div class="flex flex-col md:flex-row md:items-center gap-3 md:gap-4
+                p-3 md:p-4 bg-white rounded-xl shadow-sm">
+
                     <!-- Категория расхода -->
                     <div x-data="{ open: false, level: 0, path: [] }" class="relative w-full md:w-[28rem]">
                         <button @click="open = !open"
-                                class="w-full h-[56px] text-left bg-white border border-gray-300 px-5 py-3 rounded-xl shadow-sm hover:shadow-md transition text-base font-medium flex items-center">
+                                class="w-full
+                           h-[40px] md:h-[56px]
+                           text-left bg-white border border-gray-300
+                           px-3 md:px-5 py-2 md:py-3
+                           rounded-lg md:rounded-xl
+                           shadow-sm hover:shadow-md transition
+                           text-xs md:text-base font-medium
+                           flex items-center">
                             <template x-if="path.length === 0">
                                 <span>Выберите категорию расхода</span>
                             </template>
@@ -69,40 +62,106 @@
                                 <span id="category" x-text="path.join(' > ')"></span>
                             </template>
                         </button>
+
                         <!-- Выпадающее меню -->
                         <div x-show="open"
                              @click.outside="open = false"
-                             class="absolute mt-2 w-full z-50 bg-white border border-gray-200 rounded-xl shadow-xl p-4 space-y-3 transition-all duration-300"
+                             class="absolute mt-2 w-full z-50 bg-white border border-gray-200
+                        rounded-lg md:rounded-xl shadow-xl
+                        p-3 md:p-4 space-y-3
+                        max-h-[260px] md:max-h-[320px]
+                        overflow-y-auto transition-all duration-300"
                              x-transition>
                             <div x-show="level > 0" class="mb-2">
-                                <button @click="level--; path.pop()" class="text-sm text-blue-600 hover:underline">← Назад
+                                <button @click="level--; path.pop()"
+                                        class="text-xs md:text-sm text-blue-600 hover:underline">
+                                    ← Назад
                                 </button>
                             </div>
                             {{ categories_html|raw }}
                         </div>
                     </div>
+
+                    <!-- Доход от проекта -->
+                    <div x-data="{ open: false, level: 0, path: [] }" class="relative w-full md:w-[28rem]">
+                        <button @click="open = !open"
+                                class="w-full
+                           h-[40px] md:h-[56px]
+                           text-left bg-white border border-gray-300
+                           px-3 md:px-5 py-2 md:py-3
+                           rounded-lg md:rounded-xl
+                           shadow-sm hover:shadow-md transition
+                           text-xs md:text-base font-medium
+                           flex items-center">
+                            <template x-if="path.length === 0">
+                                <span>Доход от проекта</span>
+                            </template>
+                            <template x-if="path.length > 0">
+                                <span id="category" x-text="path.join(' > ')"></span>
+                            </template>
+                        </button>
+
+                        <!-- Выпадающее меню -->
+                        <div x-show="open"
+                             @click.outside="open = false"
+                             class="absolute mt-2 w-full z-50 bg-white border border-gray-200
+                        rounded-lg md:rounded-xl shadow-xl
+                        p-3 md:p-4 space-y-3
+                        max-h-[260px] md:max-h-[320px]
+                        overflow-y-auto transition-all duration-300"
+                             x-transition>
+                            <div x-show="level > 0" class="mb-2">
+                                <button @click="level--; path.pop()"
+                                        class="text-xs md:text-sm text-blue-600 hover:underline">
+                                    ← Назад
+                                </button>
+                            </div>
+                            {{ project_html|raw }}
+                        </div>
+                    </div>
+
                     <!-- Дата "от" -->
                     <div class="flex items-center w-full md:w-auto gap-2">
-                        <span class="text-sm font-medium text-gray-600">ОТ-</span>
+                        <span class="text-xs md:text-sm font-medium text-gray-600">ОТ-</span>
                         <input type="text"
                                id="datepicker_from"
                                placeholder="Дата начала"
                                autocomplete="off"
-                               class="w-full md:w-[12rem] h-[56px] p-4 bg-white rounded-xl shadow-sm text-base font-semibold text-gray-700 uppercase border border-gray-200"/>
+                               class="w-full md:w-[12rem]
+                          h-[40px] md:h-[56px]
+                          p-2 md:p-4
+                          bg-white rounded-lg md:rounded-xl
+                          shadow-sm
+                          text-xs md:text-base font-semibold text-gray-700 uppercase
+                          border border-gray-200"/>
                     </div>
+
                     <!-- Дата "до" -->
                     <div class="flex items-center w-full md:w-auto gap-2">
-                        <span class="text-sm font-medium text-gray-600">ДО-</span>
+                        <span class="text-xs md:text-sm font-medium text-gray-600">ДО-</span>
                         <input type="text"
                                id="datepicker_to"
                                placeholder="Дата окончания"
                                autocomplete="off"
-                               class="w-full md:w-[12rem] h-[56px] p-4 bg-white rounded-xl shadow-sm text-base font-semibold text-gray-700 uppercase border border-gray-200"/>
+                               class="w-full md:w-[12rem]
+                          h-[40px] md:h-[56px]
+                          p-2 md:p-4
+                          bg-white rounded-lg md:rounded-xl
+                          shadow-sm
+                          text-xs md:text-base font-semibold text-gray-700 uppercase
+                          border border-gray-200"/>
                     </div>
-                    <!-- Кнопка "Искать" -->
+
+                    <!-- Кнопка поиска -->
                     <div class="w-full md:w-auto">
                         <button id="searchFilters" type="submit"
-                                class="w-full md:w-auto h-[56px] px-6 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-xl shadow-sm transition">
+                                class="w-full md:w-auto
+                           h-[40px] md:h-[56px]
+                           px-4 md:px-6
+                           bg-blue-600 hover:bg-blue-700
+                           text-white text-xs md:text-sm font-semibold
+                           rounded-lg md:rounded-xl
+                           shadow-sm transition">
                             Поиск с фильтрам
                         </button>
                     </div>
@@ -193,12 +252,30 @@
         <div class="lg:hidden space-y-4 mt-4">
             {% for finances in get_courier_finances %}
                 <div class="border border-gray-200 rounded-lg p-3 shadow-sm bg-white text-[13px] space-y-2">
-                    <div><div class="text-gray-500 text-xs">Дата:</div><div class="font-medium">{{ finances.date }}</div></div>
-                    <div><div class="text-gray-500 text-xs">День:</div><div class="font-medium">{{ finances.dey }}</div></div>
-                    <div><div class="text-gray-500 text-xs">Сумма:</div><div class="font-semibold">{{ finances.amount }}</div></div>
-                    <div><div class="text-gray-500 text-xs">Категории:</div><div class="text-[11px] break-all">{{ finances.category }}</div></div>
-                    <div><div class="text-gray-500 text-xs">От кого:</div><div class="text-[11px] break-all">{{ finances.from_whom }}</div></div>
-                    <div><div class="text-gray-500 text-xs">Комментарии:</div><div class="text-[11px] break-all">{{ finances.comments }}</div></div>
+                    <div>
+                        <div class="text-gray-500 text-xs">Дата:</div>
+                        <div class="font-medium">{{ finances.date }}</div>
+                    </div>
+                    <div>
+                        <div class="text-gray-500 text-xs">День:</div>
+                        <div class="font-medium">{{ finances.dey }}</div>
+                    </div>
+                    <div>
+                        <div class="text-gray-500 text-xs">Сумма:</div>
+                        <div class="font-semibold">{{ finances.amount }}</div>
+                    </div>
+                    <div>
+                        <div class="text-gray-500 text-xs">Категории:</div>
+                        <div class="text-[11px] break-all">{{ finances.category }}</div>
+                    </div>
+                    <div>
+                        <div class="text-gray-500 text-xs">От кого:</div>
+                        <div class="text-[11px] break-all">{{ finances.from_whom }}</div>
+                    </div>
+                    <div>
+                        <div class="text-gray-500 text-xs">Комментарии:</div>
+                        <div class="text-[11px] break-all">{{ finances.comments }}</div>
+                    </div>
                     <div>
                         <div class="text-gray-500 text-xs">Возврат:</div>
                         {% if finances.return_account == 1 %}
@@ -234,7 +311,7 @@
         </div>
     </div>
 
-    <input type="checkbox" id="cornerModal" class="hidden peer" />
+    <input type="checkbox" id="cornerModal" class="hidden peer"/>
     <div class="fixed bottom-4 right-4 bg-white border shadow-lg rounded-lg p-4 w-80 z-50 hidden peer-checked:flex peer-checked:flex-col">
         <div class="flex items-start justify-between">
             <div>
@@ -251,7 +328,7 @@
     </div>
 
     <!-- Corner Modal -->
-    <input type="checkbox" id="cornerModal" class="hidden peer" />
+    <input type="checkbox" id="cornerModal" class="hidden peer"/>
     <div class="fixed bottom-4 right-4 bg-white border shadow-lg rounded-lg p-3 w-72 z-50 hidden peer-checked:flex peer-checked:flex-col text-sm
             sm:w-80 sm:p-4">
         <div class="flex items-start justify-between">
@@ -264,7 +341,7 @@
     </div>
 
     <!-- Unlink Account Modal -->
-    <input type="checkbox" id="unlink_account" class="modal-toggle" />
+    <input type="checkbox" id="unlink_account" class="modal-toggle"/>
     <div class="modal" role="dialog">
         <div class="modal-box max-w-sm sm:max-w-md p-4 sm:p-6 text-sm sm:text-base">
             <h1 class="text-base sm:text-lg font-bold text-gray-800 mb-4">Вы действительно хотите отменить расход?</h1>
@@ -286,19 +363,23 @@
                 </div>
 
                 <div class="alert alert-info rounded-xl mt-2 sm:mt-3 text-white text-xs sm:text-sm flex items-start gap-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 sm:h-6 sm:w-6 shrink-0 stroke-current text-white" fill="none" viewBox="0 0 24 24">
+                    <svg xmlns="http://www.w3.org/2000/svg"
+                         class="h-5 w-5 sm:h-6 sm:w-6 shrink-0 stroke-current text-white" fill="none"
+                         viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                              d="M13 16h-1v-4h-1m1-4h.01M12 20a8 8 0 100-16 8 8 0 000 16z" />
+                              d="M13 16h-1v-4h-1m1-4h.01M12 20a8 8 0 100-16 8 8 0 000 16z"/>
                     </svg>
                     <span class="text-white">Если отправка подтверждена курьером, соответствующая сумма будет вычтена с его товарного баланса!</span>
                 </div>
             </div>
 
             <div class="modal-action mt-4 sm:mt-6 flex flex-col sm:flex-row gap-2 sm:gap-4">
-                <button id="confirmUnlink" class="btn bg-blue-600 hover:bg-blue-700 text-white border-none rounded-lg px-4 py-1 sm:px-6 sm:py-2 text-xs sm:text-sm">
+                <button id="confirmUnlink"
+                        class="btn bg-blue-600 hover:bg-blue-700 text-white border-none rounded-lg px-4 py-1 sm:px-6 sm:py-2 text-xs sm:text-sm">
                     Подтвердить
                 </button>
-                <label for="unlink_account" class="btn btn-outline rounded-lg px-4 py-1 sm:px-6 sm:py-2 text-xs sm:text-sm">
+                <label for="unlink_account"
+                       class="btn btn-outline rounded-lg px-4 py-1 sm:px-6 sm:py-2 text-xs sm:text-sm">
                     Отменить
                 </label>
             </div>
@@ -329,7 +410,7 @@
             const checkbox = document.getElementById('cornerModal');
             const txtModal = document.getElementById('txtModal');
             checkbox.checked = true;
-            txtModal.innerHTML= message;
+            txtModal.innerHTML = message;
 
 
             setTimeout(() => {

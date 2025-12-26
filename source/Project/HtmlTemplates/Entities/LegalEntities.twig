@@ -36,6 +36,9 @@
                     </svg>
                 </button>
             </div>
+
+            <!-- Фильтры даты -->
+            {% include './FilterData/DateSearch.twig' %}
         </div>
 
         <!-- Блок баланса и процента -->
@@ -61,9 +64,6 @@
                     <span>Нет транзакций</span>
                 </div>
             {% else %}
-                <!-- Фильтры даты -->
-                {% include './FilterData/DatefromDatetoEntities.twig' %}
-
 
                 <!-- Таблица для десктопа -->
                 <div class="hidden md:block overflow-x-auto w-full border border-gray-200 rounded-lg shadow-sm mt-4">

@@ -232,6 +232,7 @@ class TransactionController extends BaseController
 
         $get_courier_finances = CompanyFinancesLM::getCourierFinances($courier_id, $offset, $limit, $category, $date_from, $date_to);
         $get_categories = ExpenseCategoriesLM::getExpenseCategories();
+        $get_categories_project = ExpenseCategoriesLM::getExpenseCategories(null, 1);
 
         $expenses_count = CompanyFinancesLM::getCourierFinancesCount($courier_id, $category, $date_from, $date_to);
         $page_count = ceil($expenses_count / $limit);
@@ -244,12 +245,19 @@ class TransactionController extends BaseController
             $categories_html = HtmlLM::renderCategoryNot();
         }
 
+        if ($get_categories_project) {
+            $project_html = HtmlLM::renderCategoryLevels($get_categories_project);
+        } else {
+            $project_html = HtmlLM::renderCategoryNot();
+        }
+
 
         return $this->twig->render('Transaction/GetCourierFinances.twig', [
             'page' => $page + 1,
             'courier' => $courier,
             'get_courier_finances' => $get_courier_finances,
             'categories_html' => $categories_html,
+            'project_html' => $project_html,
             'page_count' => $page_count,
         ]);
     }

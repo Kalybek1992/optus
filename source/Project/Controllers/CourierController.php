@@ -91,9 +91,9 @@ class CourierController extends BaseController
         $courier = CouriersLM::getCourierByUserId($user['id']);
         $amount = InformationDC::get('amount');
         $category = InformationDC::get('category');
-        $receipt_date = InformationDC::get('date');
         $comments = InformationDC::get('comments');
         $translation_max_id = TransactionsLM::getTranslationMaxId();
+        $receipt_date = InformationDC::get('date');
         $dt = DateTime::createFromFormat('d.m.Y', $receipt_date);
         $issue_date = $dt->format('Y-m-d');
 
@@ -157,6 +157,9 @@ class CourierController extends BaseController
         $category = trim((string)InformationDC::get('category_path'));
         $comments = trim((string)InformationDC::get('comments'));
         $translation_max_id = TransactionsLM::getTranslationMaxId();
+        $receipt_date = InformationDC::get('date');
+        $dt = DateTime::createFromFormat('d.m.Y', $receipt_date);
+        $issue_date = $dt->format('Y-m-d');
 
         if (!$courier) {
             return ApiViewer::getErrorBody(['value' => 'invalid_parameters']);
@@ -183,6 +186,7 @@ class CourierController extends BaseController
                 'transaction_id' => $translation_max_id + 1,
                 'category' => $category,
                 'comments' => $comments,
+                'issue_date' => $issue_date,
                 'status' => 'confirm_admin',
             ]);
 
@@ -215,6 +219,9 @@ class CourierController extends BaseController
         $client_id = (int)InformationDC::get('client_id');
         $amount = (float)InformationDC::get('amount');
         $comments = trim((string)InformationDC::get('comments'));
+        $receipt_date = InformationDC::get('date');
+        $dt = DateTime::createFromFormat('d.m.Y', $receipt_date);
+        $issue_date = $dt->format('Y-m-d');
 
         if ($client_id <= 0 || $amount <= 0) {
             return ApiViewer::getErrorBody(['value' => 'invalid_parameters']);
@@ -228,6 +235,7 @@ class CourierController extends BaseController
                     'client_id' => $client_id,
                     'comments' => $comments,
                     'status' => 'processed',
+                    'issue_date' => $issue_date,
                     'created_at' => date('Y-m-d H:i:s'),
                 ]
             ]);
