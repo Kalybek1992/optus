@@ -553,6 +553,29 @@ return [
                 new ApiKeyCourierMiddleware
             ]
         ],
+        '/courier/courierfinances' => [
+            'validation' => [
+                'page' => [
+                    'required' => false,
+                    'custom_logic' => fn($a) => is_numeric($a) || null == $a
+                ],
+                'category' => [
+                    'required' => false,
+                    'custom_logic' => fn($a) => is_string($a) || $a == null
+                ],
+                'date_from' => [
+                    'required' => false,
+                    'custom_logic' => fn($a) => is_string($a) && DateTime::createFromFormat('d.m.Y', $a) !== false || $a == null
+                ],
+                'date_to' => [
+                    'required' => false,
+                    'custom_logic' => fn($a) => is_string($a) && DateTime::createFromFormat('d.m.Y', $a) !== false || $a == null
+                ]
+            ],
+            'middlewares' => [
+                new ApiKeyCourierMiddleware
+            ]
+        ],
         '/transaction/distributioncommoditymoney' => [
             'validation' => [
                 'captcha_response' => ['required' => false]
@@ -1868,7 +1891,26 @@ return [
                 ]
             ],
             'middlewares' => [
-                new ApiKeyAdminMiddleware
+                new ApiKeyAdminMiddleware,
+            ]
+        ],
+        '/unloading/courierfinances' => [
+            'validation' => [
+                'category' => [
+                    'required' => false,
+                    'custom_logic' => fn($a) => is_string($a) || $a == null
+                ],
+                'date_from' => [
+                    'required' => false,
+                    'custom_logic' => fn($a) => is_string($a) && DateTime::createFromFormat('d.m.Y', $a) !== false || $a == null
+                ],
+                'date_to' => [
+                    'required' => false,
+                    'custom_logic' => fn($a) => is_string($a) && DateTime::createFromFormat('d.m.Y', $a) !== false || $a == null
+                ]
+            ],
+            'middlewares' => [
+                new ApiKeyCourierMiddleware
             ]
         ],
         '/unloading/getexpenses' => [

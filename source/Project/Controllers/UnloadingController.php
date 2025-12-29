@@ -8,6 +8,7 @@ use Source\Project\DataContainers\InformationDC;
 use Source\Project\LogicManagers\LogicPdoModel\ClientServicesLM;
 use Source\Project\LogicManagers\LogicPdoModel\ClientsLM;
 use Source\Project\LogicManagers\LogicPdoModel\CompanyFinancesLM;
+use Source\Project\LogicManagers\LogicPdoModel\CouriersLM;
 use Source\Project\LogicManagers\LogicPdoModel\LegalEntitiesLM;
 use Source\Project\LogicManagers\LogicPdoModel\TransactionsLM;
 use Source\Project\LogicManagers\Xlsx\XlsxLM;
@@ -599,6 +600,53 @@ class UnloadingController extends BaseController
         );
 
         $file_path = XlsxLM::supplierClientReceiptsDate($all_transactions, $transactions_sum);
+
+        return ApiViewer::getOkBody(['file' => $file_path]);
+    }
+
+    public function courierFinances(): array
+    {
+        $date_from = InformationDC::get('date_from');
+        $date_to = InformationDC::get('date_to');
+        $category = InformationDC::get('category');
+        $user = InformationDC::get('user');
+        $courier = CouriersLM::getCourierByUserId($user['id']);
+        $courier_id = $courier['id'] ?? 0;
+        $limit = 120;
+
+        $transactions_count = CompanyFinancesLM::getCourierFinancesCount($courier_id, $category, $date_from, $date_to);
+        $all_transactions = [];
+        $offset = 0;
+
+        $limit_count = 2500;
+        if ($transactions_count > $limit_count) {
+            return ApiViewer::getErrorBody(['message' => 'limit_reached']);
+        }
+
+        while ($offset < $transactions_count) {
+            $chunk = CompanyFinancesLM::getCourierFinances(
+                $courier_id,
+                $offset,
+                $limit,
+                $category,
+                $date_from,
+                $date_to
+            );
+
+            if (!empty($chunk)) {
+                $all_transactions = array_merge($all_transactions, $chunk);
+            }
+
+            $offset += $limit;
+            usleep(500);
+        }
+
+        if (!$all_transactions) {
+            return ApiViewer::getErrorBody(['message' => 'File not found']);
+        }
+
+
+        $file_path = XlsxLM::getCourierFinances($all_transactions);
 
         return ApiViewer::getOkBody(['file' => $file_path]);
     }

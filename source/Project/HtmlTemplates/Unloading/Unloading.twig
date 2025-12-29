@@ -1,14 +1,14 @@
 {% block content %}
 
 
-    <input type="checkbox" id="cornerModal" class="hidden peer" />
+    <input type="checkbox" id="unloading-modal" class="hidden peer" />
     <div class="fixed bottom-4 right-4 bg-white border shadow-lg rounded-lg p-4 w-80 z-50 hidden peer-checked:flex peer-checked:flex-col">
         <div class="flex items-start justify-between">
             <div>
                 <h3 class="text-lg font-semibold">Уведомление</h3>
-                <p id="txtModal" class="text-sm text-gray-600">Пользователь успешно добавлен.</p>
+                <p id="txt-modal-unloading" class="text-sm text-gray-600">Пользователь успешно добавлен.</p>
             </div>
-            <label for="cornerModal" class="ml-4 text-gray-400 hover:text-gray-600 cursor-pointer">✕</label>
+            <label for="unloading-modal" class="ml-4 text-gray-400 hover:text-gray-600 cursor-pointer">✕</label>
         </div>
     </div>
 
@@ -21,6 +21,17 @@
                 params[key] = value;
             }
             return params;
+        }
+
+        function showModal(message) {
+            const checkbox = document.getElementById('unloading-modal');
+            const txtModal = document.getElementById('txt-modal-unloading');
+            checkbox.checked = true;
+            txtModal.innerHTML= message;
+
+            setTimeout(() => {
+                checkbox.checked = false;
+            }, 5000);
         }
 
         async function downloadTableUniversal() {
@@ -55,12 +66,12 @@
             textSpan.classList.remove('opacity-0');
 
             if (result.status === 'error' && result.message === 'limit_reached') {
-                showCornerModal('Слишком много записей невозможно выгрузить, попробуйте задать параметры!');
+                showModal('Слишком много записей невозможно выгрузить, попробуйте задать параметры!');
                 return;
             }
 
             if (!result || result.error || result.status === 'error') {
-                showCornerModal('Не удалось образовать файл!');
+                showModal('Не удалось образовать файл!');
                 return;
             }
 
@@ -85,7 +96,7 @@
                     document.body.removeChild(link);
                 };
             } else {
-                showCornerModal('Не найден файл для скачивания!');
+                showModal('Не найден файл для скачивания!');
             }
         }
 

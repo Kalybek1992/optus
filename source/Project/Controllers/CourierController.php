@@ -332,4 +332,49 @@ class CourierController extends BaseController
             'stock_balances' => $stock_balances,
         ]);
     }
+
+    public function courierFinances(): string
+    {
+        $page = InformationDC::get('page') ?? 0;
+        $category = InformationDC::get('category');
+        $date_from = InformationDC::get('date_from');
+        $date_to = InformationDC::get('date_to');
+        $user = InformationDC::get('user');
+
+        $courier = CouriersLM::getCourierByUserId($user['id']);
+        $courier_id = $courier['id'] ?? 0;
+        $limit = 30;
+        $offset = $page * $limit;
+
+        $get_courier_finances = CompanyFinancesLM::getCourierFinances($courier_id, $offset, $limit, $category, $date_from, $date_to);
+        $get_categories = ExpenseCategoriesLM::getExpenseCategories();
+        $get_categories_project = ExpenseCategoriesLM::getExpenseCategories(null, 1);
+
+        $expenses_count = CompanyFinancesLM::getCourierFinancesCount($courier_id, $category, $date_from, $date_to);
+        $page_count = ceil($expenses_count / $limit);
+        $courier = CouriersLM::getCourierCourierId($courier_id);
+
+
+        if ($get_categories) {
+            $categories_html = HtmlLM::renderCategoryLevels($get_categories);
+        } else {
+            $categories_html = HtmlLM::renderCategoryNot();
+        }
+
+        if ($get_categories_project) {
+            $project_html = HtmlLM::renderCategoryLevels($get_categories_project);
+        } else {
+            $project_html = HtmlLM::renderCategoryNot();
+        }
+
+
+        return $this->twig->render('Courier/GetCourierFinances.twig', [
+            'page' => $page + 1,
+            'courier' => $courier,
+            'get_courier_finances' => $get_courier_finances,
+            'categories_html' => $categories_html,
+            'project_html' => $project_html,
+            'page_count' => $page_count,
+        ]);
+    }
 }
