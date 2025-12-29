@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 use Phinx\Migration\AbstractMigration;
 
-final class CreateExpenseCategoriesTable extends AbstractMigration
+final class CreateDebtClosingsTable extends AbstractMigration
 {
     /**
      * Change Method.
@@ -19,11 +19,11 @@ final class CreateExpenseCategoriesTable extends AbstractMigration
      */
     public function up(): void
     {
-        if ($this->hasTable('expense_categories')) {
-            $this->table('expense_categories')->drop()->save();
+        if ($this->hasTable('debt_closings')) {
+            $this->table('debt_closings')->drop()->save();
         }
 
-        $table = $this->table('expense_categories', [
+        $table = $this->table('debt_closings', [
             'id' => false,
             'primary_key' => ['id'],
         ]);
@@ -34,28 +34,24 @@ final class CreateExpenseCategoriesTable extends AbstractMigration
                 'signed' => true,
                 'null' => false,
             ])
-            ->addColumn('name', 'string', [
-                'limit' => 255,
+            ->addColumn('debt_id', 'integer', [
                 'null' => false,
             ])
-            ->addColumn('is_parsed', 'integer', [
-                'default' => 0,
+            ->addColumn('transaction_id', 'integer', [
                 'null' => false,
             ])
-            ->addColumn('project', 'boolean', [
-                'default' => false,
+            ->addColumn('amount', 'decimal', [
+                'precision' => 15,
+                'scale' => 2,
                 'null' => false,
-            ])
-            ->addColumn('supplier_id', 'integer', [
-                'null' => true,
             ])
             ->create();
     }
 
     public function down(): void
     {
-        if ($this->hasTable('expense_categories')) {
-            $this->table('expense_categories')->drop()->save();
+        if ($this->hasTable('debt_closings')) {
+            $this->table('debt_closings')->drop()->save();
         }
     }
 

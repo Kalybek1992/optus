@@ -23,10 +23,17 @@ final class CreateUsersTable extends AbstractMigration
             $this->table('users')->drop()->save();
         }
 
-        $table = $this->table('users', ['id' => false, 'primary_key' => ['id']]);
-        $table
-            ->addColumn('id', 'integer', ['identity' => true])
+        $table = $this->table('users', [
+            'id' => false,
+            'primary_key' => ['id'],
+        ]);
 
+        $table
+            ->addColumn('id', 'integer', [
+                'identity' => true,
+                'signed' => true,
+                'null' => false,
+            ])
             ->addColumn('role', 'enum', [
                 'values' => [
                     'admin',
@@ -35,37 +42,51 @@ final class CreateUsersTable extends AbstractMigration
                     'courier',
                     'client_services',
                     'manager',
-                    'shop'
+                    'shop',
                 ],
-                'null' => false
+                'null' => false,
             ])
-
-            ->addColumn('name', 'string', ['limit' => 100, 'null' => false])
-            ->addColumn('email', 'string', ['limit' => 100, 'null' => true])
-            ->addColumn('password', 'string', ['limit' => 255, 'null' => true])
-            ->addColumn('token', 'string', ['limit' => 255, 'null' => true])
+            ->addColumn('restricted_access', 'boolean', [
+                'default' => false,
+                'null' => false,
+            ])
+            ->addColumn('name', 'string', [
+                'limit' => 100,
+                'null' => false,
+            ])
+            ->addColumn('email', 'string', [
+                'limit' => 100,
+                'null' => true,
+            ])
+            ->addColumn('password', 'string', [
+                'limit' => 255,
+                'null' => true,
+            ])
+            ->addColumn('token', 'string', [
+                'limit' => 255,
+                'null' => true,
+            ])
             ->addColumn('created_at', 'timestamp', [
                 'default' => 'CURRENT_TIMESTAMP',
-                'null' => true
+                'null' => true,
             ])
             ->addColumn('updated_at', 'timestamp', [
                 'default' => 'CURRENT_TIMESTAMP',
                 'update'  => 'CURRENT_TIMESTAMP',
-                'null' => true
+                'null' => true,
             ])
             ->addColumn('redirect', 'boolean', [
                 'default' => false,
-                'null' => false
-            ])
-            ->addColumn('restricted_access', 'boolean', [
-                'default' => false,
-                'null' => false
+                'null' => false,
             ])
             ->create();
     }
 
     public function down(): void
     {
-        $this->table('users')->drop()->save();
+        if ($this->hasTable('users')) {
+            $this->table('users')->drop()->save();
+        }
     }
+
 }

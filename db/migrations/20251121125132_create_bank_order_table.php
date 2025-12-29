@@ -23,29 +23,85 @@ final class CreateBankOrderTable extends AbstractMigration
             $this->table('bank_order')->drop()->save();
         }
 
-        $table = $this->table('bank_order');
-        $table->addColumn('type', 'enum', ['values' => ['commission','withdrawal','unknown','expense','sending_by_courier'], 'null' => false])
-            ->addColumn('amount', 'decimal', ['precision' => 15, 'scale' => 2, 'null' => false])
-            ->addColumn('date', 'datetime', ['null' => false])
-            ->addColumn('from_account_id', 'integer', ['null' => true])
-            ->addColumn('transaction_id', 'integer', ['null' => true])
-            ->addColumn('description', 'text', ['null' => true])
-            ->addColumn('document_number', 'string', ['limit' => 50, 'null' => true])
-            ->addColumn('recipient_company_name', 'string', ['limit' => 255, 'null' => true])
-            ->addColumn('recipient_bank_name', 'string', ['limit' => 255, 'null' => true])
-            ->addColumn('recipient_bank_account', 'string', ['limit' => 20, 'null' => true])
-            ->addColumn('recipient_inn', 'string', ['limit' => 12, 'null' => true])
-            ->addColumn('recipient_kpp', 'string', ['limit' => 9, 'null' => true])
-            ->addColumn('recipient_bic', 'string', ['limit' => 9, 'null' => true])
-            ->addColumn('recipient_correspondent_account', 'string', ['limit' => 20, 'null' => true])
-            ->addColumn('status', 'enum', ['values' => ['processed','pending'], 'default' => 'pending'])
-            ->addColumn('auto_detection', 'boolean', ['default' => false, 'null' => false])
-            ->addColumn('return_account', 'boolean', ['default' => false, 'null' => false])
+        $table = $this->table('bank_order', [
+            'id' => false,
+            'primary_key' => ['id'],
+        ]);
+
+        $table
+            ->addColumn('id', 'integer', [
+                'identity' => true,
+                'signed' => true,
+                'null' => false,
+            ])
+            ->addColumn('type', 'enum', [
+                'values' => [
+                    'commission',
+                    'withdrawal',
+                    'unknown',
+                    'expense',
+                    'sending_by_courier'
+                ],
+                'null' => false,
+            ])
+            ->addColumn('amount', 'decimal', [
+                'precision' => 15,
+                'scale' => 2,
+                'null' => false,
+            ])
+            ->addColumn('date', 'datetime', [
+                'null' => false,
+            ])
+            ->addColumn('from_account_id', 'integer', [
+                'null' => true,
+            ])
+            ->addColumn('transaction_id', 'integer', [
+                'null' => true,
+            ])
+            ->addColumn('description', 'text', [
+                'null' => true,
+            ])
+            ->addColumn('document_number', 'string', [
+                'limit' => 50,
+                'null' => true,
+            ])
+            ->addColumn('recipient_company_name', 'string', [
+                'limit' => 255,
+                'null' => true,
+            ])
+            ->addColumn('recipient_bank_name', 'string', [
+                'limit' => 255,
+                'null' => true,
+            ])
+            ->addColumn('recipient_inn', 'string', [
+                'limit' => 12,
+                'null' => true,
+            ])
+            ->addColumn('account', 'string', [
+                'limit' => 25,
+                'null' => true,
+            ])
+            ->addColumn('status', 'enum', [
+                'values' => ['processed', 'pending'],
+                'default' => 'pending',
+                'null' => true,
+            ])
+            ->addColumn('auto_detection', 'boolean', [
+                'default' => false,
+                'null' => false,
+            ])
+            ->addColumn('return_account', 'boolean', [
+                'default' => false,
+                'null' => false,
+            ])
             ->create();
     }
 
     public function down(): void
     {
-        $this->table('bank_order')->drop()->save();
+        if ($this->hasTable('bank_order')) {
+            $this->table('bank_order')->drop()->save();
+        }
     }
+
 }

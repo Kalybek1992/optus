@@ -23,42 +23,98 @@ final class CreateCompanyFinancesTable extends AbstractMigration
             $this->table('company_finances')->drop()->save();
         }
 
-        $table = $this->table('company_finances');
-        $table
-            ->addColumn('order_id', 'integer', ['null' => true])
-            ->addColumn('transaction_id', 'integer', ['null' => true])
-            ->addColumn('card_id', 'integer', ['null' => true])
-            ->addColumn('courier_id', 'integer', ['null' => true])
-            ->addColumn('client_id', 'integer', ['null' => true, 'signed' => false])
-            ->addColumn('supplier_id', 'integer', ['null' => true])
-            ->addColumn('manager_id', 'integer', ['null' => true])
-            ->addColumn('category', 'string', ['limit' => 255, 'null' => true])
-            ->addColumn('comments', 'string', ['limit' => 255, 'null' => true])
-            ->addColumn('issue_date', 'date', ['null' => true])
+        $table = $this->table('company_finances', [
+            'id' => false,
+            'primary_key' => ['id'],
+        ]);
 
+        $table
+            ->addColumn('id', 'integer', [
+                'identity' => true,
+                'signed' => true,
+                'null' => false,
+            ])
+            ->addColumn('order_id', 'integer', [
+                'null' => true,
+            ])
+            ->addColumn('transaction_id', 'integer', [
+                'null' => true,
+            ])
+            ->addColumn('card_id', 'integer', [
+                'null' => true,
+            ])
+            ->addColumn('courier_id', 'integer', [
+                'null' => true,
+            ])
+            ->addColumn('sender_courier_id', 'integer', [
+                'null' => true,
+            ])
+            ->addColumn('client_id', 'integer', [
+                'null' => true,
+                'signed' => false,
+            ])
+            ->addColumn('client_services_id', 'integer', [
+                'null' => true,
+                'signed' => false,
+            ])
+            ->addColumn('supplier_id', 'integer', [
+                'null' => true,
+            ])
+            ->addColumn('manager_id', 'integer', [
+                'null' => true,
+            ])
+            ->addColumn('category', 'string', [
+                'limit' => 255,
+                'null' => true,
+            ])
+            ->addColumn('comments', 'string', [
+                'limit' => 255,
+                'null' => true,
+            ])
             ->addColumn('type', 'enum', [
                 'values' => [
-                    'stock_balances','courier_balances','expense','expense_stock_balances',
-                    'courier_expense','return_debit_courier','courier_income_other',
-                    'shipping_manager','shipping_return','debt_repayment_client_supplier',
-                    'debt_repayment_сompanies_supplier','expense_stock_balances_supplier','moved_cash'
+                    'stock_balances',
+                    'courier_balances',
+                    'expense',
+                    'expense_stock_balances',
+                    'courier_expense',
+                    'return_debit_courier',
+                    'courier_income_other',
+                    'shipping_manager',
+                    'shipping_return',
+                    'debt_repayment_client_supplier',
+                    'debt_repayment_сompanies_supplier',
+                    'expense_stock_balances_supplier',
+                    'moved_cash',
+                    'debt_repayment_transaction',
                 ],
-                'null' => false
+                'null' => false,
+            ])
+            ->addColumn('issue_date', 'date', [
+                'null' => true,
             ])
             ->addColumn('return_type', 'enum', [
-                'values' => ['cash','wheel','return_wheel'],
-                'null' => true
+                'values' => ['cash', 'wheel', 'return_wheel'],
+                'null' => true,
             ])
             ->addColumn('status', 'enum', [
-                'values' => ['processed','pending','confirm_courier','confirm_admin'],
+                'values' => [
+                    'processed',
+                    'pending',
+                    'confirm_courier',
+                    'confirm_admin',
+                ],
                 'default' => 'pending',
-                'null' => false
+                'null' => false,
             ])
             ->create();
     }
 
     public function down(): void
     {
-        $this->table('company_finances')->drop()->save();
+        if ($this->hasTable('company_finances')) {
+            $this->table('company_finances')->drop()->save();
+        }
     }
+
 }

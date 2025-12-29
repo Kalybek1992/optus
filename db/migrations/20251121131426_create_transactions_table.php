@@ -23,24 +23,84 @@ final class CreateTransactionsTable extends AbstractMigration
             $this->table('transactions')->drop()->save();
         }
 
-        $table = $this->table('transactions', ['id' => false, 'primary_key' => ['id']]);
-        $table->addColumn('id', 'integer', ['identity' => true])
-            ->addColumn('type', 'enum', ['values' => ['income','expense','return','bank_order','internal_transfer','courier_expense','courier_income','return_client_services'], 'null' => false])
-            ->addColumn('amount', 'decimal', ['precision' => 15, 'scale' => 2, 'null' => false])
-            ->addColumn('percent', 'decimal', ['precision' => 5, 'scale' => 2, 'default' => 0.00])
-            ->addColumn('interest_income', 'decimal', ['precision' => 15, 'scale' => 2, 'default' => 0.00])
-            ->addColumn('date', 'datetime', ['null' => false])
-            ->addColumn('description', 'text', ['null' => true])
-            ->addColumn('from_account_id', 'integer', ['null' => true])
-            ->addColumn('to_account_id', 'integer', ['null' => true])
-            ->addColumn('status', 'enum', ['values' => ['processed','pending'], 'default' => 'pending'])
-            ->addColumn('date_received', 'date', ['null' => true])
-            ->addColumn('user_id', 'integer', ['null' => true])
+        $table = $this->table('transactions', [
+            'id' => false,
+            'primary_key' => ['id'],
+        ]);
+
+        $table
+            ->addColumn('id', 'integer', [
+                'identity' => true,
+                'signed' => true,
+                'null' => false,
+            ])
+            ->addColumn('type', 'enum', [
+                'values' => [
+                    'income',
+                    'expense',
+                    'return',
+                    'bank_order',
+                    'internal_transfer',
+                    'courier_expense',
+                    'courier_income',
+                    'return_client_services',
+                    'return_supplier',
+                ],
+                'null' => false,
+            ])
+            ->addColumn('amount', 'decimal', [
+                'precision' => 15,
+                'scale' => 2,
+                'null' => false,
+            ])
+            ->addColumn('percent', 'decimal', [
+                'precision' => 5,
+                'scale' => 2,
+                'default' => 0.00,
+                'null' => true,
+            ])
+            ->addColumn('supplier_client_percent', 'decimal', [
+                'precision' => 5,
+                'scale' => 2,
+                'null' => true,
+            ])
+            ->addColumn('interest_income', 'decimal', [
+                'precision' => 15,
+                'scale' => 2,
+                'default' => 0.00,
+                'null' => true,
+            ])
+            ->addColumn('date', 'datetime', [
+                'null' => false,
+            ])
+            ->addColumn('description', 'text', [
+                'null' => true,
+            ])
+            ->addColumn('from_account_id', 'integer', [
+                'null' => true,
+            ])
+            ->addColumn('to_account_id', 'integer', [
+                'null' => true,
+            ])
+            ->addColumn('status', 'enum', [
+                'values' => ['processed', 'pending'],
+                'default' => 'pending',
+                'null' => true,
+            ])
+            ->addColumn('date_received', 'date', [
+                'null' => true,
+            ])
+            ->addColumn('user_id', 'integer', [
+                'null' => true,
+            ])
             ->create();
     }
 
     public function down(): void
     {
-        $this->table('transactions')->drop()->save();
+        if ($this->hasTable('transactions')) {
+            $this->table('transactions')->drop()->save();
+        }
     }
+
 }

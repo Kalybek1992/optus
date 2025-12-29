@@ -23,11 +23,29 @@ final class CreateDebtsTable extends AbstractMigration
             $this->table('debts')->drop()->save();
         }
 
-        $table = $this->table('debts');
-        $table->addColumn('from_account_id', 'integer', ['null' => true])
-            ->addColumn('to_account_id', 'integer', ['null' => true])
-            ->addColumn('transaction_id', 'integer', ['null' => true])
-            ->addColumn('writing_transaction_id', 'integer', ['null' => true])
+        $table = $this->table('debts', [
+            'id' => false,
+            'primary_key' => ['id'],
+        ]);
+
+        $table
+            ->addColumn('id', 'integer', [
+                'identity' => true,
+                'signed' => true,
+                'null' => false,
+            ])
+            ->addColumn('from_account_id', 'integer', [
+                'null' => true,
+            ])
+            ->addColumn('to_account_id', 'integer', [
+                'null' => true,
+            ])
+            ->addColumn('transaction_id', 'integer', [
+                'null' => true,
+            ])
+            ->addColumn('writing_transaction_id', 'integer', [
+                'null' => true,
+            ])
             ->addColumn('type_of_debt', 'enum', [
                 'values' => [
                     'supplier_goods',
@@ -35,18 +53,33 @@ final class CreateDebtsTable extends AbstractMigration
                     'client_services',
                     'сlient_debt',
                     'сlient_debt_supplier',
-                    'supplier_debt_сlient'
+                    'supplier_debt_сlient',
+                    'client_services_debt',
+                    'supplier_debt',
                 ],
-                'null' => false
+                'null' => false,
             ])
-            ->addColumn('amount', 'decimal', ['precision' => 15, 'scale' => 2, 'null' => false])
-            ->addColumn('date', 'date', ['null' => true])
-            ->addColumn('status', 'enum', ['values' => ['active','paid','offs_confirmation'], 'default' => 'active'])
+            ->addColumn('amount', 'decimal', [
+                'precision' => 15,
+                'scale' => 2,
+                'null' => false,
+            ])
+            ->addColumn('date', 'date', [
+                'null' => true,
+            ])
+            ->addColumn('status', 'enum', [
+                'values' => ['active', 'paid', 'offs_confirmation'],
+                'default' => 'active',
+                'null' => true,
+            ])
             ->create();
     }
 
     public function down(): void
     {
-        $this->table('debts')->drop()->save();
+        if ($this->hasTable('debts')) {
+            $this->table('debts')->drop()->save();
+        }
     }
+
 }
