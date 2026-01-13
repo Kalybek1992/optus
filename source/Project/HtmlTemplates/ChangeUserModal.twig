@@ -255,6 +255,68 @@
         </div>
     </dialog>
 
+
+    <input type="checkbox" id="increase_debt" class="modal-toggle"/>
+    <div class="modal" role="dialog">
+        <div class="modal-box max-w-md">
+            <h1 class="text-lg font-bold text-gray-800 mb-4">
+                Увеличить долг
+            </h1>
+
+            <div class="space-y-3">
+                <!-- Имя поставщика -->
+                <div class="p-3 border rounded-xl bg-gray-50">
+                    <span class="font-semibold text-gray-700">Поставщик:</span>
+                    <div id="debtUserName" class="text-gray-800 mt-1">—</div>
+                </div>
+
+                <!-- Текущий долг -->
+                <div class="p-3 border rounded-xl bg-gray-50">
+                    <span class="font-semibold text-gray-700">Текущий долг:</span>
+                    <div id="currentDebt" class="text-gray-800 mt-1">— ₽</div>
+                </div>
+
+                <!-- Input -->
+                <div class="flex flex-col">
+                <span class="font-semibold text-gray-700 mb-1">
+                    Увеличить долг:
+                </span>
+                    <input
+                            type="number"
+                            id="increaseDebtValue"
+                            class="input input-bordered w-full"
+                            placeholder="Введите сумму"
+                            min="1"
+                    />
+                </div>
+
+                <!-- Предупреждение -->
+                <div class="alert alert-info rounded-xl text-white">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 shrink-0 stroke-current text-white" fill="none"
+                         viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M13 16h-1v-4h-1m1-4h.01M12 20a8 8 0 100-16 8 8 0 000 16z"/>
+                    </svg>
+                    <span>Будет добавлен новый долг и создана ручная транзакция, в результате чего общий долг поставщика увеличится.</span>
+                </div>
+            </div>
+
+            <!-- Кнопки -->
+            <div class="modal-action mt-6">
+                <button
+                        class="btn bg-blue-600 hover:bg-blue-700 text-white border-none rounded-lg px-6"
+                        onclick="saveIncreaseDebt()"
+                >
+                    Изменить
+                </button>
+                <label for="increase_debt" class="btn btn-outline rounded-lg">
+                    Отменить
+                </label>
+            </div>
+        </div>
+    </div>
+
+
     <script>
         const modalCheckbox = document.getElementById('change_email');
         const changeEmail = document.getElementById('change');
@@ -486,6 +548,40 @@
             }
 
         });
+
+
+        let increaseDebtData = {
+            clientId: null,
+            userName: null,
+            currentDebt: null
+        };
+
+        function openIncreaseDebtModal(el) {
+            increaseDebtData.clientId = el.dataset.clientId;
+            increaseDebtData.userName = el.dataset.userName;
+            increaseDebtData.currentDebt = el.dataset.currentDebit;
+
+            document.getElementById('debtUserName').textContent = increaseDebtData.userName;
+            document.getElementById('currentDebt').textContent =
+                Number(increaseDebtData.currentDebt).toLocaleString('ru-RU') + ' ₽';
+
+            document.getElementById('increaseDebtValue').value = '';
+
+            document.getElementById('increase_debt').checked = true;
+        }
+
+        function saveIncreaseDebt() {
+            const value = document.getElementById('increaseDebtValue').value;
+
+            console.log('📌 Увеличение долга');
+            console.log('Поставщик:', increaseDebtData.userName);
+            console.log('Client ID:', increaseDebtData.clientId);
+            console.log('Текущий долг:', increaseDebtData.currentDebt);
+            console.log('Добавляемая сумма:', value);
+
+            // пока просто закрываем
+            document.getElementById('increase_debt').checked = false;
+        }
     </script>
 
 {% endblock %}

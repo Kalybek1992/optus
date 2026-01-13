@@ -108,7 +108,17 @@
                     </div>
                     <div class="flex justify-between items-center">
                         <div class="font-semibold text-gray-500">Товарный долг поставщика</div>
-                        <div class="font-semibold text-gray-600 text-base">{{ supplier.debit_amount_sum|number_format(0, ',', ' ') }} ₽</div>
+                        <div
+                                class="font-semibold text-gray-600 text-base cursor-pointer hover:text-blue-600"
+                                role="button"
+                                tabindex="0"
+                                data-user-name="{{ supplier.name }}"
+                                data-client-id="{{ supplier.id }}"
+                                data-current-debit="{{ supplier.debit_amount_sum }}"
+                                onclick="openIncreaseDebtModal(this)"
+                        >
+                            {{ supplier.debit_amount_sum|number_format(0, ',', ' ') }} ₽
+                        </div>
                     </div>
                 </div>
             </div>
