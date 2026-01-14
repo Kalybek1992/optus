@@ -666,7 +666,7 @@ class UserController extends BaseController
                 ClientServicesLM::supplierClientServicessAllDelete($role['id']);
                 SuppliersLM::supplierIdDelete($role['id']);
             } else {
-                ClientsLM::clientIdDelete($role['id']);
+                ClientServicesLM::clientServicessDelete($role['id']);
             }
         }
 
@@ -694,7 +694,6 @@ class UserController extends BaseController
         foreach ($legals_id as $legal_id) {
             DebtsLM::deleteAllActiveDebtUser($legal_id);
         }
-
 
         UsersLM::deleteUserId($user_id);
 
@@ -746,6 +745,7 @@ class UserController extends BaseController
 
     public function testDellDb(): array
     {
+        die();
         $builder = CompanyFinances::newQueryBuilder()->delete();
         PdoConnector::execute($builder);
 

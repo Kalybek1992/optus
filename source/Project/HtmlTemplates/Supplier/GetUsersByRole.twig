@@ -87,39 +87,60 @@
                                 <!-- Клиент услуги -->
                                 <a href="/supplier/clientServicesManager?manager_id={{ client.id }}"
                                    class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2 px-4
-                                    rounded-lg transition-colors duration-200 text-center shadow-sm">
+                                        rounded-lg transition-colors duration-200 text-center shadow-sm">
                                     Клиент услуги
                                 </a>
 
                                 <!-- Отчет по отгрузкам -->
                                 <a href="/supplier/deliveredGoods?manager_id={{ client.id }}"
                                    class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2 px-4
-                                    rounded-lg transition-colors duration-200 text-center shadow-sm">
+                                            rounded-lg transition-colors duration-200 text-center shadow-sm">
                                     Отчет по отгрузкам
                                 </a>
 
                                 <!-- Возврат отгрузки -->
                                 <a href="/supplier/returnGoods?manager_id={{ client.id }}"
                                    class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2 px-4
-                                    rounded-lg transition-colors duration-200 text-center shadow-sm">
+                                        rounded-lg transition-colors duration-200 text-center shadow-sm">
                                     Возврат отгрузки
                                 </a>
 
                                 <!-- Взаиморасчет -->
                                 <a href="/supplier/managerDailyReports?manager_id={{ client.id }}"
                                    class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2 px-4
-                                    rounded-lg transition-colors duration-200 text-center shadow-sm">
+                                        rounded-lg transition-colors duration-200 text-center shadow-sm">
                                     Взаиморасчет
                                 </a>
 
                                 <!-- Отчет по кеш -->
                                 <a href="/supplier/getMovedCash?manager_id={{ client.id }}"
                                    class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2 px-4
-                                    rounded-lg transition-colors duration-200 text-center shadow-sm">
+                                        rounded-lg transition-colors duration-200 text-center shadow-sm">
                                     Отчет по кеш
                                 </a>
+
+                                <!-- ===== Блок для ввода ставок ===== -->
+                                <div class="w-full mt-4 flex flex-col gap-3">
+
+                                    <!-- Transit rate -->
+                                    <div class="flex flex-col">
+                                        <label class="text-black font-semibold mb-1">Ставка транзит</label>
+                                        <input type="text" value="{{ client.transit_rate}}" readonly
+                                               class="w-full p-2 border rounded-md bg-gray-100 text-gray-700 cursor-not-allowed"/>
+                                    </div>
+
+                                    <!-- Cash bet -->
+                                    <div class="flex flex-col">
+                                        <label class="text-black font-semibold mb-1">Ставка кеш</label>
+                                        <input type="text" value="{{ client.cash_bet}}" readonly
+                                               class="w-full p-2 border rounded-md bg-gray-100 text-gray-700 cursor-not-allowed"/>
+                                    </div>
+                                </div>
+
+
                             </div>
                         </div>
+
                     {% endif %}
 
                 </div>

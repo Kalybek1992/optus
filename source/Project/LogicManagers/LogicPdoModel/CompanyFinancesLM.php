@@ -5,6 +5,7 @@ namespace Source\Project\LogicManagers\LogicPdoModel;
 use DateTime;
 use Source\Base\Core\Logger;
 use Source\Project\Connectors\PdoConnector;
+use Source\Project\Models\BankOrder;
 use Source\Project\Models\CompanyFinances;
 
 
@@ -886,6 +887,18 @@ class CompanyFinancesLM
 
 
         return PdoConnector::execute($builder)[0] ?? [];
+    }
+
+    public static function deleteInBankOrders(string $order_ids)
+    {
+
+        $builder = CompanyFinances::newQueryBuilder()
+            ->delete()
+            ->where([
+                "order_id IN($order_ids)",
+            ]);
+
+        return PdoConnector::execute($builder);
     }
 
     public static function getFinancesSumNotAcceptedSupplier(int $supplier_id): int

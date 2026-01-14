@@ -23,7 +23,8 @@ class UploadedDocumentsLM
             ])
             ->where([
                 "inn IN($selects_inn)",
-                "document_number IN($selects_document_number)"
+                "document_number IN($selects_document_number)",
+                //"amount IN($selects_document_amount)"
             ]);
 
 

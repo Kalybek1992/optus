@@ -553,6 +553,14 @@ return [
                 new ApiKeyCourierMiddleware
             ]
         ],
+        '/courier/issueaanotheradmin' => [
+            'validation' => [
+                'captcha_response' => ['required' => false]
+            ],
+            'middlewares' => [
+                new ApiKeyCourierMiddleware
+            ]
+        ],
         '/courier/courierfinances' => [
             'validation' => [
                 'page' => [
@@ -977,6 +985,14 @@ return [
                     'required' => false,
                     'custom_logic' => fn($a) => is_numeric($a) && $a >= 0 && $a < 100 || $a == null
                 ],
+                'transit_rate' => [
+                    'required' => false,
+                    'custom_logic' => fn($a) => $a === null || (is_numeric($a) && (float)$a >= 0.01 && (float)$a <= 0.99)
+                ],
+                'cash_bet' => [
+                    'required' => false,
+                    'custom_logic' => fn($a) => $a === null || (is_numeric($a) && (float)$a >= 0.01 && (float)$a <= 0.99)
+                ],
             ],
             'middlewares' => [
                 new ApiKeySupplierMiddleware,
@@ -1107,7 +1123,7 @@ return [
                     'custom_logic' => fn($a) => is_string($a)
                 ],
                 'project' => [
-                    'required' => true,
+                    'required' => false,
                     'custom_logic' => fn($a) => $a == 0 || $a == 1,
                 ],
             ],

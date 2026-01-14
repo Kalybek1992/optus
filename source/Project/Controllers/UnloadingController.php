@@ -42,7 +42,6 @@ class UnloadingController extends BaseController
         header('Content-Length: ' . filesize($file_path));
 
         readfile($file_path);
-        unlink($file_path);
         exit;
     }
 
@@ -76,8 +75,6 @@ class UnloadingController extends BaseController
 
         readfile($file_path);
 
-        // удаляем после успешной отдачи
-        unlink($file_path);
         exit;
     }
 

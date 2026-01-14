@@ -25,42 +25,65 @@
         </div>
 
         <!-- Действия -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
 
-            <a class="btn bg-blue-600 border-blue-600 hover:bg-blue-700 text-white w-full"
-               href="/courier/incomeotherform">
-                Деньги из других источников
-            </a>
+            <!-- Карточка: Доход -->
+            <div class="border rounded-lg shadow p-4 flex flex-col items-center gap-3">
+                <h2 class="text-lg font-semibold">Доход</h2>
+                <a class="btn bg-blue-600 border-blue-600 hover:bg-blue-700 text-white w-full py-4 px-6 text-center"
+                   style="height: 70px; display: flex; align-items: center; justify-content: center;"
+                   href="/courier/incomeotherform">
+                    Деньги из других источников
+                </a>
+                <a class="btn bg-blue-600 border-blue-600 hover:bg-blue-700 text-white w-full text-center"
+                   href="/categories/projectPage">
+                    Доход от проекта
+                </a>
+            </div>
 
-            <a class="btn bg-blue-600 border-blue-600 hover:bg-blue-700 text-white w-full"
-               href="/courier/expenseform">
-                Создать расход
-            </a>
+            <!-- Карточка: Расход -->
+            <div class="border rounded-lg shadow p-4 flex flex-col items-center gap-3">
+                <h2 class="text-lg font-semibold">Расход</h2>
+                <a class="btn bg-blue-600 border-blue-600 hover:bg-blue-700 text-white w-full py-4 px-6 text-center"
+                   href="/courier/expenseform">
+                    Создать расход
+                </a>
+                <a class="btn bg-blue-600 border-blue-600 hover:bg-blue-700 text-white w-full py-4 px-6 text-center"
+                   href="/categories/pageCategories">
+                    Категории расходов
+                </a>
+            </div>
 
-            <a class="btn bg-blue-600 border-blue-600 hover:bg-blue-700 text-white w-full"
-               href="/courier/debtpayoutform">
-                Выдать долг клиенту
-            </a>
+            <!-- Карточка: Выдача -->
+            <div class="border rounded-lg shadow p-4 flex flex-col items-center gap-3">
+                <h2 class="text-lg font-semibold">Выдача</h2>
+                <a class="btn bg-blue-600 border-blue-600 hover:bg-blue-700 text-white w-full py-4 px-6 text-center"
+                   href="/courier/debtpayoutform">
+                    Выдать долг клиенту
+                </a>
+                <a class="btn bg-blue-600 border-blue-600 hover:bg-blue-700 text-white w-full py-4 px-6 text-center"
+                   href="/courier/issueaAnotherCourier">
+                    Курьеру
+                </a>
+                <a class="btn bg-blue-600 border-blue-600 hover:bg-blue-700 text-white w-full py-4 px-6 text-center"
+                   href="/courier/issueaAnotherAdmin">
+                    Aдминистратору
+                </a>
+            </div>
 
-            <a class="btn bg-blue-600 border-blue-600 hover:bg-blue-700 text-white w-full"
-               href="/courier/issueaAnotherCourier">
-                Выдать курьеру
-            </a>
+            <!-- Карточка: Отчёты -->
+            <div class="border rounded-lg shadow p-4 flex flex-col items-center gap-3">
+                <h2 class="text-lg font-semibold">Отчёты</h2>
+                <a class="btn bg-blue-600 border-blue-600 hover:bg-blue-700 text-white w-full py-4 px-6 text-center"
+                   href="/courier/courierFinances">
+                    Отчёты по финансам
+                </a>
+            </div>
 
-            <a class="btn bg-blue-600 border-blue-600 hover:bg-blue-700 text-white w-full"
-               href="/categories/pageCategories">
-                Категории расходов
-            </a>
-
-            <a class="btn bg-blue-600 border-blue-600 hover:bg-blue-700 text-white w-full"
-               href="/categories/projectPage">
-                Доход от проекта
-            </a>
-            <a class="btn bg-blue-600 border-blue-600 hover:bg-blue-700 text-white w-full"
-               href="/courier/courierFinances">
-                Отчеты по финансам
-            </a>
         </div>
+
+
+
 
     </div>
 {% endblock %}

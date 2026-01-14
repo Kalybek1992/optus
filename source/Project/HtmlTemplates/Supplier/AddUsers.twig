@@ -8,13 +8,20 @@
         <div class="modal-box text-center">
             <h3 id="statusTitle" class="text-lg font-bold"></h3>
             <p id="statusText" class="py-4"></p>
+
             <div class="modal-action">
                 <form method="dialog">
-                    <button class="btn btn-primary" id="closeModalBtn">ОК</button>
+                    <a href="/supplier/addUserPage"
+                            id="closeModalBtn"
+                            class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold
+                           px-5 py-2 rounded-lg transition-colors duration-200">
+                        ОК
+                    </a>
                 </form>
             </div>
         </div>
     </dialog>
+
 
     <!-- Контейнер формы -->
     <div class="w-full max-w-md p-8 bg-white rounded-2xl shadow-lg mx-auto mt-[50px]">
@@ -74,6 +81,23 @@
                        class="w-full pl-10 p-2 border rounded-md focus:ring-2 focus:ring-emerald-500 focus:outline-none"/>
             </div>
 
+            <!-- Ставки менеджера по кэшу и транзиту -->
+            <div id="managerWrapper" class="relative hidden">
+
+                <!-- Тема для transit-rate -->
+                <div class="text-black font-semibold mb-1">Ставка транзит</div>
+                <input type="number" id="transit-rate" name="transit_rate" placeholder="От 0,01 до 0,99"
+                       step="0.01" min="0.01" max="0.99"
+                       class="w-full pl-10 p-2 border rounded-md focus:ring-2 focus:ring-emerald-500 focus:outline-none mb-4"/>
+
+                <!-- Тема для cash-bet -->
+                <div class="text-black font-semibold mb-1">Ставка кеш</div>
+                <input type="number" id="cash-bet" name="cash_bet" placeholder="От 0,01 до 0,99"
+                       step="0.01" min="0.01" max="0.99"
+                       class="w-full pl-10 p-2 border rounded-md focus:ring-2 focus:ring-emerald-500 focus:outline-none"/>
+            </div>
+
+
             <!-- Кнопка -->
             <button id="submitUserBtn"
                     class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2 px-6 rounded-lg transition-colors duration-200 text-center flex items-center justify-center">
@@ -105,24 +129,116 @@
             }
         };
 
+        function inputErrorProhibited() {
+
+            // Процент (0.01 – 99)
+            const percentageInput = document.getElementById('percentage');
+            if (percentageInput) {
+                percentageInput.addEventListener('input', () => {
+                    let value = parseFloat(percentageInput.value);
+
+                    if (isNaN(value)) {
+                        percentageInput.value = '';
+                        return;
+                    }
+
+                    if (value < 0.01) percentageInput.value = 0.01;
+                    if (value > 99) percentageInput.value = 99;
+                });
+            }
+
+            // Transit rate (0.01 – 0.99)
+            const transitInput = document.getElementById('transit-rate');
+            if (transitInput) {
+                transitInput.addEventListener('input', () => {
+                    let value = parseFloat(transitInput.value);
+
+                    if (isNaN(value)) {
+                        transitInput.value = '';
+                    }
+                });
+            }
+
+            // Cash bet (0.01 – 0.99)
+            const cashInput = document.getElementById('cash-bet');
+            if (cashInput) {
+                cashInput.addEventListener('input', () => {
+                    let value = parseFloat(cashInput.value);
+
+                    if (isNaN(value)) {
+                        cashInput.value = '';
+                    }
+                });
+            }
+
+        }
+
+
+        function openPercentage() {
+            const percentageWrapper = document.getElementById('percentageWrapper');
+            const percentageInput = document.getElementById('percentage');
+
+            percentageWrapper.classList.remove('hidden');
+            percentageInput.setAttribute('aria-required', 'true');
+        }
+
+        function closePercentage() {
+            const percentageWrapper = document.getElementById('percentageWrapper');
+            const percentageInput = document.getElementById('percentage');
+            percentageWrapper.classList.add('hidden');
+
+            percentageInput.removeAttribute('aria-required');
+            percentageInput.value = '';
+        }
+
+        const roleSelect = document.getElementById('role');
+        roleSelect.selectedIndex = 0;
+
+        function openTransitandCashManager() {
+            const managerWrapper = document.getElementById('managerWrapper');
+            const transitRateInput = document.getElementById('transit-rate');
+            const cashBetInput = document.getElementById('cash-bet');
+
+            managerWrapper.classList.remove('hidden');
+
+            transitRateInput.setAttribute('aria-required', 'true');
+            cashBetInput.setAttribute('aria-required', 'true');
+        }
+
+        function closeTransitandCashManager() {
+            const managerWrapper = document.getElementById('managerWrapper');
+            const transitRateInput = document.getElementById('transit-rate');
+            const cashbetInput = document.getElementById('cash-bet');
+
+            managerWrapper.classList.add('hidden');
+
+            transitRateInput.removeAttribute('aria-required');
+            transitRateInput.value = '';
+
+            cashbetInput.removeAttribute('aria-required');
+            cashbetInput.value = '';
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
             const form = document.getElementById('addUserForm');
             const submitBtn = document.getElementById('submitUserBtn');
             const roleSelect = document.getElementById('role');
-            const percentageWrapper = document.getElementById('percentageWrapper');
-            const percentageInput = document.getElementById('percentage');
+
 
             // Показывать/скрывать поле процента
             const updatePercentageVisibility = () => {
                 const role = roleSelect.value;
                 if (role === 'client') {
-                    percentageWrapper.classList.remove('hidden');
-                    percentageInput.setAttribute('aria-required', 'true');
-                } else {
-                    percentageWrapper.classList.add('hidden');
-                    percentageInput.removeAttribute('aria-required');
-                    percentageInput.value = '';
+                    openPercentage()
+                    closeTransitandCashManager()
+                }else if(role === 'manager') {
+                    closePercentage()
+                    openTransitandCashManager()
+                }else {
+                    closeTransitandCashManager()
+                    closePercentage()
                 }
+                inputErrorProhibited()
             };
 
             roleSelect.addEventListener('change', updatePercentageVisibility);
@@ -130,69 +246,106 @@
             submitBtn.addEventListener('click', async () => {
                 const name = document.getElementById('name').value.trim();
                 const role = roleSelect.value;
-                const percentVal = document.getElementById('percentage').value.trim();
 
-                // Базовые проверки
+                const percentVal = document.getElementById('percentage').value.trim();
+                const transitRateVal = document.getElementById('transit-rate').value.trim();
+                const cashBetVal = document.getElementById('cash-bet').value.trim();
+
+                // Базовая проверка
                 if (!name || !role) {
                     showModal('Ошибка!', 'Укажите имя и выберите роль!');
                     return;
                 }
 
-                // Проверка поля percent
+                const body = { name, role };
+
+                // ===== CLIENT =====
                 if (role === 'client') {
-                    if (percentVal === '') {
+
+                    // percent обязателен
+                    if (!percentVal) {
                         showModal('Ошибка!', 'Для клиента обязательно укажите процент!');
                         return;
                     }
-                    const percentNum = Number(percentVal);
-                    if (Number.isNaN(percentNum) || percentNum < 0 || percentNum >= 100) {
-                        showModal('Ошибка!', 'Процент должен быть числом в диапазоне от 0 до 99.99.');
+
+                    const percent = Number(percentVal);
+                    if (Number.isNaN(percent) || percent <= 0 || percent > 100) {
+                        showModal('Ошибка!', 'Процент должен быть от 0.01 до 100.');
                         return;
                     }
-                } else {
+
+                    body.percent = percent;
+
+                    // transit-rate (если введён)
+                    if (transitRateVal !== '') {
+                        const transitRate = Number(transitRateVal);
+                        if (Number.isNaN(transitRate) || transitRate < 0.01 || transitRate > 0.99) {
+                            showModal('Ошибка!', 'Transit rate должен быть от 0.01 до 0.99.');
+                            return;
+                        }
+                        body.transit_rate = transitRate;
+                    }
+
+                    // cash-bet (если введён)
+                    if (cashBetVal !== '') {
+                        const cashBet = Number(cashBetVal);
+                        if (Number.isNaN(cashBet) || cashBet < 0.01 || cashBet > 0.99) {
+                            showModal('Ошибка!', 'Cash bet должен быть от 0.01 до 0.99.');
+                            return;
+                        }
+                        body.cash_bet = cashBet;
+                    }
+                }
+
+                // ===== MANAGER =====
+                if (role === 'manager') {
+                    // percent (если введён — проверяем)
                     if (percentVal !== '') {
-                        showModal('Ошибка!', 'Поле "Процент" допускается только для роли "Клиент". Очистите поле или выберите роль "Клиент".');
-                        return;
+                        const percent = Number(percentVal);
+                        if (Number.isNaN(percent) || percent <= 0 || percent > 100) {
+                            showModal('Ошибка!', 'Процент должен быть от 0.01 до 100.');
+                            return;
+                        }
+                        body.percent = percent;
                     }
+
+                    function formatFloat(value) {
+                        return Number(value).toFixed(2);
+                    }
+
+                    // transit-rate
+                    if (transitRateVal !== '') {
+                        const transitRateNum = Number(transitRateVal.replace(',', '.'));
+                        if (Number.isNaN(transitRateNum) || transitRateNum < 0.01 || transitRateNum > 0.99) {
+                            showModal('Ошибка!', 'Transit rate должен быть от 0.01 до 0.99.');
+                            return;
+                        }
+                        body.transit_rate = formatFloat(transitRateNum);
+                    }
+
+                    // cash-bet
+                    if (cashBetVal !== '') {
+                        const cashBetNum = Number(cashBetVal.replace(',', '.'));
+                        if (Number.isNaN(cashBetNum) || cashBetNum < 0.01 || cashBetNum > 0.99) {
+                            showModal('Ошибка!', 'Cash bet должен быть от 0.01 до 0.99.');
+                            return;
+                        }
+                        body.cash_bet = formatFloat(cashBetNum);
+                    }
+
                 }
 
-                // Подготовка тела запроса
-                const body = { name, role };
-                if (role === 'client') {
-                    body.percent = Number(percentVal);
+                // ===== ОТПРАВКА =====
+                const result = await postDataRes('/supplier/addUser', body);
+
+                if (result.success) {
+                    showModal('Успех!', 'Пользователь успешно добавлен!', true);
                 } else {
-                    body.percent = null;
-                }
-
-                try {
-                    const response = await fetch('/supplier/addUser', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(body)
-                    });
-
-                    const text = await response.text();
-                    let result;
-                    try {
-                        result = JSON.parse(text);
-                    } catch (e) {
-                        console.warn('Ответ сервера не JSON:', text);
-                        showModal('Ошибка!', 'Сервер вернул неожидимый ответ: ' + text);
-                        return;
-                    }
-
-                    if (result.success) {
-                        showModal('Успех!', 'Пользователь успешно добавлен!', true);
-                        form.reset();
-                        updatePercentageVisibility();
-                    } else {
-                        showModal('Ошибка!', result.message || 'Не удалось добавить пользователя!');
-                    }
-                } catch (error) {
-                    console.error('Ошибка запроса:', error);
-                    showModal('Ошибка!', 'Произошла ошибка при отправке запроса.');
+                    form.reset();
+                    showModal('Ошибка!', result.message || 'Не удалось добавить пользователя!');
                 }
             });
+
 
             closeModalBtn.addEventListener('click', () => {
                 try { modal.close(); } catch (e) {}

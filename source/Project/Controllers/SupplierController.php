@@ -38,6 +38,8 @@ class SupplierController extends BaseController
         $suplier = InformationDC::get('suplier');
         $role = InformationDC::get('role');
         $percent = InformationDC::get('percent');
+        $transit_rate = InformationDC::get('transit_rate');
+        $cash_bet = InformationDC::get('cash_bet');
 
         if ($repeat) {
             return ApiViewer::getErrorBody(['value' => 'repeat_name_manager']);
@@ -57,10 +59,12 @@ class SupplierController extends BaseController
             return ApiViewer::getErrorBody(['value' => 'error_insert_user']);
         }
 
-        if ($role == 'manager') {
+        if ($role == 'manager' && $transit_rate && $cash_bet) {
             ManagersLM::insertNewManagers([
                 'user_id' => $user->id,
                 'current_balance' => 0,
+                'transit_rate' => $transit_rate,
+                'cash_bet' => $cash_bet,
                 'supplier_id' => $suplier['supplier_id'],
                 'last_update' => date('Y-m-d H:i:s')
             ]);
@@ -1065,10 +1069,8 @@ class SupplierController extends BaseController
         $offset = $page * $limit;
         $suplier = InformationDC::get('suplier');
         $supplier_id = $suplier['supplier_id'] ?? 0;
-
         $users = SuppliersLM::getSuppliersUsers($role, $supplier_id, $offset, $limit);
 
-        Logger::log(print_r($users, true), 'supplier');
 
         if (!$users) {
             return $this->twig->render('User/NoClients.twig');

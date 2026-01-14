@@ -15,6 +15,7 @@ use Source\Project\LogicManagers\LogicPdoModel\LegalEntitiesLM;
 use Source\Project\LogicManagers\LogicPdoModel\StockBalancesLM;
 use Source\Project\LogicManagers\LogicPdoModel\TransactionsLM;
 use Source\Project\LogicManagers\LogicPdoModel\CompanyFinancesLM;
+use Source\Project\LogicManagers\LogicPdoModel\UploadedLogLM;
 use Source\Project\LogicManagers\LogicPdoModel\UsersLM;
 use Source\Project\DataContainers\InformationDC;
 use Source\Project\Viewer\ApiViewer;
@@ -524,12 +525,14 @@ class EntitiesController extends BaseController
     public function archiveOfExtracts(): string
     {
         $date = InformationDC::get('date');
-        $our_accounts = LegalEntitiesLM::getEntitiesOurAccountDate($date);
+        $our_accounts = UploadedLogLM::getEntitiesOurAccountDate($date);
+
 
         //Logger::log(print_r($companies, true), 'getOurEntities');
 
         return $this->twig->render('Entities/OurAccounts.twig', [
             'our_accounts' => $our_accounts,
+            'date' => $date
         ]);
     }
 

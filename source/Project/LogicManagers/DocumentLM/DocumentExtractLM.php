@@ -53,6 +53,7 @@ class DocumentExtractLM
 
     public string $document_all_inn = '';
     public string $document_all_number = '';
+    public string $document_all_balance = '';
     public string $result_document_processing = '';
     private array $blocks = [];
     public array $payment_order = [];
@@ -127,8 +128,7 @@ class DocumentExtractLM
         }
 
         $this->checkingUploadedDocuments();
-
-        //Logger::log(print_r($result, true), 'map_payment_order');
+        //Logger::log(print_r($this->result_document_processing , true), 'map_payment_order');
     }
 
     private function checkingUploadedDocuments(): void
@@ -188,19 +188,22 @@ class DocumentExtractLM
         }
     }
 
-
+    //TODO кое что убрал может надо вернуть $exclude_amount это баланс || сумма !!!!
     private function removeDuplicates(array $loaded_transactions, $transactions)
     {
         foreach ($loaded_transactions as $transaction) {
 
             $exclude_inn = $transaction->inn;
             $exclude_doc = $transaction->document_number;
+            $exclude_amount = $transaction->amount;
 
-            $transactions = array_filter($transactions, function ($item) use ($exclude_inn, $exclude_doc) {
-                return !($item['inn'] === $exclude_inn && $item['document_number'] === $exclude_doc);
+            $transactions = array_filter($transactions, function ($item) use ($exclude_inn, $exclude_doc, $exclude_amount) {
+                return !(
+                    $item['inn'] == $exclude_inn &&
+                    $item['document_number'] == $exclude_doc
+                );
             });
         }
-
 
         return $transactions;
     }
@@ -209,6 +212,7 @@ class DocumentExtractLM
     {
         $inns = [];
         $document_numbers = [];
+        $balance = [];
 
         $data_processed = [
             'payment_order' => $this->payment_order,
@@ -222,6 +226,7 @@ class DocumentExtractLM
 
                     $inns[] = $wrap($transaction['inn']);
                     $document_numbers[] = $wrap($transaction['document_number']);
+                    $balance[] = $wrap($transaction['balance']);
                 }
             }
         }
@@ -229,6 +234,7 @@ class DocumentExtractLM
 
         $this->document_all_inn = implode(', ', $inns);
         $this->document_all_number = implode(', ', $document_numbers);
+        $this->document_all_balance = implode(', ', $balance);
     }
 
 

@@ -76,6 +76,7 @@ class TransactionsProcessLM extends DocumentExtractLM
     public function __construct(array $lines, $section_document = 'СекцияДокумент')
     {
         parent::__construct($lines, $section_document);
+
         $this->transactions_count = count($this->payment_order);
         $this->bank_order_count = count($this->bank_order);
     }
@@ -108,13 +109,25 @@ class TransactionsProcessLM extends DocumentExtractLM
             $this->our_account_number = $row['bank_account'];
         }
 
-        if (isset($this->income[0])) {
+        if (isset($this->income[0]) && !$this->our_account) {
             $row = $this->income[0];
             $this->our_account = [
                 'company_name' => $row['company_name_recipient'],
                 'inn' => $row['inn_recipient'],
                 'bank_name' => $row['bank_name_recipient'],
                 'account' => $row['bank_account_recipient'],
+                'our_account' => 1,
+            ];
+            $this->our_account_number = $row['bank_account_recipient'];
+        }
+
+        if (isset($this->bank_order[0]) && !$this->our_account) {
+            $row = $this->bank_order[0];
+            $this->our_account = [
+                'company_name' => $row['company_name'],
+                'inn' => $row['inn'],
+                'bank_name' => $row['bank_name'],
+                'account' => $row['bank_account'],
                 'our_account' => 1,
             ];
             $this->our_account_number = $row['bank_account_recipient'];
@@ -846,6 +859,7 @@ class TransactionsProcessLM extends DocumentExtractLM
                 'id' => $max_id += 1,
                 'inn' => $bank_order['inn'],
                 'document_number' => $bank_order['document_number'],
+                'amount' => $bank_order['balance'],
                 'date' => time()
             ];
 

@@ -670,6 +670,7 @@ class LegalEntitiesLM
             return [];
         }
 
+        Logger::log(print_r($rows, true), 'legal_entities');
         $result = [];
 
         foreach ($rows as $row) {

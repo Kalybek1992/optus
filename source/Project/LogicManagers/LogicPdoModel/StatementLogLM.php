@@ -198,7 +198,7 @@ class StatementLogLM
 
 
             $bank_orders = implode(", ", $bank_orders);
-
+            CompanyFinancesLM::deleteInBankOrders($bank_orders);
             BankOrderLM::deleteInBankOrders($bank_orders);
         }
     }

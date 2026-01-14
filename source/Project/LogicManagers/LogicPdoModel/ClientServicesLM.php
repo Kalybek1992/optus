@@ -36,6 +36,18 @@ class ClientServicesLM
         return PdoConnector::execute($builder)[0] ?? [];
     }
 
+    public static function clientServicessDelete(int $id)
+    {
+        $builder = ClientServices::newQueryBuilder()
+            ->delete()
+            ->where([
+                'id =' . $id,
+            ]);
+
+
+        return PdoConnector::execute($builder);
+    }
+
     public static function getClientsServices(int $offset = 0, int $limit = 8): array
     {
 

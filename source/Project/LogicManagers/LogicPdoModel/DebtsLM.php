@@ -268,14 +268,23 @@ class DebtsLM
             return false;
         }
 
-        foreach ($client_services as $client_service) {
-            if (!in_array($client_service->supplier_id, $suppliers_id)) {
-                $suppliers_id[] = $client_service->supplier_id;
+
+        foreach ($client_services as $row) {
+            if (is_numeric($row->supplier_id)) {
+                $suppliers_id[$row->supplier_id] = true;
             }
         }
 
 
+        $suppliers_id = array_keys($suppliers_id);
         $suppliers_id = implode(', ', $suppliers_id);
+
+
+
+        if (empty($suppliers_id)) {
+            return false;
+        }
+
         $supplier_good_sum = LegalEntitiesLM::getDebtsSupplierGoodSum($suppliers_id);
 
         if (!$supplier_good_sum) {

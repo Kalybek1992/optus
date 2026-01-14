@@ -333,6 +333,18 @@ class CourierController extends BaseController
         ]);
     }
 
+    public function issueaAnotherAdmin(): string
+    {
+        $user = InformationDC::get('user');
+        $courier = CouriersLM::getCourierByUserId($user['id']);
+
+        $stock_balances = $courier['balance_sum'] ?? 0;
+
+        return $this->twig->render('Courier/issueaAnotherAdmin.twig', [
+            'stock_balances' => $stock_balances,
+        ]);
+    }
+
     public function courierFinances(): string
     {
         $page = InformationDC::get('page') ?? 0;

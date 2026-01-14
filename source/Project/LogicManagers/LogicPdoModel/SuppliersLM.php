@@ -488,6 +488,8 @@ class SuppliersLM
                     'balance_sum' => $balance_sum,
                     'debit_amount_sum' => $debit_amount_sum,
                     'user_id' => $supplier->user_id,
+                    'transit_rate' => $supplier->transit_rate,
+                    'cash_bet' => $supplier->cash_bet,
                     'created_at' => $supplier->created_at,
                     'bank_accounts' => $bank_accounts ? [$bank_accounts] : [],
                 ];
