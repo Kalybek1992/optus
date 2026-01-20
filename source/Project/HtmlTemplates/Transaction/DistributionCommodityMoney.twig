@@ -40,8 +40,10 @@
 
                     <!-- Подсказка -->
                     <div class="text-sm mt-1 text-red-500 sm:text-sm sm:mt-0" x-show="status !== 'ok'">
-                        <span class="block sm:hidden" x-text="status === 'exceed' ? 'Превышено!' : (status === 'invalid' ? 'Число!' : '')"></span>
-                        <span class="hidden sm:block" x-text="status === 'exceed' ? 'Сумма превышает доступную!' : (status === 'invalid' ? 'Введите число!' : '')"></span>
+                        <span class="block sm:hidden"
+                              x-text="status === 'exceed' ? 'Превышено!' : (status === 'invalid' ? 'Число!' : '')"></span>
+                        <span class="hidden sm:block"
+                              x-text="status === 'exceed' ? 'Сумма превышает доступную!' : (status === 'invalid' ? 'Введите число!' : '')"></span>
                     </div>
                 </div>
 
@@ -74,40 +76,62 @@
                 <div class="space-y-4 mt-4"
                      x-data="{
                             selected: null,
+
                             openCourierList: false,
                             openClientList: false,
+                            openSupplierList: false,
+
                             selectedCourier: null,
                             selectedClient: null,
+                            selectedSupplier: null,
+
                             selectedExpense: null,
                             expensePath: [],
+
                             select(type) {
                                 this.selected = type;
+
                                 this.openCourierList = false;
                                 this.openClientList = false;
+                                this.openSupplierList = false;
+
                                 if (type === 'courier') {
+                                    this.selectedClient = null;
+                                    this.selectedSupplier = null;
+                                    this.expensePath = [];
+                                }
+
+                                if (type === 'client') {
+                                    this.selectedCourier = null;
+                                    this.selectedSupplier = null;
+                                    this.expensePath = [];
+                                }
+
+                                if (type === 'supplier_leasing') {
+                                    this.selectedCourier = null;
                                     this.selectedClient = null;
                                     this.expensePath = [];
                                 }
-                                if (type === 'client') {
-                                    this.selectedCourier = null;
-                                    this.expensePath = [];
-                                }
+
                                 if (type === 'expense') {
                                     this.selectedCourier = null;
                                     this.selectedClient = null;
+                                    this.selectedSupplier = null;
                                 }
                             }
-                         }">
+                        }">
                     <!-- Курьер -->
                     <div class="flex flex-col sm:flex-row items-start sm:items-center gap-2">
                         <input type="radio" id="radio_courier" name="delivery_type" value="courier"
-                               class="hidden peer/courier" x-model="selected" @change="select('courier'); openCourierList = false">
+                               class="hidden peer/courier" x-model="selected"
+                               @change="select('courier'); openCourierList = false">
                         <label for="radio_courier"
                                class="btn h-12 w-full sm:w-48 text-center px-4 border border-gray-300 bg-gray-50 text-gray-700 hover:bg-blue-100 rounded-xl peer-checked/courier:bg-blue-500 peer-checked/courier:text-white transition">
                             Курьеру
                         </label>
 
-                        <div class="relative w-full sm:w-auto mt-2 sm:mt-0" x-show="selected === 'courier'" x-transition>
+                        <div class="relative w-full sm:w-auto mt-2 sm:mt-0" x-show="selected === 'courier'"
+                             x-transition>
                             {% if couriers is empty %}
                                 <a href="/user/addUser?return_page=/transaction/distributionCommodityMoney"
                                    class="btn h-12 w-full sm:w-80 px-4 text-left border border-gray-300 bg-gray-50 text-gray-700 hover:bg-blue-100 rounded-xl flex items-center justify-between transition">
@@ -154,7 +178,8 @@
                     <!-- Клиент -->
                     <div class="flex flex-col sm:flex-row items-start sm:items-center gap-2">
                         <input type="radio" id="radio_client" name="delivery_type" value="client"
-                               class="hidden peer/client" x-model="selected" @change="select('client'); openClientList = false">
+                               class="hidden peer/client" x-model="selected"
+                               @change="select('client'); openClientList = false">
                         <label for="radio_client"
                                class="btn h-12 w-full sm:w-48 text-center px-4 border border-gray-300 bg-gray-50 text-gray-700 hover:bg-blue-100 rounded-xl peer-checked/client:bg-blue-500 peer-checked/client:text-white transition">
                             Клиенту
@@ -205,16 +230,102 @@
                         </div>
                     </div>
 
+                    <!-- Поставщик лизинг -->
+                    <div class="flex flex-col sm:flex-row items-start sm:items-center gap-2">
+                        <input type="radio"
+                               id="radio_supplier"
+                               name="delivery_type"
+                               value="supplier_leasing"
+                               class="hidden peer/supplier_leasing"
+                               x-model="selected"
+                               @change="select('supplier_leasing'); openSupplierList = false">
+
+                        <label for="radio_supplier"
+                               class="btn h-12 w-full sm:w-48 text-center px-4
+                                  border border-gray-300 bg-gray-50 text-gray-700
+                                  hover:bg-blue-100 rounded-xl
+                                  peer-checked/supplier_leasing:bg-blue-500
+                                  peer-checked/supplier_leasing:text-white transition">
+                            Поставщик лизинг
+                        </label>
+
+                        <div class="relative w-full sm:w-auto mt-2 sm:mt-0"
+                             x-show="selected === 'supplier_leasing'"
+                             x-transition>
+
+                            {% if suppliers is empty %}
+                                <a href="/supplier/addSupplier?return_page=/transaction/distributionCommodityMoney"
+                                   class="btn h-12 w-full sm:w-80 px-4 text-left
+                                      border border-gray-300 bg-gray-50 text-gray-700
+                                      hover:bg-blue-100 rounded-xl
+                                      flex items-center justify-between transition">
+                                    <span>Создать поставщика</span>
+                                </a>
+                            {% else %}
+                                <button @click="openSupplierList = !openSupplierList"
+                                        class="btn h-12 w-full sm:w-80 px-4 text-left
+                                               border border-gray-300 bg-gray-50 text-gray-700
+                                               hover:bg-blue-100 rounded-xl
+                                               flex items-center justify-between transition">
+                                    <template x-if="!selectedSupplier">
+                                        <span>Выберите поставщика</span>
+                                    </template>
+                                    <template x-if="selectedSupplier">
+                                        <span x-text="selectedSupplier.name"></span>
+                                    </template>
+
+                                    <svg class="w-4 h-4 ml-2 text-gray-400"
+                                         fill="none"
+                                         stroke="currentColor"
+                                         stroke-width="2"
+                                         viewBox="0 0 24 24">
+                                        <path d="M19 9l-7 7-7-7"/>
+                                    </svg>
+                                </button>
+
+                                <!-- hidden -->
+                                <input type="hidden" name="supplier_id" :value="selectedSupplier?.id">
+                                <input type="hidden" name="supplier_name" :value="selectedSupplier?.name">
+
+                                <div x-show="openSupplierList"
+                                     @click.outside="openSupplierList = false"
+                                     class="absolute sm:absolute mt-2 sm:mt-0
+                                            sm:left-0 sm:top-full
+                                            w-full sm:w-80 z-50
+                                            bg-white border border-gray-200
+                                            rounded-xl shadow-xl p-2 space-y-1
+                                            transition-all duration-300"
+                                     x-transition>
+
+                                    {% for supplier in suppliers %}
+                                        <div @click="
+                                            selectedSupplier = { id: {{ supplier.supplier_id }}, name: '{{ supplier.username }}' };
+                                            openSupplierList = false"
+                                             class="cursor-pointer px-4 py-2 rounded-md
+                                                    hover:bg-gray-100 transition
+                                                    text-sm flex flex-col">
+                                            <span class="font-medium text-gray-900">
+                                                {{ supplier.username }}
+                                            </span>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
                     <!-- Определить как расход -->
                     <div class="flex flex-col sm:flex-row items-start sm:items-center gap-2">
                         <input type="radio" id="radio_expense" name="delivery_type" value="expense"
-                               class="hidden peer/expense" x-model="selected" @change="select('expense'); openExpenseList = false">
+                               class="hidden peer/expense" x-model="selected"
+                               @change="select('expense'); openExpenseList = false">
                         <label for="radio_expense"
                                class="btn h-12 w-full sm:w-48 text-center px-4 border border-gray-300 bg-gray-50 text-gray-700 hover:bg-blue-100 rounded-xl peer-checked/expense:bg-blue-500 peer-checked/expense:text-white transition">
                             Определить как расход
                         </label>
 
-                        <div class="relative w-full sm:w-auto mt-2 sm:mt-0" x-show="selected === 'expense'" x-transition>
+                        <div class="relative w-full sm:w-auto mt-2 sm:mt-0" x-show="selected === 'expense'"
+                             x-transition>
                             <div class="flex flex-col sm:flex-row items-start sm:items-center w-full max-w-xl gap-2">
                                 <!-- Категории расходов -->
                                 <div x-data="{ open: false, level: 0, path: [] }" class="relative w-full sm:w-auto">
@@ -233,7 +344,9 @@
                                          class="absolute sm:absolute mt-2 sm:mt-0 sm:left-0 sm:top-full w-full sm:w-80 z-50 bg-white border border-gray-200 rounded-xl shadow-xl p-4 space-y-3 overflow-auto max-h-60 transition-all duration-300"
                                          x-transition>
                                         <div x-show="level > 0" class="mb-2">
-                                            <button @click="level--; path.pop()" class="text-sm text-blue-600 hover:underline">← Назад</button>
+                                            <button @click="level--; path.pop()"
+                                                    class="text-sm text-blue-600 hover:underline">← Назад
+                                            </button>
                                         </div>
 
                                         {{ categories_html|raw }}
@@ -277,7 +390,8 @@
 
             <div class="mt-5">
                 <div id="modal-purpose" class="text-xs uppercase font-semibold text-gray-500 mb-1 tracking-wide"></div>
-                <div id="modal-appointment" class="px-3 py-2 rounded-[6px] text-sm text-gray-800 border border-blue-400 bg-transparent"></div>
+                <div id="modal-appointment"
+                     class="px-3 py-2 rounded-[6px] text-sm text-gray-800 border border-blue-400 bg-transparent"></div>
             </div>
 
             <!-- Сумма -->
@@ -353,7 +467,7 @@
     </dialog>
 
     <script src="https://cdn.jsdelivr.net/npm/pikaday/pikaday.js"></script>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pikaday/css/pikaday.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pikaday/css/pikaday.css"/>
 
     <script>
         const openErrorModal = (message) => {
@@ -448,6 +562,17 @@
                     openErrorModal('Выберите клиента!');
                     return;
                 }
+            } else if (deliveryType === 'supplier_leasing') {
+                const supplierInput = document.querySelector('input[name="supplier_id"]');
+                const userinput = document.querySelector('input[name="supplier_name"]');
+
+                if (supplierInput && supplierInput.value) {
+                    selectedId = supplierInput.value;
+                    userName = userinput.value;
+                } else {
+                    openErrorModal('Выберите поставщика!');
+                    return;
+                }
             } else if (deliveryType === 'expense') {
                 const categoryElement = document.getElementById('category');
                 categoryPath = categoryElement ? categoryElement.textContent.trim() : '';
@@ -473,6 +598,7 @@
                 courier: 'Курьеру',
                 client: 'Клиенту',
                 supplier: 'Поставщику',
+                supplier_leasing: 'Поставщику лизинг',
                 client_services: 'Клиент услуги',
                 expense: 'Расход',
             };
@@ -501,6 +627,8 @@
                 openErrorModal('Ошибка сбора данных!');
                 return;
             }
+
+            console.log(post);
 
             const result = await postData('/entities/definitionCommodityMoney', post);
 

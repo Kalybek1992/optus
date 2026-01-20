@@ -78,6 +78,21 @@ class LegalEntitiesLM
         return PdoConnector::execute($builder);
     }
 
+    public static function getBankAccountsAndInn(string $accounts, string $inns)
+    {
+        $builder = LegalEntities::newQueryBuilder()
+            ->select([
+                '*',
+            ])
+            ->where([
+                "account IN($accounts)",
+                "inn IN($inns)",
+            ]);
+
+        return PdoConnector::execute($builder);
+    }
+
+
     public static function getBankAccount(string $select)
     {
         $builder = LegalEntities::newQueryBuilder()
@@ -457,15 +472,44 @@ class LegalEntitiesLM
         $builder = LegalEntities::newQueryBuilder()
             ->select([
                 '*',
-
             ])
             ->where([
-                'inn =' . $inn,
+                "inn ='" . $inn . "'",
             ])
             ->limit(1);
 
         return PdoConnector::execute($builder)[0] ?? null;
     }
+
+
+    public static function getEntitiesInnCompany($company_name)
+    {
+        $builder = LegalEntities::newQueryBuilder()
+            ->select([
+                '*',
+            ])
+            ->where([
+                "company_name ='" . $company_name . "'",
+            ])
+            ->limit(1);
+
+        return PdoConnector::execute($builder)[0] ?? null;
+    }
+
+    public static function getEntitiesBank($bank_name)
+    {
+        $builder = LegalEntities::newQueryBuilder()
+            ->select([
+                '*',
+            ])
+            ->where([
+                "bank_name ='" . $bank_name . "'",
+            ])
+            ->limit(1);
+
+        return PdoConnector::execute($builder)[0] ?? null;
+    }
+
 
     public static function getEntitiesSupplierBalance($id, $supplier_id, $sender_legal_id)
     {

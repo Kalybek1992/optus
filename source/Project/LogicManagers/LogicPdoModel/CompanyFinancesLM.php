@@ -77,8 +77,9 @@ class CompanyFinancesLM
         $type_condition = [
             'company' => "(company_finances.type = 'expense' OR company_finances.type = 'expense_stock_balances' OR company_finances.type = 'courier_expense')",
             'supplier_expense' => "company_finances.type = 'expense_stock_balances_supplier'",
-            'supplier_debit' => "company_finances.type = 'debt_repayment_companies_supplier' OR company_finances.type = 'debt_repayment_client_supplier'",
-            'stock_balances' => "company_finances.type = 'stock_balances'"
+            'supplier_debit' => "company_finances.type = 'debt_repayment_сompanies_supplier' OR company_finances.type = 'debt_repayment_client_supplier'",
+            'stock_balances' => "company_finances.type = 'stock_balances'",
+            'debt_leasing' => "company_finances.type = 'debt_leasing'"
         ][$type];
 
         $builder = CompanyFinances::newQueryBuilder()
@@ -103,8 +104,7 @@ class CompanyFinancesLM
                 ->where([
                     "company_finances.category LIKE CONCAT('$category', '%')",
                     "t.date BETWEEN '$date_from' AND '$date_to'",
-                    $type_condition,
-                    "company_finances.status = 'processed'"
+                    $type_condition
                 ]);
         }
 
@@ -112,8 +112,7 @@ class CompanyFinancesLM
             $builder
                 ->where([
                     "t.date BETWEEN '$date_from' AND '$date_to'",
-                    $type_condition,
-                    "company_finances.status = 'processed'"
+                    $type_condition
                 ]);
         }
 
@@ -121,8 +120,7 @@ class CompanyFinancesLM
             $builder
                 ->where([
                     "t.date >='" . $date_from . "'",
-                    $type_condition,
-                    "company_finances.status = 'processed'"
+                    $type_condition
                 ]);
         }
 
@@ -130,16 +128,14 @@ class CompanyFinancesLM
             $builder
                 ->where([
                     "company_finances.category LIKE CONCAT('$category', '%')",
-                    $type_condition,
-                    "company_finances.status = 'processed'"
+                    $type_condition
                 ]);
         }
 
         if (!$category && !$date_from && !$date_to) {
             $builder
                 ->where([
-                    $type_condition,
-                    "company_finances.status = 'processed'"
+                    $type_condition
                 ]);
         }
 
@@ -160,7 +156,8 @@ class CompanyFinancesLM
             'company' => "(company_finances.type = 'expense' OR company_finances.type = 'expense_stock_balances' OR company_finances.type = 'courier_expense')",
             'supplier_expense' => "company_finances.type = 'expense_stock_balances_supplier'",
             'supplier_debit' => "company_finances.type = 'debt_repayment_сompanies_supplier' OR company_finances.type = 'debt_repayment_client_supplier'",
-            'stock_balances' => "company_finances.type = 'stock_balances'"
+            'stock_balances' => "company_finances.type = 'stock_balances'",
+            'debt_leasing' => "company_finances.type = 'debt_leasing'"
         ][$type];
 
         $clients = [
@@ -177,6 +174,10 @@ class CompanyFinancesLM
             ],
             'stock_balances' => [
                 'c.id = client_id',
+            ],
+            'debt_leasing' => [
+                'c.id = client_id',
+                'c.supplier_id =' . $supplier_id,
             ],
         ][$type];
 
@@ -539,9 +540,10 @@ class CompanyFinancesLM
                 'company_finances.status as status',
                 't.amount as amount',
                 't.date as bo_date',
-                'сс.card_number as card_number',
+                'cc.card_number as card_number',
                 'u_supplier.name as supplier_name',
                 'u_courier.name as courier_name',
+                'le.company_name as company_name',
             ])
             ->leftJoin('transactions t')
             ->on([
@@ -551,9 +553,9 @@ class CompanyFinancesLM
             ->on([
                 's.id = supplier_id',
             ])
-            ->leftJoin('couriers с')
+            ->leftJoin('couriers c')
             ->on([
-                'с.id = sender_courier_id',
+                'c.id = sender_courier_id',
             ])
             ->leftJoin('users u_supplier')
             ->on([
@@ -561,11 +563,15 @@ class CompanyFinancesLM
             ])
             ->leftJoin('users u_courier')
             ->on([
-                'u_courier.id = с.user_id',
+                'u_courier.id = c.user_id',
             ])
-            ->leftJoin('credit_cards сс')
+            ->leftJoin('credit_cards cc')
             ->on([
-                'сс.id = card_id',
+                'cc.id = card_id',
+            ])
+            ->leftJoin('legal_entities le')
+            ->on([
+                'le.id = cc.legal_id',
             ])
             ->where([
                 'courier_id =' . $courier_id,
@@ -585,6 +591,7 @@ class CompanyFinancesLM
                 'status' => $r->status,
                 'amount' => $r->amount,
                 'card_number' => $r->card_number,
+                'company_name' => $r->company_name,
                 'supplier_name' => $r->supplier_name ?? $r->courier_name ?? 'Администратор',
                 'date' => $r->bo_date ? date('d.m.Y', strtotime($r->bo_date)) : '',
             ];
@@ -644,6 +651,36 @@ class CompanyFinancesLM
         return PdoConnector::execute($builder)[0] ?? null;
     }
 
+    public static function getPendingByIdConfirmSupplier(int $company_finances_id): ?object
+    {
+        $builder = CompanyFinances::newQueryBuilder()
+            ->select([
+                'id as id',
+                'courier_id as courier_id',
+                'status as status',
+                'client_id as client_id',
+                'supplier_id as supplier_id',
+                't.amount as amount',
+                't.id as transaction_id',
+                'с.current_balance as current_balance',
+            ])
+            ->leftJoin('transactions t')
+            ->on([
+                't.id = transaction_id',
+            ])
+            ->leftJoin('couriers с')
+            ->on([
+                'с.id =  courier_id',
+            ])
+            ->where([
+                'id =' . $company_finances_id,
+                "status = 'confirm_supplier'",
+            ])
+            ->limit(1);
+
+        return PdoConnector::execute($builder)[0] ?? null;
+    }
+
     public static function getReturnTypeWheelId(int $company_finances_id): ?object
     {
         $builder = CompanyFinances::newQueryBuilder()
@@ -679,7 +716,7 @@ class CompanyFinancesLM
         return PdoConnector::execute($builder)[0] ?? null;
     }
 
-    public static function confirmationCostsCourier(): array
+    public static function confirmationCostsAdmin(): array
     {
         $builder = CompanyFinances::newQueryBuilder()
             ->select([
@@ -715,7 +752,8 @@ class CompanyFinancesLM
                 company_finances.type = 'return_debit_courier' OR 
                 company_finances.type = 'courier_expense' OR 
                 company_finances.type = 'courier_income_other' OR
-                company_finances.type = 'debt_repayment_сompanies_supplier'
+                company_finances.type = 'debt_repayment_сompanies_supplier' OR
+                company_finances.type = 'stock_balances'
                 )",
             ]);
 
@@ -726,12 +764,14 @@ class CompanyFinancesLM
         $return_debit_courier = [];
         $courier_income_other = [];
         $debt_repayment_companies_supplier = [];
+        $stock_balances = [];
 
         if (!$confirmation) {
             return [];
         }
 
         foreach ($confirmation as $confirm) {
+
             if ($confirm->type == 'courier_expense') {
                 $courier_expense[] = [
                     'id' => $confirm->id,
@@ -764,7 +804,7 @@ class CompanyFinancesLM
                     'email' => $confirm->email,
                     'courier_name' => $confirm->name,
                     'client_name' => $client['username'] ?? '',
-                    'debit_amount' => $client['debit_amount'] ?? 0,
+                    'debit_amount' => $client['debit_amount'] ? $client['debit_amount'] - $confirm->amount : 0,
                 ];
             }
 
@@ -803,6 +843,21 @@ class CompanyFinancesLM
                     'transaction_description' => $confirm->description,
                 ];
             }
+
+            if ($confirm->type == 'stock_balances') {
+                $stock_balances[] = [
+                    'id' => $confirm->id,
+                    'transaction_id' => $confirm->transaction_id,
+                    'courier_id' => $confirm->courier_id,
+                    'comments' => $confirm->comments,
+                    'amount' => $confirm->amount,
+                    'date' => $confirm->date ? date('d.m.Y', strtotime($confirm->date)) : '',
+                    'issue_date' => $confirm->issue_date ? date('d.m.Y', strtotime($confirm->issue_date)) : '',
+                    'type' => $confirm->type,
+                    'email' => $confirm->email,
+                    'courier_name' => $confirm->name,
+                ];
+            }
         }
 
         //Logger::log(print_r($debt_repayment_companies_supplier, true), 'adminHomePage');
@@ -812,6 +867,69 @@ class CompanyFinancesLM
             'return_debit_courier' => $return_debit_courier,
             'courier_income_other' => $courier_income_other,
             'debt_repayment_companies_supplier' => $debt_repayment_companies_supplier,
+            'stock_balances' => $stock_balances,
+        ];
+    }
+
+    public static function confirmationCostSupplier(int $supplier_id): array
+    {
+        $builder = CompanyFinances::newQueryBuilder()
+            ->select([
+                '*',
+                't.amount as amount',
+                't.date as date',
+                't.description as description',
+                'u.email as email',
+                'u.name as name',
+                'cs.id as client_id',
+            ])
+            ->leftJoin('transactions t')
+            ->on([
+                't.id = transaction_id',
+            ])
+            ->leftJoin('couriers c')
+            ->on([
+                'c.id = courier_id',
+            ])
+            ->leftJoin('clients cs')
+            ->on([
+                'cs.id = client_id',
+            ])
+            ->leftJoin('users u')
+            ->on([
+                'u.id = c.user_id',
+            ])
+            ->where([
+                "status = 'confirm_supplier'",
+                "supplier_id =" . $supplier_id
+            ]);
+
+
+        $confirmation = PdoConnector::execute($builder) ?? [];
+        $debt_leasing = [];
+
+        if (!$confirmation) {
+            return [];
+        }
+
+        foreach ($confirmation as $confirm) {
+            if ($confirm->type == 'debt_leasing') {
+                $debt_leasing[] = [
+                    'id' => $confirm->id,
+                    'transaction_id' => $confirm->transaction_id,
+                    'comments' => $confirm->comments,
+                    'amount' => $confirm->amount,
+                    'date' => $confirm->date ? date('d.m.Y', strtotime($confirm->date)) : '',
+                    'issue_date' => $confirm->issue_date ? date('d.m.Y', strtotime($confirm->issue_date)) : '',
+                    'type' => $confirm->type,
+                ];
+            }
+        }
+
+        //Logger::log(print_r($debt_repayment_companies_supplier, true), 'adminHomePage');
+
+        return [
+            'debt_leasing' => $debt_leasing,
         ];
     }
 
@@ -1138,7 +1256,5 @@ class CompanyFinancesLM
 
         return PdoConnector::execute($builder)[0] ?? [];
     }
-
-
 
 }

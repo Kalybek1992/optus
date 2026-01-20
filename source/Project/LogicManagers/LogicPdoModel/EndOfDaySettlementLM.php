@@ -5,9 +5,7 @@ namespace Source\Project\LogicManagers\LogicPdoModel;
 use DateTime;
 use Source\Base\Core\Logger;
 use Source\Project\Connectors\PdoConnector;
-use Source\Project\Models\Debts;
 use Source\Project\Models\EndOfDaySettlement;
-use Source\Project\Models\UploadedDocuments;
 
 
 /**
@@ -22,7 +20,6 @@ class EndOfDaySettlementLM
             $date = $date->format('Y-m-d');
         }
 
-
         $builder = EndOfDaySettlement::newQueryBuilder()
             ->select([
                 '*',
@@ -32,7 +29,7 @@ class EndOfDaySettlementLM
                 'manager_id =' . $manager_id,
                 "date < " . "'$date'"
             ])
-            ->orderBy('id', 'DESC')
+            ->orderBy('date', 'DESC')
             ->limit(1);
 
 
@@ -50,7 +47,7 @@ class EndOfDaySettlementLM
                 'manager_id =' . $manager_id,
                 "date =" . "'$date'"
             ])
-            ->orderBy('id', 'DESC')
+            ->orderBy('date', 'DESC')
             ->limit(1);
 
 
@@ -87,6 +84,8 @@ class EndOfDaySettlementLM
             $end = new DateTime('today');
             $manager_id = $value['manager_id'];
             $supplier_id = $value['supplier_id'];
+            $transit_rate = $value['transit_rate'] ?? null;
+            $cash_bet = $value['cash_bet'] ?? null;
 
             while ($current <= $end) {
                 $date_format = $current->format('d.m.Y');
@@ -97,7 +96,9 @@ class EndOfDaySettlementLM
                     $date_format,
                     $date_format,
                     $manager_id,
-                    $supplier_id
+                    $supplier_id,
+                    $transit_rate,
+                    $cash_bet
                 );
 
                 if ($today) {
@@ -105,6 +106,8 @@ class EndOfDaySettlementLM
                         self::updateEndOfDaySettlement([
                             'amount =' . $report['amount'],
                             'scenario =' . $report['scenario'],
+                            'transit_rate =' . $report['transit_rate'],
+                            'cash_bet =' . $report['cash_bet'],
                             'date =' . $date,
                         ], $today->id);
                     }
@@ -114,6 +117,8 @@ class EndOfDaySettlementLM
                             'manager_id' => $manager_id,
                             'amount' => $report['amount'],
                             'scenario' => $report['scenario'],
+                            'transit_rate =' . $report['transit_rate'],
+                            'cash_bet =' . $report['cash_bet'],
                             'date' => $date,
                         ];
                     }

@@ -3,6 +3,7 @@
 namespace Source\Project\Controllers;
 
 
+use Source\Base\Core\Logger;
 use Source\Project\Controllers\Base\BaseController;
 use Source\Project\LogicManagers\HtmlLM\HtmlLM;
 use Source\Project\LogicManagers\LogicPdoModel\BankOrderLM;
@@ -13,6 +14,7 @@ use Source\Project\LogicManagers\LogicPdoModel\DebtsLM;
 use Source\Project\LogicManagers\LogicPdoModel\ExpenseCategoriesLM;
 use Source\Project\LogicManagers\LogicPdoModel\LegalEntitiesLM;
 use Source\Project\LogicManagers\LogicPdoModel\StockBalancesLM;
+use Source\Project\LogicManagers\LogicPdoModel\SuppliersLM;
 use Source\Project\LogicManagers\LogicPdoModel\TransactionsLM;
 use Source\Project\LogicManagers\LogicPdoModel\CompanyFinancesLM;
 use Source\Project\LogicManagers\LogicPdoModel\UploadedLogLM;
@@ -557,20 +559,35 @@ class EntitiesController extends BaseController
         if ($user['role'] == 'courier' && $delivery_type == 'client') {
             $status_company_finances = 'confirm_admin';
             $type_company_finances = 'return_debit_courier';
+        }
 
+        if ($user['role'] == 'courier'){
             $courier = CouriersLM::getCourierByUserId($user['id']);
             $courier_id = $courier['id'] ?? null;
             $balance = $courier['balance_sum'] ?? 0;
-
             $courier_balance = $balance - $amount;
         }
 
-        if ($user['role'] == 'courier' && $delivery_type == 'courier') {
-            $courier = CouriersLM::getCourierByUserId($user['id']);
-            $courier_id = $courier['id'] ?? null;
-            $balance = $courier['balance_sum'] ?? 0;
+        if ($delivery_type == 'admin') {
+            $insert_company_finances = [
+                'transaction_id' => $translation_max_id + 1,
+                'comments' => $comments,
+                'courier_id' => $courier_id,
+                'type' => 'stock_balances',
+                'status' => 'confirm_admin',
+                'issue_date' => $issue_date
+            ];
 
-            $courier_balance = $balance - $amount;
+            TransactionsLM::insertNewTransactions([
+                'id' => $translation_max_id + 1,
+                'type' => 'internal_transfer',
+                'amount' => $amount,
+                'date' => date('Y-m-d H:i:s'),
+                'description' => 'Расход товарных денег.',
+                'status' => 'processed'
+            ]);
+
+            CouriersLM::adjustCurrentBalance($courier_id, $courier_balance);
         }
 
         if ($delivery_type == 'expense') {
@@ -596,9 +613,7 @@ class EntitiesController extends BaseController
         if ($delivery_type == 'courier') {
             $courier = CouriersLM::getCouriersId($selected_id);
 
-            if (!$courier) {
-                return ApiViewer::getErrorBody(['value' => 'bad_courier']);
-            }
+            if (!$courier) return ApiViewer::getErrorBody(['value' => 'bad_courier']);
 
             $insert_company_finances = [
                 'transaction_id' => $translation_max_id + 1,
@@ -624,17 +639,34 @@ class EntitiesController extends BaseController
             }
         }
 
-        if ($delivery_type == 'client') {
+        if ($delivery_type == 'supplier_leasing') {
+            $supplier = SuppliersLM::getSuppliersId($selected_id);
+            if (!$supplier) return ApiViewer::getErrorBody(['value' => 'bad_courier']);
 
+            $insert_company_finances = [
+                'transaction_id' => $translation_max_id + 1,
+                'supplier_id' => $selected_id,
+                'comments' => $comments,
+                'type' => 'debt_leasing',
+                'status' => 'confirm_supplier',
+                'issue_date' => $issue_date
+            ];
+
+            TransactionsLM::insertNewTransactions([
+                'id' => $translation_max_id + 1,
+                'type' => 'internal_transfer',
+                'amount' => $amount,
+                'date' => date('Y-m-d H:i:s'),
+                'description' => 'Перевод поставщику на лизинг.',
+                'status' => 'processed'
+            ]);
+        }
+
+        if ($delivery_type == 'client') {
             $client = ClientsLM::getClientId($selected_id);
 
-            if (!$client) {
-                return ApiViewer::getErrorBody(['value' => 'bad_client']);
-            }
-
-            if (!$client['legal_id']) {
-                return ApiViewer::getErrorBody(['value' => 'bad_client_legal_entities']);
-            }
+            if (!$client) return ApiViewer::getErrorBody(['value' => 'bad_client']);
+            if (!$client['legal_id']) return ApiViewer::getErrorBody(['value' => 'bad_client_legal_entities']);
 
             TransactionsLM::insertNewTransactions([
                 'id' => $translation_max_id + 1,
@@ -658,9 +690,7 @@ class EntitiesController extends BaseController
             if ($courier_id) {
                 $insert_company_finances['courier_id'] = $courier_id;
                 CouriersLM::adjustCurrentBalance($courier_id, $courier_balance);
-            }
-
-            if (!$courier_id) {
+            }else{
                 DebtsLM::payOffClientsDebt(
                     $client['legal_id'],
                     $amount,
@@ -695,13 +725,13 @@ class EntitiesController extends BaseController
         $stock_balances = InformationDC::get('stock_balances');
         $sum_amout = 0;
 
+
         if (!$bank_order) {
             return ApiViewer::getErrorBody(['error' => 'not_bank_order']);
         }
 
-        $bank_order_all = BankOrderLM::getBankOrderRecipientCompanyName($bank_order->recipient_company_name);
+        $bank_order_all = BankOrderLM::getBankOrderRecipientCompanyInn($bank_order->recipient_inn);
         $entities_max_id = LegalEntitiesLM::getLegalEntitiesMaxId();
-
 
         LegalEntitiesLM::setNewLegalEntitie([
             'id' => $entities_max_id + 1,
@@ -713,25 +743,34 @@ class EntitiesController extends BaseController
 
         foreach ($bank_order_all as $order) {
             $sum_amout = $sum_amout + $order->amount;
+            $transaction_id = $order->transaction_id ?? false;
 
-            TransactionsLM::updateTransactionsId([
-                'to_account_id =' . $entities_max_id + 1
-            ], $order->transaction_id);
+            if ($transaction_id){
+                TransactionsLM::updateTransactionsId([
+                    'to_account_id =' . $entities_max_id + 1
+                ], $order->transaction_id);
 
-            if ($stock_balances == 'courier') {
-                $fin = CompanyFinancesLM::getFinancesOrderId($order->id);
 
-                if ($fin->type == 'courier_balances' && $fin->status == 'processed' && $fin->courier_id) {
-                    $courier = CouriersLM::getCourierCourierId($fin->courier_id);
-                    $new_balanse = $courier['balance_sum'] - $order->amount;
 
-                    CouriersLM::updateCouriers([
-                        'current_balance =' . $new_balanse,
-                    ],  $fin->courier_id);
+                if ($stock_balances == 'courier') {
+                    $fin = CompanyFinancesLM::getFinancesOrderId($order->id);
+
+                    if ($fin) {
+                        if ($fin->type == 'courier_balances' && $fin->status == 'processed' && $fin->courier_id) {
+                            $courier = CouriersLM::getCourierCourierId($fin->courier_id);
+                            $new_balanse = $courier['balance_sum'] - $order->amount;
+
+                            CouriersLM::updateCouriers([
+                                'current_balance =' . $new_balanse,
+                            ],  $fin->courier_id);
+                        }
+                    }
                 }
-            }
 
-            CompanyFinancesLM::deleteOrderId($order->id);
+
+                CompanyFinancesLM::deleteOrderId($order->id);
+                BankOrderLM::deleteBankOrderRecipientId($order->id);
+            }
         }
 
         if ($stock_balances == 'сompany') {
@@ -744,7 +783,7 @@ class EntitiesController extends BaseController
             ]);
         }
 
-        BankOrderLM::deleteBankOrderRecipientCompanyName($bank_order->recipient_company_name);
+
         return ApiViewer::getOkBody(['success' => 'ok']);
     }
 }

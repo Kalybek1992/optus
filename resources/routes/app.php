@@ -665,6 +665,25 @@ return [
                 new ApiKeySupplierMiddleware
             ]
         ],
+        '/supplier/debtleasingreport' => [
+            'validation' => [
+                'page' => [
+                    'required' => false,
+                    'custom_logic' => fn($a) => is_numeric($a) || $a == null
+                ],
+                'date_from' => [
+                    'required' => false,
+                    'custom_logic' => fn($a) => is_string($a) && DateTime::createFromFormat('d.m.Y', $a) !== false || $a == null
+                ],
+                'date_to' => [
+                    'required' => false,
+                    'custom_logic' => fn($a) => is_string($a) && DateTime::createFromFormat('d.m.Y', $a) !== false || $a == null
+                ],
+            ],
+            'middlewares' => [
+                new ApiKeySupplierMiddleware
+            ]
+        ],
         '/supplier/deliveredgoods' => [
             'validation' => [
                 'page' => [
@@ -925,6 +944,21 @@ return [
                 new ApiKeyShopreceiptsDateMiddleware
             ]
         ],
+        '/search/extractsearch' => [
+            'page' => [
+                'required' => false,
+                'custom_logic' => fn($a) => is_numeric($a) || $a == null
+            ],
+            'query' => [
+                'required' => false
+            ],
+            'type' => [
+                'required' => false
+            ],
+            'middlewares' => [
+                new ApiKeyAdminMiddleware
+            ]
+        ],
     ],
     'POST' => [
         '/user/auth' => [
@@ -970,6 +1004,52 @@ return [
                 new RepeatEmailMiddleware,
                 new NewUserTokenMiddleware,
                 new NewUserRoleCheckMiddleware,
+            ]
+        ],
+        '/supplier/changesettlementrates' => [
+            'validation' => [
+                'transit_rate' => [
+                    'required' => true,
+                    'custom_logic' => fn($a) => is_numeric($a) && (float)$a >= 0.01 && (float)$a <= 0.99
+                ],
+                'cash_bet' => [
+                    'required' => true,
+                    'custom_logic' => fn($a) => is_numeric($a) && (float)$a >= 0.01 && (float)$a <= 0.99
+                ],
+                'manager_id' => [
+                    'required' => true,
+                    'custom_logic' => fn($a) => is_numeric($a) && $a > 0
+                ],
+                'date' => [
+                    'required' => false,
+                    'custom_logic' => fn($a) => is_string($a) && DateTime::createFromFormat('d.m.Y', $a) !== false || $a == null
+                ],
+            ],
+            'middlewares' => [
+                new ApiKeySupplierMiddleware,
+            ]
+        ],
+        '/supplier/changeratesmanager' => [
+            'validation' => [
+                'transit_rate' => [
+                    'required' => true,
+                    'custom_logic' => fn($a) => is_numeric($a) && (float)$a >= 0.01 && (float)$a <= 0.99
+                ],
+                'cash_bet' => [
+                    'required' => true,
+                    'custom_logic' => fn($a) => is_numeric($a) && (float)$a >= 0.01 && (float)$a <= 0.99
+                ],
+                'manager_id' => [
+                    'required' => true,
+                    'custom_logic' => fn($a) => is_numeric($a) && $a > 0
+                ],
+                'date' => [
+                    'required' => false,
+                    'custom_logic' => fn($a) => is_string($a) && DateTime::createFromFormat('d.m.Y', $a) !== false || $a == null
+                ],
+            ],
+            'middlewares' => [
+                new ApiKeySupplierMiddleware,
             ]
         ],
         '/supplier/adduser' => [
@@ -1460,7 +1540,7 @@ return [
             'validation' => [
                 'delivery_type' => [
                     'required' => true,
-                    'custom_logic' => fn($a) => $a == 'expense' || $a == 'client' || $a == 'courier'
+                    'custom_logic' => fn($a) => $a == 'expense' || $a == 'client' || $a == 'courier' || $a == 'admin' || $a == 'supplier_leasing'
                 ],
                 'selected_id' => [
                     'required' => false,
@@ -1485,7 +1565,7 @@ return [
                 new ApiKeyAddUserCategoriesMiddleware
             ]
         ],
-        '/courier/expenseadmin' => [
+        '/courier/confirmadmin' => [
             'validation' => [
                 'finances_id' => [
                     'required' => true,
@@ -1497,7 +1577,7 @@ return [
                 ],
                 'action_type' => [
                     'required' => true,
-                    'custom_logic' => fn($a) => $a == 'consumption' || $a == 'debt' || $a == 'courier_income_other'
+                    'custom_logic' => fn($a) => $a == 'consumption' || $a == 'debt' || $a == 'courier_income_other' || $a == 'stock_balances_admin'
                 ],
             ],
             'middlewares' => [
@@ -1618,6 +1698,9 @@ return [
                 'category_path' => [
                     'required' => false
                 ],
+                'leasing' => [
+                    'required' => false
+                ],
                 'amount' => [
                     'required' => true,
                     'custom_logic' => fn($a) => is_numeric($a) && $a > 0
@@ -1634,7 +1717,7 @@ return [
                 new ApiKeySupplierMiddleware,
             ]
         ],
-        '/supplier/expenseadmin' => [
+        '/supplier/confirmadmin' => [
             'validation' => [
                 'finances_id' => [
                     'required' => true,
@@ -1647,6 +1730,21 @@ return [
             ],
             'middlewares' => [
                 new ApiKeyAdminMiddleware,
+            ]
+        ],
+        '/supplier/confirmsupplier' => [
+            'validation' => [
+                'finances_id' => [
+                    'required' => true,
+                    'custom_logic' => fn($a) => is_numeric($a) && $a > 0
+                ],
+                'status' => [
+                    'required' => true,
+                    'custom_logic' => fn($a) => $a == 'confirm' || $a == 'cancel'
+                ],
+            ],
+            'middlewares' => [
+                new ApiKeySupplierMiddleware,
             ]
         ],
         '/supplier/saveproductbalance' => [

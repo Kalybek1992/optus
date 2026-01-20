@@ -55,7 +55,7 @@ class HomeController extends BaseController
         $client_services = DebtsLM::getDebtsClientServicesCount();
         $stock_balances = StockBalancesLM::getStockBalances()->balance ?? 0;
         $our_accounts = LegalEntitiesLM::getEntitiesOurAccount();
-        $confirmation = CompanyFinancesLM::confirmationCostsCourier();
+        $confirmation = CompanyFinancesLM::confirmationCostsAdmin();
         $task_planner = TaskPlannerLM::getAllTaskPlan();
         $legal_entitie = LegalEntitiesLM::getNonOurCompanies();
         $error_uploads = StatementLogLM::getStatementLogStatusError();
@@ -88,6 +88,7 @@ class HomeController extends BaseController
             'return_debit_courier' => $confirmation['return_debit_courier'] ?? [],
             'courier_income_other' => $confirmation['courier_income_other'] ?? [],
             'debt_repayment_companies_supplier' => $confirmation['debt_repayment_companies_supplier'] ?? [],
+            'stock_balances_confirmation' => $confirmation['stock_balances'] ?? [],
             'task_planner' => $task_planner,
             'legal_entitie' => $legal_entitie,
             'mutual_settlements' => $mutual_settlements,
@@ -120,7 +121,9 @@ class HomeController extends BaseController
         $supplier_companies = LegalEntitiesLM::getLegalSupplierCompany($supplier->suppliers_id);
         $supplier_debts = DebtsLM::getDebtSupplierPage($supplier->suppliers_id);
         $not_accepted = CompanyFinancesLM::getFinancesSumNotAcceptedSupplier($supplier->suppliers_id);
+        $confirmations = CompanyFinancesLM::confirmationCostSupplier($supplier->suppliers_id);
 
+        Logger::log(print_r($confirmations,true), 'supplierHomePage');
 
         return $this->twig->render('Supplier/SupplierHome.twig', [
             'supplier' => $user,
@@ -129,7 +132,9 @@ class HomeController extends BaseController
             'companies' => $supplier_companies,
             'debts' => $supplier_debts,
             'stock_balance' => $supplier->stock_balance ?? 0,
+            'debt_leasing' => $supplier->debt_leasing ?? 0,
             'not_accepted' => $not_accepted,
+            'confirmations' => $confirmations,
             'role' => 'supplier'
         ]);
     }
@@ -192,7 +197,6 @@ class HomeController extends BaseController
         $supplier_debts = DebtsLM::getDebtSupplierPage($supplier->suppliers_id);
         $couriers = CouriersLM::getCouriersAll();
 
-        Logger::log(print_r($user, true), 'supplier_users');
 
         return $this->twig->render('Supplier/SupplierHomeRestrictedAccess.twig', [
             'supplier' => $user,

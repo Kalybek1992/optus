@@ -39,7 +39,8 @@ final class ApiKeySupplierMiddleware extends Middleware
                 '*',
                 's.id as supplier_id',
                 's.balance as balance',
-                's.stock_balance as stock_balance'
+                's.stock_balance as stock_balance',
+                's.debt_leasing as debt_leasing'
             ])
             ->innerJoin('suppliers s')
             ->on([
@@ -80,6 +81,7 @@ final class ApiKeySupplierMiddleware extends Middleware
             'supplier_id' => $user->supplier_id,
             'balance' => $user->balance,
             'stock_balance' => $user->stock_balance,
+            'debt_leasing' => $user->debt_leasing ?? 0,
             'restricted_access' => $user->restricted_access
         ];
 

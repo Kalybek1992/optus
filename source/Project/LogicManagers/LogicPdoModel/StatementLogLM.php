@@ -46,27 +46,6 @@ class StatementLogLM
     }
 
 
-    public static function getStatementLogDate($date = null)
-    {
-        if (!empty($date)) {
-            $dt = DateTime::createFromFormat('d.m.Y', $date);
-            $check_date = $dt ? $dt->format('Y-m-d') : date('Y-m-d');
-        } else {
-            $check_date = date('Y-m-d');
-        }
-
-
-        $builder = StatementLog::newQueryBuilder()
-            ->select([
-                '*'
-            ])->where([
-                "status =" . 0,
-            ]);
-
-        return PdoConnector::execute($builder);
-    }
-
-
     public static function getStatementLogStatusError(): array
     {
         $builder = StatementLog::newQueryBuilder()
@@ -100,6 +79,7 @@ class StatementLogLM
                 'company_name' => $legal->company_name ?? 'Неизвестно',
                 'date' => $date_ru,
                 'time' => $time_ru,
+                'recent_activities' => array_key_last($steps_array),
             ];
         }
 
@@ -158,6 +138,8 @@ class StatementLogLM
         if (isset($errors['last_statement_download']) && $errors['last_statement_download']) {
             $id = $errors['last_statement_download'];
             UploadedLogLM::deleteUploadedLog($id);
+
+            unset($errors['last_statement_download']);
         }
     }
 
@@ -178,6 +160,8 @@ class StatementLogLM
 
             $id = $errors['last_statement_download'];
             UploadedLogLM::deleteUploadedLog($id);
+
+            unset($errors['update_known_legal_entities_totals']);
         }
     }
 
@@ -188,6 +172,8 @@ class StatementLogLM
             $ids = implode(", ", $ids);
 
             UploadedDocumentsLM::deleteUploadedDocumentsIds($ids);
+
+            unset($errors['uploaded_documents']);
         }
     }
 
@@ -200,6 +186,8 @@ class StatementLogLM
             $bank_orders = implode(", ", $bank_orders);
             CompanyFinancesLM::deleteInBankOrders($bank_orders);
             BankOrderLM::deleteInBankOrders($bank_orders);
+
+            unset($errors['new_bank_orders']);
         }
     }
 
@@ -212,6 +200,8 @@ class StatementLogLM
             $transaction_id = implode(", ", $transaction_id);
 
             DebtsLM::deleteTransactionIdGoods($transaction_id);
+
+            unset($errors['expenditure_on_goods']);
         }
     }
 
@@ -232,7 +222,11 @@ class StatementLogLM
                     ],
                     $supplier_balance->id,
                 );
+
+                unset($errors['update_balance_supplier'][$key]);
             }
+
+            unset($errors['update_balance_supplier']);
         }
     }
 
@@ -243,6 +237,8 @@ class StatementLogLM
             $ids = implode(", ", $ids);
 
             SupplierBalanceLM::deleteBalanceIds($ids);
+
+            unset($errors['insert_new_balance']);
         }
     }
 
@@ -274,6 +270,8 @@ class StatementLogLM
                         ], $debit->id);
                     }
                 }
+
+                unset($errors[$type][$key]);
             }
 
             $goods_type = [
@@ -284,6 +282,8 @@ class StatementLogLM
 
             DebtClosingsLM::deleteDebtClosingsInTransactionId($transaction_ids);
             DebtsLM::deleteTransactionIdGoodsType($transaction_ids, $goods_type);
+
+            unset($errors[$type]);
         }
     }
 
@@ -291,11 +291,11 @@ class StatementLogLM
     {
         if (isset($errors['add_new_transactions']) && $errors['add_new_transactions']) {
             $transactions_ids = $errors['add_new_transactions'];
-
-
             $transactions_ids  = implode(", ", $transactions_ids);
 
             TransactionsLM::deleteTransactionsIds($transactions_ids);
+
+            unset($errors['add_new_transactions']);
         }
     }
 
@@ -311,8 +311,9 @@ class StatementLogLM
             }
 
             $accounts_ids  = implode(", ", $accounts_ids);
-
             LegalEntitiesLM::deleteLegalsEntitiesIds($accounts_ids);
+
+            unset($errors['add_new_accounts']);
         }
     }
 
@@ -322,6 +323,8 @@ class StatementLogLM
             $end_of_day_settlement = $errors['end_of_day_settlement'];
 
             EndOfDaySettlementLM::updateEndOfDayTransactions($end_of_day_settlement);
+
+            unset($errors['end_of_day_settlement']);
         }
     }
 

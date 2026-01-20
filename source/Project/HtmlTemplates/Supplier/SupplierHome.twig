@@ -46,6 +46,14 @@
                     </div>
                 </a>
 
+                <a href="/supplier/debtLeasingReport"
+                   class="flex flex-col items-center p-3 sm:p-4 bg-emerald-50 border border-emerald-200 rounded-xl shadow-sm">
+                    <div class="text-xs sm:text-sm text-gray-500">Лизинг долг</div>
+                    <div class="text-base sm:text-lg font-bold text-emerald-600">
+                        {{ debt_leasing|number_format(0, ',', ' ') }} ₽
+                    </div>
+                </a>
+
                 <div class="flex flex-col items-center p-3 sm:p-4 bg-emerald-50 border border-emerald-200 rounded-xl shadow-sm">
                     <div class="text-xs sm:text-sm text-gray-500">Долг транзитный</div>
                     <div class="text-base sm:text-lg font-bold text-emerald-600">
@@ -100,6 +108,91 @@
                 </div>
             </div>
         </div>
+
+        <!-- Раздел: Подтвердить лизинг -->
+        {% if confirmations is defined and confirmations.debt_leasing is defined and confirmations.debt_leasing is not empty %}
+
+            <div class="bg-white shadow-sm rounded-2xl p-4 sm:p-6 border border-gray-100 mt-6 sm:mt-8">
+                <h2 class="text-lg sm:text-2xl font-semibold text-gray-800 mb-4 sm:mb-6">
+                    Принять подтвердить долг лизинг
+                </h2>
+
+                <div class="overflow-x-auto">
+                    <table class="min-w-full text-xs sm:text-sm text-left border-t border-gray-200 table-auto">
+                        <thead class="bg-gray-50 text-gray-700 hidden sm:table-header-group">
+                        <tr class="border-b">
+                            <th class="py-2 px-4 font-medium">Дата отправки</th>
+                            <th class="py-2 px-4 font-medium">Дата создания</th>
+                            <th class="py-2 px-4 font-medium">Комментарий</th>
+                            <th class="py-2 px-4 font-medium text-right">Сумма</th>
+                            <th class="py-2 px-4 font-medium">Действия</th>
+                        </tr>
+                        </thead>
+
+                        <tbody class="text-gray-700">
+                        {% for item in confirmations.debt_leasing %}
+                            <tr class="border border-gray-200 rounded-xl mb-3 sm:mb-0 sm:border-0
+                               hover:bg-gray-50 transition
+                               flex flex-col sm:table-row align-top">
+
+                                <td class="py-2 px-3 sm:px-4">
+                                    <span class="sm:hidden text-gray-400 text-xs block">Дата отправки</span>
+                                    {{ item.date }}
+                                </td>
+
+                                <td class="py-2 px-3 sm:px-4">
+                                    <span class="sm:hidden text-gray-400 text-xs block">Дата создания</span>
+                                    {{ item.issue_date }}
+                                </td>
+
+                                <td class="py-2 px-3 sm:px-4 break-words">
+                                    <span class="sm:hidden text-gray-400 text-xs block">Комментарий</span>
+                                    {{ item.comments }}
+                                </td>
+
+                                <td class="py-2 px-3 sm:px-4 font-semibold text-green-600 sm:text-right">
+                                    <span class="sm:hidden text-gray-400 text-xs block">Сумма</span>
+                                    {{ item.amount|number_format(2, ',', ' ') }}
+                                </td>
+
+                                <td class="py-2 px-3 sm:px-4">
+                                    <span class="sm:hidden text-gray-400 text-xs block mb-1">Действия</span>
+                                    <div class="flex gap-2">
+                                        <button
+                                                onclick="handleLeasingAction(this)"
+                                                data-id="{{ item.id }}"
+                                                data-type="{{ item.type }}"
+                                                data-action="confirm"
+                                                data-comments="{{ item.comments }}"
+                                                data-date="{{ item.date }}"
+                                                data-issue-date="{{ item.issue_date }}"
+                                                data-amount="{{ item.amount }}"
+                                                class="inline-flex items-center justify-center px-2.5 py-1.5 rounded-lg text-white text-xs font-medium bg-green-600 hover:bg-green-700 transition">
+                                            Подтвердить
+                                        </button>
+                                        <button
+                                                onclick="handleLeasingAction(this)"
+                                                data-id="{{ item.id }}"
+                                                data-type="{{ item.type }}"
+                                                data-action="cancel"
+                                                data-comments="{{ item.comments }}"
+                                                data-date="{{ item.date }}"
+                                                data-issue-date="{{ item.issue_date }}"
+                                                data-amount="{{ item.amount }}"
+                                                class="inline-flex items-center justify-center px-2.5 py-1.5 rounded-lg text-white text-xs font-medium bg-red-600 hover:bg-red-700 transition">
+                                            Отменить
+                                        </button>
+
+                                    </div>
+                                </td>
+
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        {% endif %}
 
         <!-- Раздел: Транзит (Клиентские услуги) -->
         {% if no_managers is not empty %}
@@ -419,6 +512,51 @@
         </form>
     </dialog>
 
+    <!-- Модальное Подтвердить лизинг -->
+    <dialog id="leasing_modal_unique" class="modal">
+        <div class="modal-box relative rounded-2xl p-6 sm:p-8 w-full max-w-md bg-white shadow-xl">
+            <h3 id="leasing_modal_title" class="text-xl sm:text-2xl font-semibold text-gray-800 mb-6 text-center"></h3>
+
+            <div class="space-y-4">
+
+                <div>
+                    <p class="text-sm font-medium text-gray-500 mb-1">Дата создания</p>
+                    <input id="leasing_modal_created_at" type="text" readonly
+                           class="w-full h-[44px] px-3 bg-white border border-green-600 rounded-lg shadow-sm text-sm font-medium text-gray-700 focus:outline-none">
+                </div>
+
+                <div>
+                    <p class="text-sm font-medium text-gray-500 mb-1">Дата отправки</p>
+                    <input id="leasing_modal_sent_at" type="text" readonly
+                           class="w-full h-[44px] px-3 bg-white border border-green-600 rounded-lg shadow-sm text-sm font-medium text-gray-700 focus:outline-none">
+                </div>
+
+                <div>
+                    <p class="text-sm font-medium text-gray-500 mb-1">Сумма</p>
+                    <input id="leasing_modal_amount" type="text" readonly
+                           class="w-full h-[44px] px-3 bg-white border border-green-600 rounded-lg shadow-sm text-sm font-bold text-green-700 focus:outline-none">
+                </div>
+
+                <div>
+                    <p class="text-sm font-medium text-gray-500 mb-1">Комментарий</p>
+                    <textarea id="leasing_modal_comment" readonly rows="3"
+                              class="w-full px-3 py-2 bg-white border border-green-600 rounded-lg shadow-sm text-sm text-gray-700 resize-none focus:outline-none"></textarea>
+                </div>
+
+            </div>
+
+            <div class="flex justify-end gap-3 mt-6">
+                <button id="leasing_modal_cancel"
+                        class="btn btn-ghost px-5 py-2 text-gray-700">Отмена</button>
+                <button id="leasing_modal_confirm"
+                        class="btn text-white border-none px-6 py-2">Подтвердить</button>
+            </div>
+        </div>
+
+        <form method="dialog" class="modal-backdrop bg-black/40 backdrop-blur-sm">
+            <button>close</button>
+        </form>
+    </dialog>
 
     <!-- Модальное окно создания возврата -->
     <dialog id="return_modal" class="modal">
@@ -1026,6 +1164,67 @@
                 }
             }
         }
+
+        // -----------------------------------
+        // Подтвердить лизинг
+        // -----------------------------------
+        document.addEventListener('DOMContentLoaded', () => {
+
+            const modal = document.getElementById('leasing_modal_unique');
+            const cancelBtn = document.getElementById('leasing_modal_cancel');
+            const confirmBtn = document.getElementById('leasing_modal_confirm');
+
+            // Закрытие по кнопке Отмена
+            cancelBtn.addEventListener('click', () => modal.close());
+
+            // Функция открытия и заполнения модалки
+            window.handleLeasingAction = function(el) {
+                const data = {
+                    company_finances_id: el.dataset.id,
+                    type: el.dataset.type,
+                    action: el.dataset.action,
+                    comments: el.dataset.comments,
+                    date: el.dataset.date,
+                    issue_date: el.dataset.issueDate,
+                    amount: el.dataset.amount,
+                };
+
+                // Заполняем input’ы
+                document.getElementById('leasing_modal_created_at').value = data.issue_date || '';
+                document.getElementById('leasing_modal_sent_at').value = data.date || '';
+                document.getElementById('leasing_modal_amount').value = data.amount || '';
+                document.getElementById('leasing_modal_comment').value = data.comments || '—';
+
+                // Заголовок и кнопка подтверждения
+                const title = document.getElementById('leasing_modal_title');
+                if (data.action === 'confirm') {
+                    title.textContent = 'Подтвердить лизинг долг?';
+                    confirmBtn.textContent = 'Подтвердить';
+                    confirmBtn.className = 'btn bg-green-600 hover:bg-green-700 text-white border-none px-6 py-2';
+                } else {
+                    title.textContent = 'Отменить лизинг долг?';
+                    confirmBtn.textContent = 'Отменить';
+                    confirmBtn.className = 'btn bg-red-600 hover:bg-red-700 text-white border-none px-6 py-2';
+                }
+
+                // Действие по кнопке Подтвердить/Отменить
+                confirmBtn.onclick = async () => {
+                    const payload = {
+                        finances_id: data.company_finances_id,
+                        status: data.action,
+                    };
+
+                    const result = await postDataRes('/supplier/confirmSupplier', payload);
+                    if (result === 'error' || !result.success) {
+                        openErrorModal('Ошибка действия с лизингом. Повторите пожалуйста!');
+                    } else {
+                        location.reload();
+                    }
+                };
+                modal.showModal();
+            };
+        });
+
 
     </script>
 

@@ -75,6 +75,7 @@ class UsersLM
                 's.id as suppliers_id',
                 's.balance as balance',
                 's.stock_balance as stock_balance',
+                's.debt_leasing as debt_leasing',
             ])
             ->innerJoin('suppliers s')
             ->on([

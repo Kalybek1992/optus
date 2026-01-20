@@ -16,6 +16,7 @@ use Source\Project\LogicManagers\LogicPdoModel\BankAccountsLM;
 use Source\Project\LogicManagers\LogicPdoModel\BankOrderLM;
 use Source\Project\LogicManagers\LogicPdoModel\LegalEntitiesLM;
 use Source\Project\LogicManagers\LogicPdoModel\LoadedTransactionsLM;
+use Source\Project\LogicManagers\LogicPdoModel\StatementLogLM;
 use Source\Project\LogicManagers\LogicPdoModel\TransactionsLM;
 use Source\Project\Models\BankOrder;
 use Source\Project\Models\Transactions;
@@ -81,7 +82,13 @@ class FileController extends BaseController
         }
 
         $document
-            ->determineExpensesIncome()
+            ->determineExpensesIncome();
+
+        if ($document->result_document_processing == 'our_bank_is_not_listed') {
+            unlink($destination);
+            return ApiViewer::getErrorBody(['value' => 'our_bank_is_not_listed']);
+        }
+        $document
             ->getOurAccounts()
             ->getFamousCompanies()
             ->processingNewAccounts()

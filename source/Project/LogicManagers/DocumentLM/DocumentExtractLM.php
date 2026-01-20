@@ -48,12 +48,12 @@ class DocumentExtractLM
     public array $section_document = [
         'payment_order' => 'СекцияДокумент=Платежное поручение',
         'bank_order' => 'СекцияДокумент=Банковский ордер',
+        'payment_order_order' => 'СекцияДокумент=Платежный ордер',
         'bank_exchange' => '1CClientBankExchange'
     ];
 
-    public string $document_all_inn = '';
-    public string $document_all_number = '';
-    public string $document_all_balance = '';
+    public array $document_all = [];
+
     public string $result_document_processing = '';
     private array $blocks = [];
     public array $payment_order = [];
@@ -86,9 +86,6 @@ class DocumentExtractLM
         }
 
         $this->blocks = $blocks;
-
-        //Logger::log(print_r($blocks, true), 'blocks');
-
         $this->sortSection();
     }
 
@@ -105,6 +102,10 @@ class DocumentExtractLM
                 $this->bank_order[] = $block;
             }
 
+            if (str_starts_with($block[0], $this->section_document['payment_order_order'])) {
+                $this->bank_order[] = $block;
+            }
+
             if (str_starts_with($block[0], $this->section_document['bank_exchange'])) {
                 $this->bank_exchange[] = $block;
             }
@@ -114,11 +115,11 @@ class DocumentExtractLM
         $this->mapBankExchange();
         $this->mapSectionOrder();
 
-        if (!$this->document_all_inn && !$this->document_all_number){
+        if (!$this->document_all) {
             $this->result_document_processing = 'no_extracts_files';
         }
 
-        if (!$this->bank_order && !$this->payment_order){
+        if (!$this->bank_order && !$this->payment_order) {
             $this->result_document_processing = 'no_extracts_files';
         }
 
@@ -128,7 +129,6 @@ class DocumentExtractLM
         }
 
         $this->checkingUploadedDocuments();
-        //Logger::log(print_r($this->result_document_processing , true), 'map_payment_order');
     }
 
     private function checkingUploadedDocuments(): void
@@ -136,13 +136,17 @@ class DocumentExtractLM
         $this->getSelectInOrder();
 
         $loaded_transactions = UploadedDocumentsLM::getBankAccounts(
-            $this->document_all_inn,
-            $this->document_all_number
+            $this->document_all['document_all_inn'],
+            $this->document_all['document_all_number'],
+            $this->document_all['document_all_balance'],
+            $this->document_all['document_all_inn_recipient'],
+            $this->document_all['document_all_bank_account'],
+            $this->document_all['document_all_bank_account_recipient'],
+            $this->document_all['document_all_date']
         );
 
         $this->bank_order = $this->removeDuplicates($loaded_transactions, $this->bank_order);
         $this->payment_order = $this->removeDuplicates($loaded_transactions, $this->payment_order);
-
 
         if (!$this->bank_order && !$this->payment_order) {
             $this->result_document_processing = 'processed_invoices';
@@ -151,7 +155,6 @@ class DocumentExtractLM
 
         $this->result_document_processing = 'there_are_documents_left_to_be_processed.';
     }
-
 
     private function mapSectionOrder(): void
     {
@@ -188,19 +191,31 @@ class DocumentExtractLM
         }
     }
 
-    //TODO кое что убрал может надо вернуть $exclude_amount это баланс || сумма !!!!
-    private function removeDuplicates(array $loaded_transactions, $transactions)
+    private function removeDuplicates(array $loaded_transactions, array $transactions): array
     {
+
         foreach ($loaded_transactions as $transaction) {
 
             $exclude_inn = $transaction->inn;
             $exclude_doc = $transaction->document_number;
             $exclude_amount = $transaction->amount;
+            $recipient_inn = $transaction->recipient_inn;
+            $bank_account = $transaction->bank_account;
+            $recipient_bank_account = $transaction->recipient_bank_account;
+            $statement_date = $transaction->statement_date;
 
-            $transactions = array_filter($transactions, function ($item) use ($exclude_inn, $exclude_doc, $exclude_amount) {
+            $transactions = array_filter($transactions, function ($item) use (
+                $exclude_inn, $exclude_doc, $exclude_amount,
+                $bank_account, $recipient_bank_account, $statement_date, $recipient_inn
+            ) {
                 return !(
                     $item['inn'] == $exclude_inn &&
-                    $item['document_number'] == $exclude_doc
+                    $item['document_number'] == $exclude_doc &&
+                    $item['balance'] == $exclude_amount &&
+                    $item['bank_account'] == $bank_account &&
+                    $item['bank_account_recipient'] == $recipient_bank_account &&
+                    $item['inn_recipient'] == $recipient_inn &&
+                    $item['date'] == $statement_date
                 );
             });
         }
@@ -213,6 +228,10 @@ class DocumentExtractLM
         $inns = [];
         $document_numbers = [];
         $balance = [];
+        $date = [];
+        $bank_account = [];
+        $bank_account_recipient = [];
+        $inn_recipient = [];
 
         $data_processed = [
             'payment_order' => $this->payment_order,
@@ -227,16 +246,34 @@ class DocumentExtractLM
                     $inns[] = $wrap($transaction['inn']);
                     $document_numbers[] = $wrap($transaction['document_number']);
                     $balance[] = $wrap($transaction['balance']);
+                    $date[] = $wrap($transaction['date']);
+                    $bank_account[] = $wrap($transaction['bank_account']);
+                    $bank_account_recipient[] = $wrap($transaction['bank_account_recipient']);
+                    $inn_recipient[] = $wrap($transaction['inn_recipient']);
                 }
             }
         }
 
+        $document_all = [
+            'document_all_inn' => implode(', ', $inns),
+            'document_all_number' => implode(', ', $document_numbers),
+            'document_all_balance' => implode(', ', $balance),
+            'document_all_inn_recipient' => implode(', ', $inn_recipient),
+            'document_all_bank_account' => implode(', ', $bank_account),
+            'document_all_bank_account_recipient' => implode(', ', $bank_account_recipient),
+            'document_all_date' => implode(', ', $date),
+        ];
 
-        $this->document_all_inn = implode(', ', $inns);
-        $this->document_all_number = implode(', ', $document_numbers);
-        $this->document_all_balance = implode(', ', $balance);
+        $lengths = array_map(
+            fn($value) => count(explode(', ', $value)),
+            $document_all
+        );
+
+        if (count(array_unique($lengths)) === 1) {
+            $this->document_all = $document_all;
+        }
+
     }
-
 
     private function mapBankExchange(): void
     {

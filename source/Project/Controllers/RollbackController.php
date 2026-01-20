@@ -24,14 +24,22 @@ class RollbackController extends BaseController
 
         if (isset($statement_log['steps_array']) && $statement_log['steps_array']) {
 
-            Logger::log(print_r($statement_log, true), 'statement_log');
-            StatementLogLM::rollbackError($statement_log['steps_array']);
+            try {
+                StatementLogLM::rollbackError($statement_log['steps_array']);
+            } catch (Throwable $e) {
+                $steps_string = serialize($statement_log['steps_array']);
+                StatementLogLM::updateStatementLog([
+                    'steps = "' . $steps_string . '"'
+                ], $statement_log['id']);
+
+                Logger::log(print_r($statement_log['steps_array'], true), 'rollback_error');
+                return ApiViewer::getErrorBody(['value' => 'error_rollback']);
+            }
 
             StatementLogLM::updateStatementLog([
                 'status = ' . 3
             ], $selected_id);
         }
-
 
         return ApiViewer::getOkBody(['success' => 'ok']);
     }

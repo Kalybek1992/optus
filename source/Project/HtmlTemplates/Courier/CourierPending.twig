@@ -28,6 +28,7 @@
                             <th class="px-4 py-2 text-left whitespace-nowrap hidden sm:table-cell">От кого</th>
                             <th class="px-4 py-2 text-left hidden md:table-cell">Комментарий</th>
                             <th class="px-4 py-2 text-left whitespace-nowrap hidden lg:table-cell">Номер карты</th>
+                            <th class="px-4 py-2 text-left whitespace-nowrap hidden lg:table-cell">Компания</th>
                             <th class="px-4 py-2"></th>
                         </tr>
                     </thead>
@@ -54,6 +55,10 @@
                                 {{ r.card_number|slice(0, 4) }} {{ r.card_number|slice(4, 4) }} {{ r.card_number|slice(8, 4) }} {{ r.card_number|slice(12, 4) }}
                             </td>
 
+                            <!-- Компания -->
+                            <td class="px-4 py-3 hidden lg:table-cell">
+                                {{ r.company_name }}
+                            </td>
                             <!-- Кнопка -->
                             <td class="px-4 py-3 text-right">
                                 <button
@@ -73,6 +78,7 @@
                                 <div><span class="font-semibold">От поставщика:</span> {{ r.supplier_name }}</div>
                                 <div><span class="font-semibold">Комментарий:</span> {{ r.comments }}</div>
                                 <div><span class="font-semibold">Карта:</span>  {{ r.card_number|slice(0, 4) }} {{ r.card_number|slice(4, 4) }} {{ r.card_number|slice(8, 4) }} {{ r.card_number|slice(12, 4) }}</div>
+                                <div><span class="font-semibold">Компания:</span>{{ r.company_name }}</div>
                             </td>
                         </tr>
 

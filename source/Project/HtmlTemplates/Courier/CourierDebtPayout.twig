@@ -72,7 +72,8 @@
 
                     <div x-show="openClientList"
                          @click.outside="openClientList = false"
-                         class="absolute mt-2 w-full sm:w-80 z-50 bg-white border border-gray-200 rounded-md shadow-lg p-2 space-y-1 transition-all duration-300 text-sm">
+                         class="absolute mt-2 w-full sm:w-80 z-50 bg-white border border-gray-200 rounded-md shadow-lg p-2 space-y-1 transition-all duration-300 text-sm
+                            max-h-60 overflow-y-auto">
                         {% for client in clients %}
                             <div @click="selectedClient = { id: {{ client.id }}, name: '{{ client.name }}' }; openClientList = false"
                                  class="cursor-pointer px-3 py-2 rounded-md hover:bg-gray-100 flex flex-col">
@@ -81,6 +82,7 @@
                             </div>
                         {% endfor %}
                     </div>
+
                 </div>
 
                 <!-- Комментарий -->

@@ -152,16 +152,18 @@
 
                     <!-- Курьер -->
                     <div class="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+                        <!-- Радио кнопка -->
                         <input type="radio" id="radio_courier" name="delivery_type" value="courier"
                                class="hidden peer/courier" x-model="selected" @change="select('courier')">
                         <label for="radio_courier"
                                class="w-full sm:w-48 h-12 flex items-center justify-center border rounded-xl cursor-pointer
-                                      bg-white text-green-700
-                                      peer-checked/courier:bg-emerald-600 peer-checked/courier:text-white
-                                      hover:peer-checked/courier:bg-emerald-700 transition">
+                                  bg-white text-green-700
+                                  peer-checked/courier:bg-emerald-600 peer-checked/courier:text-white
+                                  hover:peer-checked/courier:bg-emerald-700 transition">
                             Передать курьеру
                         </label>
 
+                        <!-- Блок выбора курьера -->
                         <div class="relative w-full sm:w-80 mt-2 sm:mt-0" x-show="selected === 'courier'" x-transition>
                             {% if couriers is empty %}
                                 <a href="javascript:void(0)"
@@ -197,6 +199,17 @@
                                     {% endfor %}
                                 </div>
                             {% endif %}
+                        </div>
+
+                        <!-- Новый блок с чекбоксом "Лизинг" -->
+                        <div class="w-full sm:w-auto mt-1 sm:mt-0 flex items-center justify-start"
+                             x-show="selected === 'courier'" x-transition>
+                            <fieldset class="fieldset bg-base-100 border-base-300 rounded-box border px-2 py-1">
+                                <label class="label flex items-center gap-2 py-2.5">
+                                    <input type="checkbox" id="leasing_checkbox" class="checkbox w-4 h-4">
+                                    <span class="text-sm text-green-700 leading-none">Лизинг</span>
+                                </label>
+                            </fieldset>
                         </div>
                     </div>
 
@@ -417,7 +430,9 @@
         const modalRemainder = document.getElementById('modal-remainder');
         const modalDate = document.getElementById('modal-date');
         const dateInput = document.getElementById('date_input');
+        const leasingCheckbox = document.getElementById('leasing_checkbox');
         let post = null;
+        leasingCheckbox.checked = false;
 
         document.getElementById('save_expense').addEventListener('click', () => {
             const selectedRadio = document.querySelector('input[name="delivery_type"]:checked');
@@ -428,6 +443,8 @@
             const amount = Number(enteredValue);
             let categoryPath = '';
             const dateValue = dateInput.value.trim();
+            const leasing = leasingCheckbox ? leasingCheckbox.checked : null;
+
 
             if (!enteredValue || isNaN(Number(enteredValue)) || Number(enteredValue) <= 0) {
                 openErrorModal('Укажите корректную сумму!');
@@ -443,7 +460,6 @@
                 openErrorModal('Выберите назначение!');
                 return;
             }
-
 
             const deliveryType = selectedRadio.value;
             let selectedId = null;
@@ -499,6 +515,7 @@
                 expense: 'Расход',
                 debt: 'Закрытие долга компании',
             };
+            purpose.courier += leasing ? ' лизинг' : '';
 
             post = {
                 delivery_type: deliveryType,
@@ -507,6 +524,7 @@
                 amount: amount || 0,
                 comments: commentValue,
                 date: dateValue,
+                leasing: leasing
             }
 
             if (deliveryType === 'debt') {
@@ -523,15 +541,12 @@
         });
 
         document.getElementById('confirmExpense').addEventListener('click', async () => {
-
             if (!post) {
                 openErrorModal('Ошибка сбора данных!');
                 return;
             }
 
             const result = await postDataRes('/supplier/definitionCommodityMoney', post);
-
-
             document.getElementById('save_expense_modal').checked = false;
 
             if (result === 'error') {

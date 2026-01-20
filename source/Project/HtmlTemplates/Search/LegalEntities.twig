@@ -1,0 +1,457 @@
+{% extends './Navbar/Navbar.twig' %}
+
+{% block content %}
+
+    <div class="max-w-8xl mx-auto bg-white rounded-2xl shadow-lg p-6 space-y-4 relative mt-4">
+        <!-- Верхняя часть: имя, почта, действия -->
+        <div class="space-y-4">
+            <!-- Имя  -->
+            <div class="flex items-center justify-between">
+                <div class="text-x font-semibold text-gray-800">{{ entities.company_name }}</div>
+            </div>
+
+            <div class="flex items-center gap-2 text-gray-700">
+                {% if entities.user_role == 'client' %}
+                    <span class="text-sm">Клиент:</span>
+                {% elseif entities.user_role == 'supplier' %}
+                    <span class="text-sm">Поставщик:</span>
+                {% endif %}
+                <p class="text-sm" id="bank-account">{{ entities.user_name }}</p>
+            </div>
+
+            <div class="flex items-center gap-2 text-gray-700">
+                <span class="text-sm">ИНН:</span>
+                <p class="text-sm" id="inn">{{ entities.inn }}</p>
+
+                <!-- Кнопка копирования -->
+                <button type="button"
+                        class="ml-2 w-8 h-8 flex items-center justify-center text-gray-600 hover:text-gray-900"
+                        onclick="copyText('{{ entities.inn }}')">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                              d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8l6 6v4"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M14 2v6h6"></path>
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Фильтры даты -->
+            {% include './FilterData/DateSearch.twig' %}
+        </div>
+
+        <!-- Блок баланса и процента -->
+        <div class="w-full max-w-8xl mx-auto space-y-4">
+            {% if transactions is empty %}
+                <div role="alert" class="alert alert-warning mt-4 flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 shrink-0 stroke-current" fill="none"
+                         viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                    </svg>
+                    <span>Нет транзакций</span>
+                </div>
+            {% else %}
+
+                <!-- Таблица для десктопа -->
+                <div class="hidden md:block overflow-x-auto w-full border border-gray-200 rounded-lg shadow-sm mt-4">
+                    <table class="table w-full text-sm text-left divide-x divide-gray-200">
+                        <thead class="bg-gray-100 text-xs text-gray-500 uppercase">
+                        <tr class="divide-x divide-gray-200">
+                            <th class="px-3 py-2 w-8">ID</th>
+                            <th class="px-3 py-2 w-15">Тип перевода</th>
+                            <th class="px-3 py-2 w-28">Дата</th>
+                            <th class="px-3 py-2 min-w-[250px] max-w-[500px]">Описание</th>
+                            <th class="px-3 py-2 min-w-[250px] max-w-[500px]">Получатель:Название компании</th>
+                            <th class="px-3 py-2 min-w-[250px] max-w-[500px]">Получатель</th>
+                            <th class="px-3 py-2 w-16">Процент</th>
+                            <th class="px-3 py-2 w-20">Общая сумма</th>
+                            <th class="px-3 py-2 w-20">Комиссия</th>
+                            <th class="px-3 py-2 w-24">Итоговая сумма</th>
+                        </tr>
+                        </thead>
+                        <tbody class="text-sm divide-y divide-gray-100">
+                        {% for transaction in transactions %}
+                            <tr class="hover:bg-gray-50 divide-x divide-gray-200">
+                                <td class="px-3 py-2">{{ transaction.id }}</td>
+                                <td class="px-3 py-2">
+                                    {% if 'return' in transaction.type %}
+                                        Возврат
+                                    {% endif %}
+                                    {% if transaction.type == 'expense' %}Расходы
+                                    {% elseif transaction.type == 'income' %}Доход
+                                    {% endif %}
+                                </td>
+                                <td class="px-3 py-2">{{ transaction.date }}</td>
+                                <td class="px-3 py-2 text-xs text-gray-700">{{ transaction.description }}</td>
+                                <td class="px-3 py-2 text-xs text-gray-700">{{ transaction.company_name }}</td>
+                                <td class="px-3 py-2 text-xs text-gray-700">{{ transaction.bank_name_recipient }}</td>
+                                <td class="px-3 py-2">
+                                    {% if transaction.percent == 0 %}
+                                        {{ transaction.percent }}%
+                                    {% else %}
+                                        <span
+                                                data-transaction-id="{{ transaction.id }}"
+                                                data-legal-id="{{ transaction.legal_id }}"
+                                                data-transaction-date="{{ transaction.date }}"
+                                                data-transaction-company_name="{{ transaction.company_name }}"
+                                                data-transaction-bank_name_recipient="{{ transaction.bank_name_recipient }}"
+                                                data-transaction-percent="{{ transaction.percent }}"
+                                                data-transaction-amount="{{ transaction.amount }}"
+                                                data-transaction-interest_income="{{ transaction.interest_income }}"
+                                                data-transaction-total_amount="{{ transaction.total_amount }}"
+                                                class="change-percentage cursor-pointer text-blue-600 hover:underline font-medium">
+                                    {{ transaction.percent }}%
+                                </span>
+                                    {% endif %}
+                                </td>
+                                <td class="px-3 py-2">{{ transaction.amount|number_format(0, ',', ' ') }}</td>
+                                <td class="px-3 py-2">{{ transaction.interest_income|number_format(0, ',', ' ') }}</td>
+                                <td class="px-3 py-2">{{ transaction.total_amount|number_format(0, ',', ' ') }}</td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <!-- MOBILE CARDS -->
+                <div class="lg:hidden space-y-4 mt-4">
+                    {% for transaction in transactions %}
+                        <div class="border border-gray-200 rounded-lg p-3 shadow-sm bg-white text-[13px] space-y-2">
+
+                            <div><span class="text-gray-500 text-xs">ID:</span> <span
+                                        class="font-medium">{{ transaction.id }}</span></div>
+                            <div><span class="text-gray-500 text-xs">Тип перевода:</span>
+                                <span class="font-medium">
+                                    {% if transaction.type == 'expense' %}Расходы
+                                    {% elseif transaction.type == 'return' %}Возврат
+                                    {% elseif transaction.type == 'income' %}Доход
+                                    {% endif %}
+                                </span>
+                            </div>
+                            <div><span class="text-gray-500 text-xs">Дата:</span> <span
+                                        class="font-medium">{{ transaction.date }}</span></div>
+                            <div><span class="text-gray-500 text-xs">Описание:</span> <span
+                                        class="text-xs text-gray-700 break-all">{{ transaction.description }}</span>
+                            </div>
+                            <div><span class="text-gray-500 text-xs">Получатель:Название компании:</span> <span
+                                        class="text-xs text-gray-700 break-all">{{ transaction.company_name }}</span>
+                            </div>
+                            <div><span class="text-gray-500 text-xs">Получатель:</span> <span
+                                        class="text-xs text-gray-700 break-all">{{ transaction.bank_name_recipient }}</span>
+                            </div>
+                            <div><span class="text-gray-500 text-xs">Процент:</span>
+                                {% if transaction.percent == 0 %}
+                                    <span>{{ transaction.percent }}%</span>
+                                {% else %}
+                                    <span
+                                            data-transaction-id="{{ transaction.id }}"
+                                            data-legal-id="{{ transaction.legal_id }}"
+                                            data-transaction-date="{{ transaction.date }}"
+                                            data-transaction-company_name="{{ transaction.company_name }}"
+                                            data-transaction-bank_name_recipient="{{ transaction.bank_name_recipient }}"
+                                            data-transaction-percent="{{ transaction.percent }}"
+                                            data-transaction-amount="{{ transaction.amount }}"
+                                            data-transaction-interest_income="{{ transaction.interest_income }}"
+                                            data-transaction-total_amount="{{ transaction.total_amount }}"
+                                            class="change-percentage cursor-pointer font-semibold text-blue-600 underline">
+                                            {{ transaction.percent }}%
+                                    </span>
+                                {% endif %}
+                            </div>
+                            <div><span class="text-gray-500 text-xs">Общая сумма:</span> <span
+                                        class="font-semibold">{{ transaction.amount|number_format(0, ',', ' ') }}</span></div>
+                            <div><span class="text-gray-500 text-xs">Комиссия:</span> <span
+                                        class="font-semibold">{{ transaction.interest_income|number_format(0, ',', ' ') }}</span></div>
+                            <div><span class="text-gray-500 text-xs">Итоговая сумма:</span> <span
+                                        class="font-semibold">{{  transaction.total_amount|number_format(0, ',', ' ') }}</span></div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+
+
+    {% include './Transaction/EditPercentage.twig' %}
+
+    <!-- Триггер через checkbox -->
+    <input type="checkbox" id="notifications" class="hidden peer"/>
+    <div class="fixed bottom-4 right-4 z-50 max-w-sm w-full
+            hidden peer-checked:flex flex-col bg-white border border-gray-300 rounded-xl shadow-xl
+            animate-fade-in transition-opacity duration-300 ease-out
+            px-5 py-4 space-y-2">
+
+        <div class="flex items-start justify-between">
+            <div class="flex items-start space-x-2">
+                <svg class="w-6 h-6 text-blue-500 mt-1 shrink-0" fill="none" stroke="currentColor" stroke-width="1.5"
+                     viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                          d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022 23.85 23.85 0 0 0 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0 3 3 0 1 0 5.714 0ZM3.124 7.5A8.969 8.969 0 0 1 5.292 3m13.416 0a8.969 8.969 0 0 1 2.168 4.5"/>
+                </svg>
+
+                <div>
+                    <h3 class="text-base font-semibold text-gray-900">Уведомление</h3>
+                    <p id="notifications-txt" class="text-sm text-gray-600 leading-snug mt-1">...</p>
+                </div>
+            </div>
+
+            <label for="notifications" class="text-gray-400 hover:text-gray-600 transition cursor-pointer">
+                ✕
+            </label>
+        </div>
+    </div>
+
+    <script src="/assets/js/CopyText.js?v=<?= time() ?>"></script>
+
+    <div class="flex items-center justify-center py-6">
+        {% include './Pagination/Pagination.twig' %}
+    </div>
+
+
+    <script>
+        const input = document.getElementById('new_percentage');
+        const error = document.getElementById('percentError');
+        const saveBtn = document.getElementById('confirmChanges');
+
+        const isValid = value => {
+            value = String(value).trim();
+            if (value.endsWith('.')) {
+                value += '0';  // чтобы "15." считалось "15.0"
+            }
+            if (!/^\d+(\.\d{0,2})?$/.test(value)) return false;
+
+            const num = Number(value);
+            return num >= 0 && num <= 100;
+        };
+
+
+        const updateUI = () => {
+            const ok = isValid(input.value);
+            saveBtn.disabled = !ok;
+            saveBtn.classList.toggle('opacity-40', !ok);
+            saveBtn.classList.toggle('cursor-not-allowed', !ok);
+        };
+
+        input.addEventListener('input', () => {
+            let val = input.value;
+            val = val.replace(/[^0-9.]/g, '');
+
+            const parts = val.split('.');
+            if (parts.length > 2) {
+                val = parts[0] + '.' + parts.slice(1).join('');
+            }
+
+
+            if (!val.startsWith('0.') && val.length > 1) {
+                val = val.replace(/^0+/, '');
+                if (val === '') val = '0';
+            }
+
+            if (Number(val) > 100) val = '100';
+
+            input.value = val;
+            updateUI();
+        });
+
+        function showCornerModal(message) {
+            const checkbox = document.getElementById('notifications');
+            const txtModal = document.getElementById('notifications-txt');
+            checkbox.checked = true;
+            txtModal.innerHTML = message;
+
+
+            setTimeout(() => {
+                checkbox.checked = false;
+            }, 5000);
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('percentModal');
+            if (modal) modal.close();
+
+            // Очистка процента, если надо
+            const percentageInput = document.getElementById('new_percentage');
+            if (percentageInput) percentageInput.value = '';
+        }
+
+        function openPercentModal(transactionId, legalId, date, balance, percent, income, amount) {
+            const modal = document.getElementById('percentModal');
+            const confirmBtn = document.getElementById('confirmChanges');
+
+            if (modal && confirmBtn) {
+                confirmBtn.dataset.transactionId = transactionId;
+                confirmBtn.dataset.legalId = legalId;
+                modal.showModal();
+            }
+
+            updateUI();
+            document.getElementById('modal-date').textContent = date || '—';
+            document.getElementById('modal-balance').textContent = balance || '—';
+            document.getElementById('modal-percent').textContent = percent || '—';
+            document.getElementById('modal-income').textContent = income || '—';
+            document.getElementById('modal-final-amount').textContent = amount || '—';
+        }
+
+        function closePercentModal() {
+            const modal = document.getElementById('percentModal');
+            if (modal) {
+                modal.close();
+            }
+        }
+
+        document.getElementById('confirmChanges').addEventListener('click', async () => {
+            const input = document.getElementById('new_percentage');
+            const confirmBtn = document.getElementById('confirmChanges');
+            const modal = document.getElementById('percentModal');
+
+            const percentage = input.value.trim();
+            const transactionId = confirmBtn.dataset.transactionId;
+            const legalId = confirmBtn.dataset.legalId;
+
+            if (!percentage || percentage < 0 || percentage > 100) {
+                input.value = '';
+                modal.close();
+                showCornerModal('Ошибка процента укажите правильное число')
+                return;
+            }
+
+
+            const result = await postData('/transaction/changePercentage', {
+                transaction_id: transactionId,
+                legal_id: legalId,
+                percent: percentage,
+            });
+
+            if (result === 'error' || result.status === 'error') {
+                input.value = '';
+                showCornerModal('Не удалось установить процент!')
+                return;
+            }
+
+            localStorage.setItem(
+                'showCornerModal',
+                'Удачно установили новый процентный'
+            );
+
+            input.value = '';
+            location.reload();
+            modal.close();
+        });
+
+        window.addEventListener('load', () => {
+            const message = localStorage.getItem('showCornerModal');
+
+            if (message) {
+                showCornerModal(message);
+                localStorage.removeItem('showCornerModal');
+            }
+        });
+
+
+        document.querySelectorAll('.change-percentage').forEach(element => {
+            element.addEventListener('click', () => {
+                const transactionId = element.getAttribute('data-transaction-id');
+                const legalId = element.getAttribute('data-legal-id');
+
+
+                const date = element.getAttribute('data-transaction-date');
+                const percent = element.getAttribute('data-transaction-percent');
+                const amount = element.getAttribute('data-transaction-amount');
+                const interest_income = element.getAttribute('data-transaction-interest_income');
+                const total_amount = element.getAttribute('data-transaction-total_amount');
+
+
+                openPercentModal(transactionId, legalId, date, amount, percent, interest_income, total_amount)
+            });
+        });
+
+        const pickerFrom = new Pikaday({
+            field: document.getElementById('datepicker_from'),
+            format: 'DD.MM.YYYY', // Русский формат даты
+            firstDay: 1,
+            i18n: {
+                previousMonth: 'Предыдущий',
+                nextMonth: 'Следующий',
+                months: ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'],
+                weekdays: ['Воскресенье', 'Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота'],
+                weekdaysShort: ['Вс', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб']
+            },
+            toString(date, format) {
+                // форматирует в dd.mm.yyyy
+                const day = String(date.getDate()).padStart(2, '0');
+                const month = String(date.getMonth() + 1).padStart(2, '0');
+                const year = date.getFullYear();
+                return `${day}.${month}.${year}`;
+            },
+            parse(dateString, format) {
+                const parts = dateString.split('.');
+                const day = parseInt(parts[0], 10);
+                const month = parseInt(parts[1], 10) - 1;
+                const year = parseInt(parts[2], 10);
+                return new Date(year, month, day);
+            }
+        });
+
+        const pickerTo = new Pikaday({
+            field: document.getElementById('datepicker_to'),
+            format: 'DD.MM.YYYY', // Русский формат даты
+            firstDay: 1,
+            i18n: {
+                previousMonth: 'Предыдущий',
+                nextMonth: 'Следующий',
+                months: ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'],
+                weekdays: ['Воскресенье', 'Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота'],
+                weekdaysShort: ['Вс', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб']
+            },
+            toString(date, format) {
+                // форматирует в dd.mm.yyyy
+                const day = String(date.getDate()).padStart(2, '0');
+                const month = String(date.getMonth() + 1).padStart(2, '0');
+                const year = date.getFullYear();
+                return `${day}.${month}.${year}`;
+            },
+            parse(dateString, format) {
+                const parts = dateString.split('.');
+                const day = parseInt(parts[0], 10);
+                const month = parseInt(parts[1], 10) - 1;
+                const year = parseInt(parts[2], 10);
+                return new Date(year, month, day);
+            }
+        });
+
+        document.getElementById('searchFilters').addEventListener('click', () => {
+            const dateFrom = document.getElementById('datepicker_from');
+            const datepickerTo = document.getElementById('datepicker_to');
+
+            if (!dateFrom.value && !datepickerTo.value) {
+                showCornerModal('Выберите фильтр');
+                return;
+            }
+
+            if (!dateFrom.value && datepickerTo.value) {
+                showCornerModal('Выберите начало даты!');
+                return;
+            }
+
+            // Получаем текущий URL и параметры
+            const currentUrl = new URL(window.location.href);
+            const params = currentUrl.searchParams;
+
+            // Удаляем параметр page, если есть
+            params.delete('page');
+
+            // Устанавливаем новые фильтры
+            if (dateFrom.value) params.set('date_from', dateFrom.value);
+            if (datepickerTo.value) params.set('date_to', datepickerTo.value);
+
+            // Добавляем page=0
+            params.set('page', '0');
+
+            const newUrl = `${currentUrl.pathname}?${params.toString()}`;
+            window.location.href = newUrl;
+        });
+
+    </script>
+
+
+{% endblock %}

@@ -120,24 +120,39 @@
                                 </a>
 
                                 <!-- ===== Блок для ввода ставок ===== -->
-                                <div class="w-full mt-4 flex flex-col gap-3">
+                                <div class="w-full mt-4 mb-5 px-[10px]">
+                                    <div class="flex items-center gap-6">
+                                        <!-- Transit -->
+                                        <div class="flex items-center gap-2">
+                                                <span class="text-black font-semibold text-sm">
+                                                    Ставка транзит:
+                                                </span>
+                                            <input
+                                                    type="text"
+                                                    value="{{ client.cash_bet }}"
+                                                    data-manager-id="{{ client.id }}"
+                                                    readonly
+                                                    data-rate-input
+                                                    class="w-[70px] px-2 py-1 border rounded-md bg-gray-100 text-gray-700 text-center text-sm cursor-pointer"
+                                            />
+                                        </div>
 
-                                    <!-- Transit rate -->
-                                    <div class="flex flex-col">
-                                        <label class="text-black font-semibold mb-1">Ставка транзит</label>
-                                        <input type="text" value="{{ client.transit_rate}}" readonly
-                                               class="w-full p-2 border rounded-md bg-gray-100 text-gray-700 cursor-not-allowed"/>
-                                    </div>
-
-                                    <!-- Cash bet -->
-                                    <div class="flex flex-col">
-                                        <label class="text-black font-semibold mb-1">Ставка кеш</label>
-                                        <input type="text" value="{{ client.cash_bet}}" readonly
-                                               class="w-full p-2 border rounded-md bg-gray-100 text-gray-700 cursor-not-allowed"/>
+                                        <!-- Cash -->
+                                        <div class="flex items-center gap-2">
+                                                <span class="text-black font-semibold text-sm">
+                                                    Ставка кеш:
+                                                </span>
+                                            <input
+                                                    type="text"
+                                                    value="{{ client.transit_rate }}"
+                                                    data-manager-id="{{ client.id }}"
+                                                    readonly
+                                                    data-rate-input
+                                                    class="w-[70px] px-2 py-1 border rounded-md bg-gray-100 text-gray-700 text-center text-sm cursor-pointer"
+                                            />
+                                        </div>
                                     </div>
                                 </div>
-
-
                             </div>
                         </div>
 
@@ -169,7 +184,7 @@
                             {% if client.bank_accounts %}
                                 {% for account in client.bank_accounts %}
                                     <a
-                                       class="text-gray-700 hover:text-gray-900">
+                                            class="text-gray-700 hover:text-gray-900">
                                         <div class="flex flex-col gap-2 p-3 bg-white border rounded-lg shadow-sm text-sm">
                                             <!-- Счет -->
                                             <div class="flex justify-between items-center">
@@ -279,13 +294,106 @@
         </div>
     </div>
 
+    <!-- Модалки status-->
+    <dialog id="statusModal" class="modal">
+        <div class="modal-box text-center">
+            <h3 id="statusTitle" class="text-lg font-bold"></h3>
+            <p id="statusText" class="py-4"></p>
+
+            <div class="modal-action">
+                <form method="dialog">
+                    <a
+                            href=""
+                            id="closeModalBtn"
+                            class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold
+                           px-5 py-2 rounded-lg transition-colors duration-200">
+                        ОК
+                    </a>
+                </form>
+            </div>
+        </div>
+    </dialog>
+
+    <!-- Изменить ставку  -->
+    <dialog id="rates_modal" class="modal">
+        <div class="modal-box relative rounded-2xl p-6 sm:p-8 w-full max-w-md bg-white shadow-xl">
+            <h3 class="text-xl sm:text-2xl font-semibold text-gray-800 mb-6 text-center">
+                Изменить ставки
+            </h3>
+
+            <div class="space-y-4">
+
+                <!-- Новая ставка транзит -->
+                <div>
+                    <p class="text-sm font-medium text-gray-500 mb-1">
+                        Новая ставка транзит
+                    </p>
+                    <input
+                            type="number"
+                            id="rate_transit_new"
+                            step="0.01"
+                            min="0"
+                            placeholder="Например: 0,91"
+                            class="w-full rounded-lg border border-green-600
+                           text-gray-800 px-3 py-2 text-sm sm:text-base
+                           outline-none focus:outline-none"
+                    />
+                </div>
+
+                <!-- Новая ставка кеш -->
+                <div>
+                    <p class="text-sm font-medium text-gray-500 mb-1">
+                        Новая ставка кеш
+                    </p>
+                    <input
+                            type="number"
+                            id="rate_cash_new"
+                            step="0.01"
+                            min="0"
+                            placeholder="Например: 0,93"
+                            class="w-full rounded-lg border border-green-600
+                           text-gray-800 px-3 py-2 text-sm sm:text-base
+                           outline-none focus:outline-none"
+                    />
+                </div>
+            </div>
+            <!-- Информационный текст -->
+            <div class="alert alert-info rounded-xl text-white flex items-start gap-2 p-3 my-[10px]">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 shrink-0 stroke-current text-white mt-1" fill="none" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M13 16h-1v-4h-1m1-4h.01M12 20a8 8 0 100-16 8 8 0 000 16z" />
+                </svg>
+                <span class="text-white text-sm md:text-base">
+                    Новые данные будут применяться в следующих транзакциях.
+                </span>
+            </div>
+            <div class="flex justify-end gap-3 mt-6">
+                <button
+                        id="rates_cancel"
+                        class="btn btn-ghost px-5 py-2 text-gray-700">
+                    Отмена
+                </button>
+
+                <button
+                        id="rates_confirm"
+                        class="btn bg-green-600 hover:bg-green-700 text-white border-none px-6 py-2">
+                    Сохранить
+                </button>
+            </div>
+        </div>
+
+        <!-- Фон-маска -->
+        <form method="dialog" class="modal-backdrop bg-black/40 backdrop-blur-sm">
+            <button>close</button>
+        </form>
+    </dialog>
 
     {% include './ChangeUserModal.twig' %}
 
 
     <script src="/assets/js/CopyText.js?v=<?= time() ?>"></script>
     <script src="https://cdn.jsdelivr.net/npm/pikaday/pikaday.js"></script>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pikaday/css/pikaday.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pikaday/css/pikaday.css"/>
 
     <script>
         // Инициализация всех полей
@@ -328,12 +436,37 @@
             }, 5000);
         }
 
+        const modal = document.getElementById('statusModal');
+        const modalTitle = document.getElementById('statusTitle');
+        const modalText = document.getElementById('statusText');
+        const closeModalBtn = document.getElementById('closeModalBtn');
+
+        const showModal = (title, text, success = false) => {
+            modalTitle.textContent = title;
+            modalText.textContent = text;
+            modalTitle.className = success
+                ? 'text-lg font-bold text-emerald-600'
+                : 'text-lg font-bold text-red-600';
+            try {
+                modal.showModal();
+            } catch (e) {
+                alert(title + "\n\n" + text);
+            }
+        };
+
+        // Закрытие по кнопке OK
+        closeModalBtn.addEventListener('click', () => {
+            if (modal.open) {
+                modal.close();
+            }
+        });
+
         document.querySelectorAll('.search-filters').forEach(btn => {
             btn.addEventListener('click', () => {
                 const container = btn.closest('.flex'); // ищем ближайший контейнер фильтра
 
                 const dateFrom = container.querySelector('.datepicker_from');
-                const dateTo   = container.querySelector('.datepicker_to');
+                const dateTo = container.querySelector('.datepicker_to');
 
                 if (!dateFrom.value && !dateTo.value) {
                     showCornerModal('Выберите фильтр');
@@ -348,11 +481,113 @@
                 const params = new URLSearchParams();
                 params.append('client_id', clientId);
                 if (dateFrom.value) params.append('date_from', dateFrom.value);
-                if (dateTo.value)   params.append('date_to', dateTo.value);
+                if (dateTo.value) params.append('date_to', dateTo.value);
 
                 window.location.href = `/transaction/clientReceiptsDate?${params.toString()}`;
             });
         });
+
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const ratesModal = document.getElementById('rates_modal');
+            const cancelBtn = document.getElementById('rates_cancel');
+            const confirmBtn = document.getElementById('rates_confirm');
+
+            const transitInput = document.getElementById('rate_transit_new');
+            const cashInput = document.getElementById('rate_cash_new');
+
+            // утилиты
+            const formatFloat = (num) => num.toFixed(2);
+
+            let activeManagerId = null; // текущий менеджер
+
+            // 1️⃣ клик по ставкам → открыть модалку
+            document.querySelectorAll('[data-rate-input]').forEach(input => {
+                input.addEventListener('click', () => {
+                    // получаем manager_id прямо из атрибута
+                    activeManagerId = input.dataset.managerId;
+
+                    if (!activeManagerId) {
+                        showModal?.('Ошибка!', 'Не удалось определить менеджера.');
+                        return;
+                    }
+
+                    // очищаем инпуты
+                    transitInput.value = '';
+                    cashInput.value = '';
+
+                    ratesModal.showModal();
+                });
+            });
+
+            // 2️⃣ отмена
+            cancelBtn.addEventListener('click', () => {
+                ratesModal.close();
+                transitInput.value = '';
+                cashInput.value = '';
+                activeManagerId = null;
+            });
+
+            // 3️⃣ сохранить
+            confirmBtn.addEventListener('click', async () => {
+                if (!activeManagerId) {
+                    showModal?.('Ошибка!', 'Не выбран менеджер.');
+                    return;
+                }
+
+                const body = {
+                    manager_id: Number(activeManagerId),
+                    date: null // даты у нас нет, всегда null
+                };
+
+                // значения из инпутов модалки
+                const transitRateVal = transitInput.value.trim();
+                const cashBetVal = cashInput.value.trim();
+
+                // transit-rate
+                if (transitRateVal !== '') {
+                    const transitRateNum = Number(transitRateVal.replace(',', '.'));
+                    if (Number.isNaN(transitRateNum) || transitRateNum < 0.01 || transitRateNum > 0.99) {
+                        showModal?.('Ошибка!', 'Ставка транзит должна быть от 0.01 до 0.99.');
+                        return;
+                    }
+                    body.transit_rate = formatFloat(transitRateNum);
+                }
+
+                // cash-bet
+                if (cashBetVal !== '') {
+                    const cashBetNum = Number(cashBetVal.replace(',', '.'));
+                    if (Number.isNaN(cashBetNum) || cashBetNum < 0.01 || cashBetNum > 0.99) {
+                        showModal?.('Ошибка!', 'Ставка кеш должна быть от 0.01 до 0.99.');
+                        return;
+                    }
+                    body.cash_bet = formatFloat(cashBetNum);
+                }
+
+                // если что-то не ввели
+                if (!body.transit_rate || !body.cash_bet) {
+                    showModal?.('Ошибка!', 'Введите обе ставки.');
+                    return;
+                }
+
+                console.log('POST body:', body);
+
+                // ===== ОТПРАВКА =====
+                const result = await postDataRes('/supplier/changeRatesManager', body);
+
+                console.log(result);
+
+                if (result.success) {
+                    window.location.reload();
+                } else {
+                    showModal('Ошибка!', 'Не удалось поменять ставки на новые!');
+                }
+
+                ratesModal.close();
+                activeManagerId = null;
+            });
+        });
+
     </script>
 
 

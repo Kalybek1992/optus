@@ -246,7 +246,7 @@
                                 <span>Наш долг перед менеджером</span>
                                 <span class="font-semibold text-red-600">
                             {{ today_report.noncash_manager_debt }} ₽
-                        </span>
+                                </span>
                             </div>
 
                             <div class="flex justify-between">
@@ -395,6 +395,41 @@
             {% set keys = today_report.scenario|keys %}
             {% set last_key = keys|last %}
 
+            <div class="w-full mt-4 mb-5 px-[10px]">
+                <div class="flex items-center gap-6">
+                    <!-- Transit -->
+                    <div class="flex items-center gap-2">
+                            <span class="text-black font-semibold text-sm">
+                                Ставка транзит:
+                            </span>
+                        <input
+                                type="text"
+                                value="{{ today_report.transit_rate }}"
+                                readonly
+                                data-rate-input
+                                class="w-[70px] px-2 py-1 border rounded-md bg-gray-100
+                                   text-gray-700 text-center text-sm cursor-pointer"
+                        />
+                    </div>
+
+                    <!-- Cash -->
+                    <div class="flex items-center gap-2">
+                            <span class="text-black font-semibold text-sm">
+                                Ставка кеш:
+                            </span>
+                        <input
+                                type="text"
+                                value="{{ today_report.cash_bet }}"
+                                readonly
+                                data-rate-input
+                                class="w-[70px] px-2 py-1 border rounded-md bg-gray-100
+                                       text-gray-700 text-center text-sm cursor-pointer"
+                        />
+                    </div>
+
+                </div>
+            </div>
+
             <!-- Заголовок сценария -->
             <div class="bg-yellow-300 text-gray-800
                 px-4 sm:px-6
@@ -419,17 +454,17 @@
                         {% else %}
                             bg-blue-100 text-gray-800
                         {% endif %}
-                    "
+                        "
                         >
                             <!-- Название -->
                             <span class="break-words leading-tight">
-                        {{ key|capitalize }}
-                    </span>
+                                {{ key|capitalize }}
+                            </span>
 
                             <!-- Сумма -->
                             <span class="whitespace-nowrap">
-                        {{ value }} ₽
-                    </span>
+                                {{ value }} ₽
+                            </span>
                         </div>
                     {% endif %}
                 {% endfor %}
@@ -444,6 +479,116 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pikaday/css/pikaday.css">
     <script src="https://cdn.jsdelivr.net/npm/pikaday/pikaday.js"></script>
 
+    <!-- Изменить ставку  -->
+    <dialog id="rates_modal" class="modal">
+        <div class="modal-box relative rounded-2xl p-6 sm:p-8 w-full max-w-md bg-white shadow-xl">
+            <h3 class="text-xl sm:text-2xl font-semibold text-gray-800 mb-6 text-center">
+                Изменить ставки
+            </h3>
+
+            <div class="space-y-4">
+
+                <!-- Новая ставка транзит -->
+                <div>
+                    <p class="text-sm font-medium text-gray-500 mb-1">
+                        Новая ставка транзит
+                    </p>
+                    <input
+                            type="number"
+                            id="rate_transit_new"
+                            step="0.01"
+                            min="0"
+                            placeholder="Например: 0,91"
+                            class="w-full rounded-lg border border-green-600
+                           text-gray-800 px-3 py-2 text-sm sm:text-base
+                           outline-none focus:outline-none"
+                    />
+                </div>
+
+                <!-- Новая ставка кеш -->
+                <div>
+                    <p class="text-sm font-medium text-gray-500 mb-1">
+                        Новая ставка кеш
+                    </p>
+                    <input
+                            type="number"
+                            id="rate_cash_new"
+                            step="0.01"
+                            min="0"
+                            placeholder="Например: 0,93"
+                            class="w-full rounded-lg border border-green-600
+                           text-gray-800 px-3 py-2 text-sm sm:text-base
+                           outline-none focus:outline-none"
+                    />
+                </div>
+            </div>
+
+            <div class="flex justify-end gap-3 mt-6">
+                <button
+                        id="rates_cancel"
+                        class="btn btn-ghost px-5 py-2 text-gray-700">
+                    Отмена
+                </button>
+
+                <button
+                        id="rates_confirm"
+                        class="btn bg-green-600 hover:bg-green-700 text-white border-none px-6 py-2">
+                    Сохранить
+                </button>
+            </div>
+        </div>
+
+        <!-- Фон-маска -->
+        <form method="dialog" class="modal-backdrop bg-black/40 backdrop-blur-sm">
+            <button>close</button>
+        </form>
+    </dialog>
+
+    <input type="checkbox" id="notifications" class="hidden peer" />
+    <div class="fixed bottom-4 right-4 z-50 max-w-sm w-full
+            hidden peer-checked:flex flex-col bg-white border border-gray-300 rounded-xl shadow-xl
+            animate-fade-in transition-opacity duration-300 ease-out
+            px-5 py-4 space-y-2">
+
+        <div class="flex items-start justify-between">
+            <div class="flex items-start space-x-2">
+                <svg class="w-6 h-6 text-blue-500 mt-1 shrink-0" fill="none" stroke="currentColor" stroke-width="1.5"
+                     viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                          d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022 23.85 23.85 0 0 0 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0 3 3 0 1 0 5.714 0ZM3.124 7.5A8.969 8.969 0 0 1 5.292 3m13.416 0a8.969 8.969 0 0 1 2.168 4.5"/>
+                </svg>
+
+                <div>
+                    <h3 class="text-base font-semibold text-gray-900">Уведомление</h3>
+                    <p id="notifications-txt" class="text-sm text-gray-600 leading-snug mt-1">...</p>
+                </div>
+            </div>
+
+            <label for="notifications" class="text-gray-400 hover:text-gray-600 transition cursor-pointer">
+                ✕
+            </label>
+        </div>
+    </div>
+
+    <!-- Модалки status-->
+    <dialog id="statusModal" class="modal">
+        <div class="modal-box text-center">
+            <h3 id="statusTitle" class="text-lg font-bold"></h3>
+            <p id="statusText" class="py-4"></p>
+
+            <div class="modal-action">
+                <form method="dialog">
+                    <a
+                       id="closeModalBtn"
+                       class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold
+                           px-5 py-2 rounded-lg transition-colors duration-200">
+                        ОК
+                    </a>
+                </form>
+            </div>
+        </div>
+    </dialog>
+
     <script>
         function showCornerModal(message) {
             const checkbox = document.getElementById('notifications');
@@ -455,6 +600,31 @@
                 checkbox.checked = false;
             }, 5000);
         }
+
+        const modal = document.getElementById('statusModal');
+        const modalTitle = document.getElementById('statusTitle');
+        const modalText = document.getElementById('statusText');
+        const closeModalBtn = document.getElementById('closeModalBtn');
+
+        const showModal = (title, text, success = false) => {
+            modalTitle.textContent = title;
+            modalText.textContent = text;
+            modalTitle.className = success
+                ? 'text-lg font-bold text-emerald-600'
+                : 'text-lg font-bold text-red-600';
+            try {
+                modal.showModal();
+            } catch (e) {
+                alert(title + "\n\n" + text);
+            }
+        };
+
+        // Закрытие по кнопке OK
+        closeModalBtn.addEventListener('click', () => {
+            if (modal.open) {
+                modal.close();
+            }
+        });
 
         const pickerTo = new Pikaday({
             field: document.getElementById('datepicker_to'),
@@ -506,6 +676,99 @@
 
             // Переход с новыми параметрами
             window.location.href = `${currentUrl.origin}${currentUrl.pathname}?${params.toString()}`;
+        });
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const ratesModal = document.getElementById('rates_modal');
+            const cancelBtn  = document.getElementById('rates_cancel');
+            const confirmBtn = document.getElementById('rates_confirm');
+
+            const transitInput = document.getElementById('rate_transit_new');
+            const cashInput    = document.getElementById('rate_cash_new');
+
+            // утилиты
+            const formatFloat = (num) => num.toFixed(2);
+
+            // 1️⃣ клик по ставкам → открыть модалку
+            document.querySelectorAll('[data-rate-input]').forEach(input => {
+                input.addEventListener('click', () => {
+                    transitInput.value = '';
+                    cashInput.value = '';
+                    ratesModal.showModal();
+                });
+            });
+
+            // 2️⃣ отмена
+            cancelBtn.addEventListener('click', () => {
+                ratesModal.close();
+                transitInput.value = '';
+                cashInput.value = '';
+            });
+
+            // 3️⃣ сохранить
+            confirmBtn.addEventListener('click', async () => {
+                const body = {};
+
+                // --- получить manager_id и дату из URL ---
+                const params = new URLSearchParams(window.location.search);
+                const managerId = params.get('manager_id');
+                const dateParam = params.get('date');
+
+                if (!managerId) {
+                    showModal?.('Ошибка!', 'Manager ID не найден в ссылке.');
+                    return;
+                }
+
+                body.manager_id = Number(managerId);
+
+                // --- дата: если есть, используем, если нет — null ---
+                body.date = dateParam ? dateParam : null;
+
+                // --- значения из инпутов ---
+                const transitRateVal = transitInput.value.trim();
+                const cashBetVal     = cashInput.value.trim();
+
+                // --- transit-rate ---
+                if (transitRateVal !== '') {
+                    const transitRateNum = Number(transitRateVal.replace(',', '.'));
+                    if (Number.isNaN(transitRateNum) || transitRateNum < 0.01 || transitRateNum > 0.99) {
+                        showModal?.('Ошибка!', 'Ставка транзит должна быть от 0.01 до 0.99.');
+                        return;
+                    }
+                    body.transit_rate = formatFloat(transitRateNum);
+                }
+
+                // --- cash-bet ---
+                if (cashBetVal !== '') {
+                    const cashBetNum = Number(cashBetVal.replace(',', '.'));
+                    if (Number.isNaN(cashBetNum) || cashBetNum < 0.01 || cashBetNum > 0.99) {
+                        showModal?.('Ошибка!', 'Ставка кеш должна быть от 0.01 до 0.99.');
+                        return;
+                    }
+                    body.cash_bet = formatFloat(cashBetNum);
+                }
+
+                // --- если ничего не ввели ---
+                if (!body.transit_rate || !body.cash_bet) {
+                    showModal?.('Ошибка!', 'Введите обе ставки.');
+                    return;
+                }
+
+
+                // ===== ОТПРАВКА =====
+                const result = await postDataRes('/supplier/changeSettlementRates', body);
+
+                console.log(result);
+
+                if (result.success) {
+                    window.location.reload();
+                } else {
+                    showModal('Ошибка!', 'Не удалось поменять ставки на новые!');
+                }
+
+                ratesModal.close();
+            });
+
         });
     </script>
 {% endblock %}

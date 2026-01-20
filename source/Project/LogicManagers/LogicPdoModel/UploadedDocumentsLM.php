@@ -14,7 +14,15 @@ use Source\Project\Models\UploadedDocuments;
  */
 class UploadedDocumentsLM
 {
-    public static function getBankAccounts(string $selects_inn, string $selects_document_number)
+    public static function getBankAccounts(
+        string $inn,
+        string $document_number,
+        string $amount,
+        string $recipient_inn,
+        string $bank_account,
+        string $recipient_bank_account,
+        string $statement_date,
+    )
     {
 
         $builder = UploadedDocuments::newQueryBuilder()
@@ -22,9 +30,13 @@ class UploadedDocumentsLM
                 '*',
             ])
             ->where([
-                "inn IN($selects_inn)",
-                "document_number IN($selects_document_number)",
-                //"amount IN($selects_document_amount)"
+                "inn IN($inn)",
+                "document_number IN($document_number)",
+                "amount IN($amount)",
+                "recipient_inn IN($recipient_inn)",
+                "bank_account IN($bank_account)",
+                "recipient_bank_account IN($recipient_bank_account)",
+                "statement_date IN($statement_date)",
             ]);
 
 

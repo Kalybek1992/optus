@@ -74,6 +74,9 @@ uploadButton.addEventListener('click', async function () {
 
     if (result.status === 'error') {
         switch (result.value) {
+            case 'error':
+                openErrorModal('Не удалось загрузить!!!');
+                break;
             case 'error_file_format':
                 openErrorModal('Неправильный формат файла!!!');
                 break;
@@ -94,6 +97,9 @@ uploadButton.addEventListener('click', async function () {
                 break;
             case 'no_extracts_files':
                 openErrorModal('Не нашли транзакции!!!');
+                break;
+            case 'our_bank_is_not_listed':
+                openErrorModal('Не нашли владельца выписки продолжить невозможно!!!');
                 break;
             case 'some_error':
                 openErrorModal('Какая-то ошибка!!!');
@@ -116,6 +122,8 @@ uploadButton.addEventListener('click', async function () {
             result.goods_client,
             result.goods_client_service
         );
+    }else {
+        openErrorModal('Не удалось загрузить!!!');
     }
 });
 

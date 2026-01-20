@@ -3,6 +3,7 @@
 {% block content %}
     {% include 'UploadModal.twig' %}
     {% include 'CompanyFinances.twig' %}
+    {% include './Search/SearchInput.twig' %}
     {% include 'Confirmation.twig' %}
     {% include 'OurAccounts.twig' %}
     {% include 'TaskPlanner.twig' %}
@@ -37,26 +38,46 @@
                 const isReturn = actionType === 'debt';
                 let title = '';
 
+
                 if (actionType === 'debt'){
                     title ='Подтвердить возврат долга курьера';
+                    document.getElementById('modal-label-category')?.classList.remove('hidden');
+                    document.getElementById('modal-category')?.classList.remove('hidden');
                 }
+
                 if (actionType === 'courier_income_other'){
                     title ='Подтвердить доход от других источников';
+                    document.getElementById('modal-label-category')?.classList.remove('hidden');
+                    document.getElementById('modal-category')?.classList.remove('hidden');
                 }
+
                 if (actionType === 'consumption'){
                     title ='Подтвердить расход курьера';
+                    document.getElementById('modal-label-category')?.classList.remove('hidden');
+                    document.getElementById('modal-category')?.classList.remove('hidden');
                 }
 
-                document.getElementById('modal-title').textContent = title;
+                if (actionType === 'stock_balances_admin'){
+                    title ='Приход от курьера';
+                    document.getElementById('modal-label-category')?.classList.add('hidden');
+                    document.getElementById('modal-category')?.classList.add('hidden');
+                    currentExpense.amount = tr.children[4].textContent.trim();
+                }
+
+                if (role === 'supplier' && actionType === 'debt'){
+                    title ='Подтвердить выдачу поставщика';
+                    document.getElementById('modal-label-category')?.classList.add('hidden');
+                    document.getElementById('modal-category')?.classList.add('hidden');
+                }
+
 
                 document.getElementById('modal-label-category').textContent = isReturn ? 'Клиент' : 'Категория';
-
                 document.getElementById('modal-courier').textContent = currentExpense.courier;
                 document.getElementById('modal-category').textContent = currentExpense.category;
                 document.getElementById('modal-comment').textContent = currentExpense.comment;
                 document.getElementById('modal-amount').textContent = currentExpense.amount;
                 document.getElementById('modal-date').textContent = currentExpense.date;
-
+                document.getElementById('modal-title').textContent = title;
                 document.getElementById('confirm_expense_modal').checked = true;
             };
 
@@ -146,7 +167,7 @@
             document.getElementById('confirmCourierBtn').addEventListener('click', async () => {
                 if (!currentExpense) return openErrorModal('Ошибка: данные не найдены.');
 
-                const result = await postData('/' +roleUser + '/expenseAdmin', {
+                const result = await postData('/' +roleUser + '/confirmAdmin', {
                     finances_id: currentExpense.id,
                     action_type: currentExpense.action_type,
                     status: 'confirm'
@@ -162,7 +183,7 @@
             window.cancelCourierExpense = async (button, role) => {
                 roleUser = role;
 
-                const result = await postData('/' +roleUser + '/expenseAdmin', {
+                const result = await postData('/' +roleUser + '/confirmAdmin', {
                     finances_id: button.dataset.id,
                     action_type: button.dataset.action,
                     status: 'cancel'

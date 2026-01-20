@@ -621,6 +621,7 @@ class SupplierController extends BaseController
         $category_path = InformationDC::get('category_path');
         $date = InformationDC::get('date');
         $translation_max_id = TransactionsLM::getTranslationMaxId();
+        $leasing = InformationDC::get('leasing');
 
         $suplier = InformationDC::get('suplier');
         $supplier_id = $suplier['supplier_id'] ?? 0;
@@ -721,12 +722,22 @@ class SupplierController extends BaseController
                 return ApiViewer::getErrorBody(['value' => 'not_courier']);
             }
 
+            $type = 'debt_repayment_сompanies_supplier';
+            if ($leasing){
+                $type = 'debt_leasing';
+                $new_debt_leasing = $suplier['debt_leasing'] - $amount;
+
+                SuppliersLM::updateSuppliers([
+                    'debt_leasing =' . $new_debt_leasing,
+                ], $supplier_id);
+            }
+
             TransactionsLM::insertNewTransactions([
                 'id' => $translation_max_id + 1,
                 'type' => 'internal_transfer',
                 'amount' => $amount,
                 'date' => date('Y-m-d H:i:s'),
-                'description' => 'Закрытие долга компании поставщиком передав курьеру. ' . $courier['name'],
+                'description' => 'Закрытие долга лизинг передав курьеру. ' . $courier['name'],
                 'status' => 'processed'
             ]);
 
@@ -736,16 +747,18 @@ class SupplierController extends BaseController
                 'courier_id' => $courier['id'],
                 'comments' => $comments,
                 'issue_date' => $issue_date,
-                'type' => 'debt_repayment_сompanies_supplier',
+                'type' => $type,
                 'status' => 'confirm_courier'
             ]);
 
-            // TODO Можно убрать когда у курьера появится кнопка отказать (при принятия)
-            DebtsLM::payOffCompaniesDebt(
-                $supplier['legal_id'],
-                $amount,
-                $translation_max_id + 1
-            );
+            if (!$leasing){
+                // TODO Можно убрать когда у курьера появится кнопка отказать (при принятия)
+                DebtsLM::payOffCompaniesDebt(
+                    $supplier['legal_id'],
+                    $amount,
+                    $translation_max_id + 1
+                );
+            }
         }
 
         if ($suplier['restricted_access'] == 0){
@@ -949,7 +962,7 @@ class SupplierController extends BaseController
         ]);
     }
 
-    public function expenseAdmin(): array
+    public function confirmAdmin(): array
     {
         $finances_id = InformationDC::get('finances_id');
         $status = InformationDC::get('status');
@@ -1003,6 +1016,51 @@ class SupplierController extends BaseController
         return ApiViewer::getOkBody(['success' => 'ok']);
     }
 
+    public function confirmSupplier(): array
+    {
+        $finances_id = InformationDC::get('finances_id');
+        $status = InformationDC::get('status');
+        $action_type = InformationDC::get('action_type');
+        $finances = CompanyFinancesLM::getPendingByIdConfirmSupplier($finances_id);
+        $suplier = InformationDC::get('suplier');
+        $supplier_id = $suplier['supplier_id'] ?? 0;
+
+        if (!$finances) {
+            return ApiViewer::getErrorBody(['value' => 'no_finances']);
+        }
+
+        if ($status == 'confirm') {
+            CompanyFinancesLM::updateCompanyFinancesId([
+                'status = ' . 'processed',
+            ], $finances_id);
+
+            TransactionsLM::updateTransactionsId([
+                'status = ' . 'processed',
+            ], $finances->transaction_id);
+
+            $new_debt_leasing = $finances->amount + $suplier['debt_leasing'] ?? 0;
+
+            SuppliersLM::updateSuppliers([
+                'debt_leasing =' . $new_debt_leasing,
+            ], $supplier_id);
+        }
+
+        if ($status == 'cancel') {
+            $stock_balances = StockBalancesLM::getStockBalances();
+            $new_balance = $finances->amount + $stock_balances->balance;
+
+            CompanyFinancesLM::deleteCompanyFinancesId($finances->id);
+            TransactionsLM::deleteTransactionsId($finances->transaction_id);
+
+            StockBalancesLM::updateStockBalances([
+                'balance=' . $new_balance,
+                'updated_date=' . date('Y-m-d')
+            ]);
+        }
+
+        return ApiViewer::getOkBody(['success' => 'ok']);
+    }
+
     public function managerDailyReports(): string
     {
         $suplier = InformationDC::get('suplier');
@@ -1050,6 +1108,7 @@ class SupplierController extends BaseController
             $manager_id,
             $supplier_id
         );
+
 
         return $this->twig->render('Supplier/ManagerDailyReports.twig', [
             'transactions' => $transactions,
@@ -1163,6 +1222,95 @@ class SupplierController extends BaseController
 
 
         return ApiViewer::getOkBody(['success' => 'ok']);
+    }
+
+    public function changeSettlementRates(): array
+    {
+        $manager_id = InformationDC::get('manager_id');
+        $suplier = InformationDC::get('suplier');
+        $supplier_id = $suplier['supplier_id'];
+        $date_from_raw = InformationDC::get('date') ?? date('d.m.Y');
+        $transit_rate = InformationDC::get('transit_rate');
+        $cash_bet = InformationDC::get('cash_bet');
+        $manager = ManagersLM::getManagerId($manager_id);
+
+        if (!$manager) {
+            return ApiViewer::getErrorBody(['value' => 'bad_manager']);
+        }
+
+        $update_end_of_day[] = [
+            'manager_id' => $manager_id,
+            'supplier_id' => $supplier_id,
+            'date' => $date_from_raw,
+            'transit_rate' => $transit_rate,
+            'cash_bet' => $cash_bet,
+        ];
+        EndOfDaySettlementLM::updateEndOfDayTransactions($update_end_of_day);
+
+
+        return ApiViewer::getOkBody(['success' => 'ok']);
+    }
+
+    public function changeRatesManager(): array
+    {
+        $manager_id = InformationDC::get('manager_id');
+        $date_from_raw = InformationDC::get('date') ?? date('d.m.Y');
+        $transit_rate = InformationDC::get('transit_rate');
+        $cash_bet = InformationDC::get('cash_bet');
+
+
+        $manager = ManagersLM::getManagerId($manager_id);
+
+        if (!$manager) {
+            return ApiViewer::getErrorBody(['value' => 'bad_manager']);
+        }
+
+        ManagersLM::managerUpdate([
+            'transit_rate =' . $transit_rate,
+            'cash_bet =' . $cash_bet,
+        ], $manager_id);
+
+
+        return ApiViewer::getOkBody(['success' => 'ok']);
+    }
+
+    public function debtLeasingReport(): string
+    {
+        $suplier = InformationDC::get('suplier');
+        $supplier_id = $suplier['supplier_id'] ?? 0;
+        $page = InformationDC::get('page') ?? 0;
+        $date_from = InformationDC::get('date_from');
+        $date_to = InformationDC::get('date_to');
+        $limit = 30;
+        $offset = $page * $limit;
+
+        $expenses = CompanyFinancesLM::getExpenses(
+            $offset,
+            $limit,
+            null,
+            $date_from,
+            $date_to,
+            'debt_leasing',
+            $supplier_id
+        );
+
+        $expenses_count = CompanyFinancesLM::getTranslationExpensesCount(
+            null,
+            $date_from,
+            $date_to,
+            'debt_leasing',
+            $supplier_id
+        );
+
+        $page_count = ceil($expenses_count / $limit);
+
+        return $this->twig->render('Supplier/DebtLeasingReport.twig', [
+            'page' => $page + 1,
+            'expenses' => $expenses,
+            'page_count' => $page_count,
+            'date_from' => $date_from,
+            'date_to' => $date_to,
+        ]);
     }
 
 }

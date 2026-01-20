@@ -746,6 +746,7 @@ class UserController extends BaseController
     public function testDellDb(): array
     {
         die();
+
         $builder = CompanyFinances::newQueryBuilder()->delete();
         PdoConnector::execute($builder);
 

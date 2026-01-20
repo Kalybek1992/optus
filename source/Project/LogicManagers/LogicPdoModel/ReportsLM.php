@@ -4,10 +4,10 @@ namespace Source\Project\LogicManagers\LogicPdoModel;
 
 
 use Source\Base\Core\Logger;
+use DateTime;
 
 class ReportsLM
 {
-
     public static function getTodayReportSupplier($date_from, $date_to, $manager_id, $supplier_id): array
     {
         $finances_sum = CompanyFinancesLM::getManagerFinancesSumAndType($manager_id, $date_from, $date_to);
@@ -25,20 +25,34 @@ class ReportsLM
             $manager_id
         );
 
-
         //TODO зборданных сумм каторый на таблице
         //TODO менеджер товар услуга
         //TODO 1) Сумма сумма, всего бн которое зашло в этот день. %8, %6 че за хрень это блять, патоки ска
         $customer_service_manager = $transactions_sum['sum_amount'];
 
 
-        //TODO 2) Сумма долг в бн переходящий (долг с прошлого дня)
-        $get_the_last_closed_day = EndOfDaySettlementLM::getTheLastClosedDay($manager_id, $date_from);
+        $date = DateTime::createFromFormat('d.m.Y', $date_from);
+        $date = $date->format('Y-m-d');
+        $get_the_lastclosed_today = EndOfDaySettlementLM::getTheLastClosedToday($manager_id, $date);
 
         //TODO 2) если суда ставить реальные данные с переносами то работает нормально
         $debt_client_services = 0;
         //TODO 9) долг по отгрузки за прошлый день ( №3 сценарий)
         $scenario_3 = 0;
+
+
+        if ($get_the_lastclosed_today){
+            //TODO Данные из менеджера которые берутся для перерасчёта - это Ставка транзит, ставка кэш
+            $transit_rate = $get_the_lastclosed_today->transit_rate;
+            $cash_bet = $get_the_lastclosed_today->cash_bet;
+        }else{
+            $manager = ManagersLM::getManagerId($manager_id);
+            $transit_rate = $manager->transit_rate;
+            $cash_bet = $manager->cash_bet;
+        }
+
+        //TODO 2) Сумма долг в бн переходящий (долг с прошлого дня)
+        $get_the_last_closed_day = EndOfDaySettlementLM::getTheLastClosedDay($manager_id, $date_from);
 
         if ($get_the_last_closed_day) {
             if ($get_the_last_closed_day->scenario == 1 || $get_the_last_closed_day->scenario == 2) {
@@ -61,7 +75,7 @@ class ReportsLM
         $transactions_percents = $transactions_sum['percents'];
 
         //TODO 6) сумма к отгрузки с учктом вычета комиссии
-        $net_shipment_amount = $transit_balance_after_deductions * 0.92;
+        $net_shipment_amount = $transit_balance_after_deductions * $transit_rate;
 
         //TODO 7) сумма отгрузки
         $shipping_manager_sum = $finances_sum->shipping_manager_amount;
@@ -87,22 +101,21 @@ class ReportsLM
                 'scenario' => 1,
                 'topic' => 'долг по отгрузке 0, займ в товаре есть. Кэш нет выдачи',
                 'займ в товаре' => $debt_goods_shipped,
-                'долг в бн отправка' => $debt_goods_shipped / 0.92,
+                'долг в бн отправка' => $debt_goods_shipped / $transit_rate,
             ];
 
         } elseif ($debt_goods_shipped > 0 && $total_cash_issued > 0) { //TODO Это обработка сценарий 2
+            $conversion_cash_to_bn = (max(($debt_goods_shipped * $cash_bet) - $total_cash_issued, $total_cash_issued - ($debt_goods_shipped * $cash_bet))) / $cash_bet;
+
             $scenario = [
                 'scenario' => 2,
                 'topic' => 'долг по отгрузке 0 займ в товаре есть. Кэш выдача есть',
                 'займ в товаре' => $debt_goods_shipped,
-                'долг в бн' => $debt_goods_shipped / 0.92,
-                'долг в кэш' => ($debt_goods_shipped / 0.92) * 0.94,
+                'долг в бн' => $debt_goods_shipped / $transit_rate,
+                'долг в кэш' => $debt_goods_shipped * $cash_bet,
                 'выданно кэш' => $total_cash_issued,
-                'конвертация кэш к бн' => $total_cash_issued / 0.94,
-                'переходящий долг в бн' => max(
-                    ($debt_goods_shipped / 0.92) - ($total_cash_issued / 0.94),
-                    0
-                ),
+                'конвертация кэш к бн' => $conversion_cash_to_bn,
+                'переходящий долг в бн' => $conversion_cash_to_bn / $transit_rate,
             ];
 
         } elseif ($noncash_manager_debt > 0) { //TODO Это обработка сценарий 3
@@ -147,10 +160,13 @@ class ReportsLM
             }
         }
 
+        $result['transit_rate'] = $transit_rate;
+        $result['cash_bet'] = $cash_bet;
+
         return $result;
     }
 
-    public static function checkinglastDaysScript($date_from, $date_to, $manager_id, $supplier_id): array
+    public static function checkinglastDaysScript($date_from, $date_to, $manager_id, $supplier_id, $transit_rate, $cash_bet): array
     {
         $finances_sum = CompanyFinancesLM::getManagerFinancesSumAndType($manager_id, $date_from, $date_to);
         $transactions_sum = LegalEntitiesLM::getEntitiesClientServicesManagerSum(
@@ -164,6 +180,13 @@ class ReportsLM
             $date_to,
             $manager_id
         );
+
+        if (!$transit_rate && !$cash_bet){
+            $manager = ManagersLM::getManagerId($manager_id);
+            //TODO Данные из менеджера которые берутся для перерасчёта - это Ставка транзит, ставка кэш
+            $transit_rate = $manager->transit_rate;
+            $cash_bet = $manager->cash_bet;
+        }
 
         //TODO 1) Сумма сумма, всего бн которое зашло в этот день. %8, %6 че за хрень это блять, патоки ска
         $customer_service_manager = $transactions_sum['sum_amount'];
@@ -194,7 +217,7 @@ class ReportsLM
         $transit_balance_after_deductions = ($customer_service_manager - $debt_client_services) - $shipping_return_sum;
 
         //TODO 6) сумма к отгрузки с учктом вычета комиссии
-        $net_shipment_amount = $transit_balance_after_deductions * 0.92;
+        $net_shipment_amount = $transit_balance_after_deductions * $transit_rate;
 
         //TODO 7) сумма отгрузки
         $shipping_manager_sum = $finances_sum->shipping_manager_amount;
@@ -217,20 +240,27 @@ class ReportsLM
         if ($debt_goods_shipped > 0 && $total_cash_issued <= 0) { //TODO Это обработка сценарий 1
 
             return [
-                'amount' => $debt_goods_shipped / 0.92,
+                'amount' => $debt_goods_shipped / $transit_rate,
                 'scenario' => 1,
+                'transit_rate' => $transit_rate,
+                'cash_bet' => $cash_bet,
             ];
         } elseif ($debt_goods_shipped > 0 && $total_cash_issued > 0) { //TODO Это обработка сценарий 2
+            $conversion_cash_to_bn = (max(($debt_goods_shipped * $cash_bet) - $total_cash_issued, $total_cash_issued - ($debt_goods_shipped * $cash_bet))) / $cash_bet;
 
             return [
-                'amount' => max(($debt_goods_shipped / 0.92) - ($total_cash_issued / 0.94), 0),
+                'amount' => $conversion_cash_to_bn / $transit_rate,
                 'scenario' => 2,
+                'transit_rate' => $transit_rate,
+                'cash_bet' => $cash_bet,
             ];
         } elseif ($noncash_manager_debt > 0) { //TODO Это обработка сценарий 3
 
             return [
                 'amount' => $noncash_manager_debt,
                 'scenario' => 3,
+                'transit_rate' => $transit_rate,
+                'cash_bet' => $cash_bet,
             ];
         }
 

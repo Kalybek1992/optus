@@ -214,7 +214,7 @@ class BankOrderLM
     }
 
 
-    public static function getBankOrderRecipientCompanyName(string $recipient_company_name)
+    public static function getBankOrderRecipientCompanyInn(string $recipient_inn)
     {
 
         $builder = BankOrder::newQueryBuilder()
@@ -230,21 +230,21 @@ class BankOrderLM
             ])
             ->where([
                 "return_account = 1",
-                "recipient_company_name = '" . $recipient_company_name . "'",
+                "recipient_inn = '" . $recipient_inn . "'",
             ]);
 
 
         return PdoConnector::execute($builder);
     }
 
-    public static function deleteBankOrderRecipientCompanyName(string $recipient_company_name)
+    public static function deleteBankOrderRecipientId(string $id)
     {
 
         $builder = BankOrder::newQueryBuilder()
             ->delete()
             ->where([
                 "return_account = 1",
-                "recipient_company_name = '" . $recipient_company_name . "'",
+                "id = " . $id,
             ]);
 
 

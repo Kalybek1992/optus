@@ -658,7 +658,7 @@ class TransactionController extends BaseController
         $clients = ClientsLM::getClientsAll();
         $get_categories = ExpenseCategoriesLM::getExpenseCategories();
         $stock_balances = StockBalancesLM::getStockBalances()->balance ?? 0;
-        //$suppliers = SuppliersLM::getSuppliersAll();
+        $suppliers = SuppliersLM::getSuppliersAll();
 
         if ($get_categories) {
             $categories_html = HtmlLM::renderCategoryLevels($get_categories);
@@ -667,7 +667,7 @@ class TransactionController extends BaseController
         }
 
         return $this->twig->render('Transaction/DistributionCommodityMoney.twig', [
-            //'suppliers' => $suppliers,
+            'suppliers' => $suppliers,
             'couriers' => $couriers,
             'clients' => $clients,
             'categories_html' => $categories_html,
@@ -910,7 +910,7 @@ class TransactionController extends BaseController
             $bank_order_id_max += 1;
 
             if ($transaction->type == 'expense') {
-                $insert_company_finances = [
+                $insert_company_finances[] = [
                     'order_id' => $bank_order_id_max,
                     'comments' => $comment,
                     'type' => 'courier_balances',

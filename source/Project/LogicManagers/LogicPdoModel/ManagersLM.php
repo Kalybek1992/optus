@@ -120,6 +120,18 @@ class ManagersLM
         return PdoConnector::execute($builder);
     }
 
+    public static function managerUpdate(array $data, int $manager_id)
+    {
+        $builder = Managers::newQueryBuilder()
+            ->update($data)
+            ->where([
+                'id =' . $manager_id
+            ])
+            ->limit(1);
+
+        return PdoConnector::execute($builder);
+    }
+
     public static function getManagersAll($supplier_id): array
     {
         $builder = Managers::newQueryBuilder()

@@ -1,0 +1,85 @@
+
+
+{% block content %}
+    <!-- Центрированный блок поиска -->
+    <div class="w-full flex flex-col items-center px-8 py-6 bg-transparent">
+        <!-- Тема -->
+        <div class="text-center text-sm font-semibold text-gray-700 my-1">
+            Быстрый поиск счетов
+        </div>
+
+        <!-- Поиск -->
+        <div class="flex flex-col md:flex-row gap-2 w-full max-w-3xl">
+            <!-- селектор -->
+            <select id="searchType"
+                    class="select select-sm h-12 w-full md:w-40 px-3 rounded-[12px] border border-base-content/30 bg-base-200 focus:border-primary focus:bg-base-100 focus:ring-0">
+                <option value="">Выберите тип</option>
+                <option value="company">Компания</option>
+                <option value="inn">ИНН</option>
+                <option value="bank">Банк</option>
+            </select>
+
+            <!-- input + кнопка в одной строке -->
+            <div class="flex w-full md:flex-1 gap-2">
+                <input
+                        type="text"
+                        id="searchInput"
+                        placeholder="Введите ИНН, название банка или компании."
+                        autocomplete="off"
+                        class="input input-sm h-12 w-full px-3 rounded-[12px] border border-base-content/40 bg-transparent focus:border-primary focus:ring-0"
+                />
+                <button
+                        id="searchBtn"
+                        class="btn btn-circle btn-sm h-12 w-12 flex-none rounded-[12px] border border-base-content/40 bg-base-200 hover:bg-base-300 focus:border-primary focus:ring-0">
+                    <svg xmlns="http://www.w3.org/2000/svg"
+                         class="h-5 w-5 m-auto"
+                         fill="none"
+                         viewBox="0 0 24 24"
+                         stroke="currentColor">
+                        <path stroke-linecap="round"
+                              stroke-linejoin="round"
+                              stroke-width="2"
+                              d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const drawerBtn = document.querySelector('.flex-none');
+            if (!drawerBtn) return;
+            if (window.location.pathname === "/") {
+                drawerBtn.style.display = "block"; // показываем
+            } else {
+                drawerBtn.style.display = "none";  // скрываем
+            }
+        });
+
+
+        document.getElementById('searchBtn').addEventListener('click', function() {
+            const type = document.getElementById('searchType').value;
+            const query = document.getElementById('searchInput').value.trim();
+
+            // Проверка
+            if (!type || !query) {
+                openErrorModal('Не выбран тип или нет текста для поиска!');
+                return;
+            }
+
+            // Если все заполнено → формируем URL и переходим
+            const params = new URLSearchParams();
+            params.set('type', type);
+            params.set('query', query);
+
+            // Пример перехода на страницу search.php?type=company&q=XYZ
+            window.location.href = 'search/extractSearch?' + params.toString();
+        });
+    </script>
+
+
+
+{% endblock %}

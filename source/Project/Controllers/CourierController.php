@@ -11,6 +11,7 @@ use Source\Project\LogicManagers\LogicPdoModel\CouriersLM;
 use Source\Project\LogicManagers\LogicPdoModel\DebtsLM;
 use Source\Project\LogicManagers\LogicPdoModel\ExpenseCategoriesLM;
 use Source\Project\LogicManagers\HtmlLM\HtmlLM;
+use Source\Project\LogicManagers\LogicPdoModel\StockBalancesLM;
 use Source\Project\LogicManagers\LogicPdoModel\TransactionsLM;
 use Source\Project\Viewer\ApiViewer;
 use DateTime;
@@ -246,7 +247,7 @@ class CourierController extends BaseController
         }
     }
 
-    public function expenseAdmin(): array
+    public function confirmAdmin(): array
     {
         $finances_id = InformationDC::get('finances_id');
         $status = InformationDC::get('status');
@@ -268,6 +269,16 @@ class CourierController extends BaseController
                 );
             }
 
+            if ($action_type == 'stock_balances_admin'){
+                $balances = StockBalancesLM::getStockBalances();
+                $new_balance = $balances->balance + $finances->amount;
+
+                StockBalancesLM::updateStockBalances([
+                    'balance =' . $new_balance,
+                    'updated_date =' . date('Y-m-d')
+                ]);
+            }
+
             CompanyFinancesLM::updateCompanyFinancesId([
                 'status = ' . 'processed',
             ], $finances_id);
@@ -279,40 +290,14 @@ class CourierController extends BaseController
 
         if ($status == 'cancel'){
 
-            if ($action_type == 'consumption'){
-                $new_balance = $finances->amount + $finances->current_balance;
+            $new_balance = $finances->amount + $finances->current_balance;
+            CompanyFinancesLM::deleteCompanyFinancesId($finances->id);
+            TransactionsLM::deleteTransactionsId($finances->transaction_id);
 
-                CompanyFinancesLM::deleteCompanyFinancesId($finances->id);
-                TransactionsLM::deleteTransactionsId($finances->transaction_id);
-
-
-                CouriersLM::adjustCurrentBalance(
-                    $finances->courier_id,
-                    $new_balance
-                );
-            }
-
-            if ($action_type == 'debt'){
-                $new_balance = $finances->amount + $finances->current_balance;
-                $client = ClientsLM::getClientId($finances->client_id);
-
-                if (!$client) {
-                    return ApiViewer::getErrorBody(['value' => 'bad_client']);
-                }
-                if (!$client['legal_id']){
-                    return ApiViewer::getErrorBody(['value' => 'bad_client_legal_entities']);
-                }
-
-
-                CompanyFinancesLM::deleteCompanyFinancesId($finances->id);
-                TransactionsLM::deleteTransactionsId($finances->transaction_id);
-
-
-                CouriersLM::adjustCurrentBalance(
-                    $finances->courier_id,
-                    $new_balance
-                );
-            }
+            CouriersLM::adjustCurrentBalance(
+                $finances->courier_id,
+                $new_balance
+            );
         }
 
 
