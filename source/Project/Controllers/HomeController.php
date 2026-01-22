@@ -54,6 +54,7 @@ class HomeController extends BaseController
         $finance = LegalEntitiesLM::getEntitiesBalance();
         $client_services = DebtsLM::getDebtsClientServicesCount();
         $stock_balances = StockBalancesLM::getStockBalances()->balance ?? 0;
+        $leasing_balance = StockBalancesLM::getStockBalances()->leasing_balance ?? 0;
         $our_accounts = LegalEntitiesLM::getEntitiesOurAccount();
         $confirmation = CompanyFinancesLM::confirmationCostsAdmin();
         $task_planner = TaskPlannerLM::getAllTaskPlan();
@@ -83,6 +84,7 @@ class HomeController extends BaseController
             'finance' => $finance,
             'client_services' => $client_services,
             'stock_balances' => $stock_balances,
+            'leasing_balance' => $leasing_balance,
             'our_accounts' => $our_accounts,
             'confirmation_costs_courier' => $confirmation['courier_expense'] ?? [],
             'return_debit_courier' => $confirmation['return_debit_courier'] ?? [],
@@ -122,8 +124,6 @@ class HomeController extends BaseController
         $supplier_debts = DebtsLM::getDebtSupplierPage($supplier->suppliers_id);
         $not_accepted = CompanyFinancesLM::getFinancesSumNotAcceptedSupplier($supplier->suppliers_id);
         $confirmations = CompanyFinancesLM::confirmationCostSupplier($supplier->suppliers_id);
-
-        Logger::log(print_r($confirmations,true), 'supplierHomePage');
 
         return $this->twig->render('Supplier/SupplierHome.twig', [
             'supplier' => $user,

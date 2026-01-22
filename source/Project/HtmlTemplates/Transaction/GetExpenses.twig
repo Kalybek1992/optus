@@ -37,7 +37,7 @@
                     <tr class="divide-x divide-gray-200">
                         <th class="px-3 py-2 w-28">Дата</th>
                         <th class="px-3 py-2 min-w-[250px] max-w-[500px]">Описание</th>
-                        <th class="px-3 py-2 w-20">Сумма</th>
+                        <th class="px-3 py-2 w-20 min-w-[80px]">Сумма</th>
                         <th class="px-3 py-2 min-w-[100px] max-w-[300px]">Отправитель:Компания</th>
                         <th class="px-3 py-2 min-w-[100px] max-w-[300px]">Отправитель:Банк</th>
                         <th class="px-3 py-2 min-w-[100px] max-w-[300px]">Получатель:Компания</th>
@@ -52,7 +52,7 @@
                         <tr class="hover:bg-gray-50 divide-x divide-gray-200">
                             <td class="px-3 py-2">{{ expense.date }}</td>
                             <td class="px-3 py-2 text-xs text-gray-700">{{ expense.description }}</td>
-                            <td class="px-3 py-2">{{ expense.amount }}</td>
+                            <td class="px-3 py-2">{{ expense.amount|number_format(0, ',', ' ') }}</td>
                             <td class="px-3 py-2 text-xs text-gray-700">{{ expense.sender_company_name }}</td>
                             <td class="px-3 py-2 text-xs text-gray-700">{{ expense.sender_bank_name }}</td>
                             <td class="px-3 py-2 text-xs text-gray-700">{{ expense.company_name }}</td>
@@ -92,7 +92,7 @@
                         </div>
                         <div>
                             <div class="text-xs font-semibold text-gray-500">Сумма</div>
-                            <div class="text-[10px] text-gray-700 mt-1">{{ expense.amount }}</div>
+                            <div class="text-[10px] text-gray-700 mt-1">{{ expense.amount|number_format(0, ',', ' ') }}</div>
                         </div>
                         <div>
                             <div class="text-xs font-semibold text-gray-500">Отправитель: (Компания)</div>

@@ -248,6 +248,41 @@ class SuppliersLM
         return $suppliers_array;
     }
 
+    public static function getSuppliersAllNoLeasing(): array
+    {
+        $builder = Suppliers::newQueryBuilder()
+            ->select([
+                '*',
+                'u.name as username',
+                'u.email as email',
+            ])
+            ->leftJoin('users u')
+            ->on([
+                'u.id = user_id',
+            ])->where([
+                'u.restricted_access = ' . 0,
+            ]);
+
+        $suppliers = PdoConnector::execute($builder);
+        $suppliers_array = [];
+
+        if (!$suppliers) {
+            return [];
+        }
+
+        foreach ($suppliers as $supplier) {
+            $suppliers_array[] = [
+                'supplier_id' => $supplier->id,
+                'username' => $supplier->username,
+                'email' => $supplier->email,
+            ];
+        }
+
+        //Logger::log(print_r($builder->build(), true), 'clients_array');
+
+        return $suppliers_array;
+    }
+
     public static function getSuppliersIdDebt(int $id): ?array
     {
 

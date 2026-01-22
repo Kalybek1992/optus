@@ -103,7 +103,6 @@ class TransactionController extends BaseController
             $categories_html = HtmlLM::renderCategoryNot();
         }
 
-        //Logger::log(print_r($expenses, true), 'getExpenses');
         return $this->twig->render('Transaction/GetExpenses.twig', [
             'page' => $page + 1,
             'expenses' => $expenses,
@@ -156,8 +155,15 @@ class TransactionController extends BaseController
         $category = InformationDC::get('category');
         $date_from = InformationDC::get('date_from');
         $date_to = InformationDC::get('date_to');
+        $leasing = InformationDC::get('leasing');
         $limit = 30;
         $offset = $page * $limit;
+
+        if ($leasing == 1){
+            $type = 'leasing';
+        }else{
+            $type = 'stock_balances';
+        }
 
         $expenses = CompanyFinancesLM::getExpenses(
             $offset,
@@ -165,16 +171,15 @@ class TransactionController extends BaseController
             $category,
             $date_from,
             $date_to,
-            'stock_balances'
+            $type
         );
         $expenses_count = CompanyFinancesLM::getTranslationExpensesCount(
             $category,
             $date_from,
             $date_to,
-            'stock_balances'
+            $type
         );
         $page_count = ceil($expenses_count / $limit);
-
 
 
         //Logger::log(print_r($expenses, true), 'getExpenses');
@@ -399,10 +404,12 @@ class TransactionController extends BaseController
     public function setStockBalances(): array
     {
         $entity_id = InformationDC::get('entity_id');
+        $leasing = InformationDC::get('leasing') ?? false;
         $legal_entities = LegalEntitiesLM::getEntitiesId($entity_id);
         $stock_balances = StockBalancesLM::getStockBalances();
         $insert_bank_order = [];
         $insert_company_finances = [];
+        $new_balance = $leasing ? $stock_balances->leasing_balance : $stock_balances->balance;
 
         if (!$legal_entities) {
             return ApiViewer::getErrorBody(['value' => 'bad_entity_id']);
@@ -415,15 +422,12 @@ class TransactionController extends BaseController
             return ApiViewer::getErrorBody(['value' => 'not_transaction']);
         }
 
-        $new_stock_balance = $stock_balances->balance;
-
         foreach ($transactions as $transaction) {
             $bank_order_id_max += 1;
-
             $insert_company_finances[] = [
                 'order_id' => $bank_order_id_max,
                 'transaction_id' => $transaction->id,
-                'type' => 'stock_balances',
+                'type' => $leasing ? 'leasing' : 'stock_balances',
                 'status' => 'processed'
             ];
 
@@ -447,14 +451,23 @@ class TransactionController extends BaseController
                 'to_account_id = ' . '<NULL>',
             ], $transaction->id);
 
-            $new_stock_balance += $transaction->amount;
+            $new_balance += $transaction->amount;
         }
 
         LegalEntitiesLM::deleteLegalEntitiesId($entity_id);
-        StockBalancesLM::updateStockBalances([
-            'balance =' . $new_stock_balance,
-            'updated_date =' . date('Y-m-d')
-        ]);
+
+        if ($leasing){
+            StockBalancesLM::updateStockBalances([
+                'leasing_balance =' . $new_balance,
+                'updated_date =' . date('Y-m-d')
+            ]);
+        }else{
+            StockBalancesLM::updateStockBalances([
+                'balance =' . $new_balance,
+                'updated_date =' . date('Y-m-d')
+            ]);
+        }
+
 
         if ($insert_bank_order && $insert_company_finances) {
             BankOrderLM::insertNewBankOrder($insert_bank_order);
@@ -463,7 +476,7 @@ class TransactionController extends BaseController
 
         return ApiViewer::getOkBody([
             'success' => 'ok',
-            'new_stock_balance' => number_format($new_stock_balance, 2),
+            'new_stock_balance' => number_format($new_balance, 2),
         ]);
     }
 
@@ -658,7 +671,7 @@ class TransactionController extends BaseController
         $clients = ClientsLM::getClientsAll();
         $get_categories = ExpenseCategoriesLM::getExpenseCategories();
         $stock_balances = StockBalancesLM::getStockBalances()->balance ?? 0;
-        $suppliers = SuppliersLM::getSuppliersAll();
+        $suppliers = SuppliersLM::getSuppliersAllNoLeasing();
 
         if ($get_categories) {
             $categories_html = HtmlLM::renderCategoryLevels($get_categories);
@@ -672,6 +685,25 @@ class TransactionController extends BaseController
             'clients' => $clients,
             'categories_html' => $categories_html,
             'stock_balances' => $stock_balances,
+        ]);
+    }
+
+    public function wasteOfLease(): string
+    {
+        $get_categories = ExpenseCategoriesLM::getExpenseCategories();
+        $leasing_balance = StockBalancesLM::getStockBalances()->leasing_balance ?? 0;
+        $suppliers = SuppliersLM::getSuppliersAllNoLeasing();
+
+        if ($get_categories) {
+            $categories_html = HtmlLM::renderCategoryLevels($get_categories);
+        } else {
+            $categories_html = HtmlLM::renderCategoryNot();
+        }
+
+        return $this->twig->render('Transaction/WasteOfLease.twig', [
+            'suppliers' => $suppliers,
+            'categories_html' => $categories_html,
+            'leasing_balance' => $leasing_balance,
         ]);
     }
 

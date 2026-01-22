@@ -315,9 +315,12 @@
         });
 
         document.getElementById('confirmUnlink').addEventListener('click', async () => {
+            const params = new URLSearchParams(window.location.search);
+            const isLeasing = params.get('leasing') === '1';
+
             const result = await postData('/entities/returnAccount', {
                 order_id: orderId,
-                stock_balances: 'сompany'
+                balances: isLeasing ? 'leasing' : 'company'
             });
 
             if (result.success) {

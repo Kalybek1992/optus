@@ -589,7 +589,15 @@ return [
                 'captcha_response' => ['required' => false]
             ],
             'middlewares' => [
-                new ApiKeyMiddleware
+                new ApiKeyAdminMiddleware
+            ]
+        ],
+        '/transaction/wasteoflease' => [
+            'validation' => [
+                'captcha_response' => ['required' => false]
+            ],
+            'middlewares' => [
+                new ApiKeyAdminMiddleware
             ]
         ],
         '/transaction/supplierreports' => [
@@ -1423,6 +1431,9 @@ return [
                 'entity_id' => [
                     'required' => true,
                     'custom_logic' => fn($a) => is_numeric($a) && $a > 0
+                ],
+                'leasing' => [
+                    'required' => false
                 ]
             ],
             'middlewares' => [
@@ -1559,6 +1570,9 @@ return [
                 ],
                 'comments' => [
                     'required' => true
+                ],
+                'expense' => [
+                    'required' => false
                 ],
             ],
             'middlewares' => [
@@ -1764,9 +1778,9 @@ return [
                     'required' => true,
                     'custom_logic' => fn($a) => is_numeric($a) && $a > 0
                 ],
-                'stock_balances' => [
+                'balances' => [
                     'required' => false,
-                    'custom_logic' => fn($a) => $a === 'сompany' || $a === 'courier' || $a == null,
+                    'custom_logic' => fn($a) => $a === 'сompany' || $a === 'courier' || $a === 'leasing' || $a == null,
                 ],
             ],
             'middlewares' => [

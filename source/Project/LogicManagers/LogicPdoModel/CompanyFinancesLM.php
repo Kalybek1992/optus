@@ -75,11 +75,12 @@ class CompanyFinancesLM
     public static function getTranslationExpensesCount($category, $date_from, $date_to, $type, $supplier_id = null)
     {
         $type_condition = [
-            'company' => "(company_finances.type = 'expense' OR company_finances.type = 'expense_stock_balances' OR company_finances.type = 'courier_expense')",
+            'company' => "(company_finances.type = 'expense' OR company_finances.type = 'expense_stock_balances' OR company_finances.type = 'expense_leasing_balance' OR company_finances.type = 'courier_expense')",
             'supplier_expense' => "company_finances.type = 'expense_stock_balances_supplier'",
             'supplier_debit' => "company_finances.type = 'debt_repayment_сompanies_supplier' OR company_finances.type = 'debt_repayment_client_supplier'",
             'stock_balances' => "company_finances.type = 'stock_balances'",
-            'debt_leasing' => "company_finances.type = 'debt_leasing'"
+            'debt_leasing' => "company_finances.type = 'debt_leasing'",
+            'leasing' => "company_finances.type = 'leasing'"
         ][$type];
 
         $builder = CompanyFinances::newQueryBuilder()
@@ -146,41 +147,27 @@ class CompanyFinancesLM
                 ]);
         }
 
-
         return PdoConnector::execute($builder)[0]->count ?? [];
     }
 
     public static function getExpenses($offset, $limit, $category, $date_from, $date_to, $type, $supplier_id = null): array
     {
         $type_condition = [
-            'company' => "(company_finances.type = 'expense' OR company_finances.type = 'expense_stock_balances' OR company_finances.type = 'courier_expense')",
+            'company' => "(company_finances.type = 'expense' OR company_finances.type = 'expense_stock_balances' OR company_finances.type = 'expense_leasing_balance' OR company_finances.type = 'courier_expense')",
             'supplier_expense' => "company_finances.type = 'expense_stock_balances_supplier'",
             'supplier_debit' => "company_finances.type = 'debt_repayment_сompanies_supplier' OR company_finances.type = 'debt_repayment_client_supplier'",
             'stock_balances' => "company_finances.type = 'stock_balances'",
-            'debt_leasing' => "company_finances.type = 'debt_leasing'"
+            'debt_leasing' => "company_finances.type = 'debt_leasing'",
+            'leasing' => "company_finances.type = 'leasing'"
         ][$type];
 
-        $clients = [
-            'company' => [
-                'c.id = client_id',
-            ],
-            'supplier_expense' => [
+        $clients = ['c.id = client_id'];
+        if ($type == 'supplier_expens' || $type == 'supplier_debit' || $type == 'debt_leasing') {
+            $clients = [
                 'c.id = client_id',
                 'c.supplier_id =' . $supplier_id,
-            ],
-            'supplier_debit' => [
-                'c.id = client_id',
-                'c.supplier_id =' . $supplier_id,
-            ],
-            'stock_balances' => [
-                'c.id = client_id',
-            ],
-            'debt_leasing' => [
-                'c.id = client_id',
-                'c.supplier_id =' . $supplier_id,
-            ],
-        ][$type];
-
+            ];
+        }
 
         $builder = CompanyFinances::newQueryBuilder()
             ->select([

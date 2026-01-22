@@ -40,7 +40,6 @@ class StockBalancesLM
         if (!$stock_balances) {
             self::setNewStockBalances([
                 'id' => 1,
-                'balance' => 0,
                 'updated_date' => date('Y-m-d')
             ]);
         }

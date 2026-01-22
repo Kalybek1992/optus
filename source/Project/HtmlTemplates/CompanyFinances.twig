@@ -12,14 +12,25 @@
             </div>
 
             <!-- Наш товар -->
-            <div class="border border-blue-400 rounded-lg p-4 text-center">
-                <div class="text-sm text-gray-600 mb-1">Наш товарный баланс</div>
-                <div class="text-base font-bold text-black">
-                    {{ stock_balances|number_format(0, ',', ' ') }} ₽
+            <a href="/transaction/distributionCommodityMoney">
+                <div class="border border-blue-400 rounded-lg p-4 text-center">
+                    <div class="text-sm text-gray-600 mb-1">Наш товарный баланс</div>
+                    <div class="text-base font-bold text-black">
+                        {{ stock_balances|number_format(0, ',', ' ') }} ₽
+                    </div>
+                    <div class="text-xs text-gray-500 mt-1">На складе</div>
                 </div>
-                <div class="text-xs text-gray-500 mt-1">На складе</div>
-            </div>
-
+            </a>
+            <!-- Наш товар -->
+            <a href="/transaction/wasteOfLease">
+                <div class="border border-blue-400 rounded-lg p-4 text-center">
+                    <div class="text-sm text-gray-600 mb-1">Лизинг баланс</div>
+                    <div class="text-base font-bold text-black">
+                        {{ leasing_balance|number_format(0, ',', ' ') }} ₽
+                    </div>
+                    <div class="text-xs text-gray-500 mt-1">”бензин-итд”</div>
+                </div>
+            </a>
             <!-- Должники -->
             <div class="border border-blue-400 rounded-lg p-4 text-center">
                 <div class="text-sm text-gray-600 mb-1">Должники (товар)</div>
@@ -30,7 +41,8 @@
             </div>
 
             <!-- Долг (услуги) -->
-            <div class="relative border border-blue-400 rounded-lg p-4 text-center {% if client_services %}cursor-pointer{% endif %}" {% if client_services %}onclick="location.href='/debts/debtsClientServices'"{% endif %}>
+            <div class="relative border border-blue-400 rounded-lg p-4 text-center {% if client_services %}cursor-pointer{% endif %}"
+                 {% if client_services %}onclick="location.href='/debts/debtsClientServices'"{% endif %}>
                 {% if client_services %}
                     <div class="absolute top-2 right-2">
                         <span class="inline-block w-4 h-4 bg-red-500 text-white text-[10px] font-bold rounded-full text-center leading-[14px]">!</span>

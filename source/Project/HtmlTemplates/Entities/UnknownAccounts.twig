@@ -274,6 +274,20 @@
                                                     </a>
                                                 </li>
 
+                                                <!-- ТОВАРНЫЙ БАЛАНС -->
+                                                <li class="list_user border-b border-gray-300 cursor-pointer hover:bg-blue-100 px-3 py-2"
+                                                    data-user-role="leasing"
+                                                    data-entity-id="{{ entitie.id }}"
+                                                    data-entitie-inn="{{ entitie.inn }}"
+                                                    data-entitie-bankaccount="{{ entitie.bank_account }}"
+                                                    data-entitie-companyname="{{ entitie.company_name }}">
+                                                    <a href="#" class="block w-full">
+                                                        <span class="block text-center text-[10px] sm:text-xs uppercase font-bold text-gray-700">
+                                                            Определить как лизинг ”бензин”
+                                                        </span>
+                                                    </a>
+                                                </li>
+
                                                 <!-- ПОЛЬЗОВАТЕЛИ -->
                                                 {% for user in users %}
                                                     <li class="list_user border-b border-gray-300 cursor-pointer hover:bg-blue-100 px-3 py-2 last:border-b-0"
@@ -515,6 +529,13 @@
                 resetUI();
             }
 
+            if (role === 'leasing'){
+                modalTitle.textContent = 'Определить как лизинг баланс ”бензин”';
+                document.querySelectorAll('.user-info').forEach(el => el.classList.add('hidden'));
+                resetUI();
+            }
+
+
             if (role === 'transaction_to_yourself'){
                 modalTitle.textContent = 'Между счетами';
                 document.querySelectorAll('.user-info').forEach(el => el.classList.add('hidden'));
@@ -572,7 +593,15 @@
 
             if (role === 'stock_balances'){
                 let result = await postData('/transaction/setStockBalances', {
+                    entity_id: entityId
+                });
+                setChangeValue(result)
+            }
+
+            if (role === 'leasing'){
+                let result = await postData('/transaction/setStockBalances', {
                     entity_id: entityId,
+                    leasing: true
                 });
                 setChangeValue(result)
             }

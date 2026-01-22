@@ -312,21 +312,21 @@ class TransactionsProcessLM extends DocumentExtractLM
             $supplier_id = $account->supplier_id ?? false;
             $client_service_id = $account->client_service_id ?? false;
             $client_id = $account->client_id ?? false;
-            $percent = $account->percent ?? 0;
 
             if ($sender && $supplier_id && !$client_service_id) {
                 $type = 'return_supplier';
-                $percent = 0;
             }
 
             if ($recipient && $client_id) {
                 $type = 'return';
-                $percent = 0;
             }
 
             if ($recipient && $client_service_id) {
                 $type = 'return_client_services';
-                $percent = 0;
+            }
+
+            if ($supplier_id || $client_service_id || $client_id) {
+                $percent = $account->percent ?? $percent;
             }
 
             if ($account->manager_id && $account->supplier_id) {

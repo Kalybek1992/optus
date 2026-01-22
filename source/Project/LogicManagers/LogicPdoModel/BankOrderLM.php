@@ -214,7 +214,7 @@ class BankOrderLM
     }
 
 
-    public static function getBankOrderRecipientCompanyInn(string $recipient_inn)
+    public static function getBankOrderRecipientCompanyInn($recipient_inn, $account)
     {
 
         $builder = BankOrder::newQueryBuilder()
@@ -231,8 +231,8 @@ class BankOrderLM
             ->where([
                 "return_account = 1",
                 "recipient_inn = '" . $recipient_inn . "'",
+                "account = '" . $account . "'",
             ]);
-
 
         return PdoConnector::execute($builder);
     }

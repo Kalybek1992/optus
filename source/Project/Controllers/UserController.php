@@ -745,8 +745,6 @@ class UserController extends BaseController
 
     public function testDellDb(): array
     {
-        die();
-
         $builder = CompanyFinances::newQueryBuilder()->delete();
         PdoConnector::execute($builder);
 
@@ -786,7 +784,8 @@ class UserController extends BaseController
         PdoConnector::execute($builder);
 
         $builder = StockBalances::newQueryBuilder()->update([
-            'balance =' . 0
+            'balance =' . 0,
+            'leasing_balance =' . 0
         ])->where([
             'id =' . 1
         ]);
