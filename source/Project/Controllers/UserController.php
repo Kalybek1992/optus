@@ -534,7 +534,6 @@ class UserController extends BaseController
     {
         $page = InformationDC::get('page') ?? 0;
         $limit = 8;
-
         $offset = $page * $limit;
 
         $administrators = UsersLM::getUserAdministrators($offset, $limit);

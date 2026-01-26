@@ -313,7 +313,7 @@ class TransactionsProcessLM extends DocumentExtractLM
             $client_service_id = $account->client_service_id ?? false;
             $client_id = $account->client_id ?? false;
 
-            if (($sender || $recipient) && $percent > 0) {
+            if (($sender || $recipient) && $account->percent > 0) {
                 $percent = $account->percent;
             }
 
