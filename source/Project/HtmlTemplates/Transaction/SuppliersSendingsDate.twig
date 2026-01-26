@@ -52,7 +52,7 @@
                     <thead class="bg-gray-100 text-xs text-gray-500 uppercase">
                     <tr class="divide-x divide-gray-200">
                         <th class="px-3 py-2 w-28">Дата</th>
-                        <th class="px-3 py-2 w-[140px]">Плательщик банк</th>
+                        <th class="px-3 py-2 w-[140px]">Плательщик название</th>
                         <th class="px-3 py-2 w-[140px]">Получатель название</th>
                         <th class="px-3 py-2 w-[60px]">Комиссия</th>
                         <th class="px-3 py-2 w-[120px]">Сумма</th>
@@ -75,7 +75,7 @@
 
                             <!-- Плательщик банк -->
                             <td class="px-3 py-2 text-xs text-gray-700">
-                                {{ transaction.sender_bank_name }}
+                                {{ transaction.sender_company_name }}
                             </td>
 
                             <!-- Получатель -->

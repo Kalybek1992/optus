@@ -841,7 +841,8 @@ class LegalEntitiesLM
             ->update($data)
             ->where([
                 'id =' . $id
-            ]);
+            ])
+            ->limit(1);
 
         return PdoConnector::execute($builder);
     }
@@ -1683,8 +1684,8 @@ class LegalEntitiesLM
         $builder = LegalEntities::newQueryBuilder()
             ->select([
                 'client_id as client_id',
-                'bank_name as sender_bank_name',
-                'company_name as sender_company_name',
+                'bank_name as recipient_bank_name',
+                'company_name as recipient_company_name',
                 't.description as description',
                 't.amount as transaction_amount',
                 'SUM(t.amount) as transaction_amount_sum',
@@ -1694,8 +1695,8 @@ class LegalEntitiesLM
                 't.id as transaction_id',
                 't.date as date',
                 'le.id as legal_id',
-                'le.bank_name as recipient_bank_name',
-                'le.company_name as recipient_company_name',
+                'le.bank_name as sender_bank_name',
+                'le.company_name as sender_company_name',
                 'GROUP_CONCAT(dc.id ORDER BY dc.id) as debit_closing_ids',
                 'GROUP_CONCAT(dc.transaction_id ORDER BY dc.id) as debit_closing_transaction_ids',
                 'GROUP_CONCAT(dc.amount ORDER BY dc.id) as debit_closing_amounts'
@@ -1806,7 +1807,7 @@ class LegalEntitiesLM
         }
 
 
-        //Logger::log(print_r($builder->build(), true), 'clientReceiptsDate');
+        Logger::log(print_r($transactions_arr, true), 'getEntitiesSuppliersTransactions');
 
         return $transactions_arr;
     }

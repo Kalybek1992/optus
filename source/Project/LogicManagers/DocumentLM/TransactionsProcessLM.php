@@ -313,6 +313,10 @@ class TransactionsProcessLM extends DocumentExtractLM
             $client_service_id = $account->client_service_id ?? false;
             $client_id = $account->client_id ?? false;
 
+            if (($sender || $recipient) && $percent > 0) {
+                $percent = $account->percent;
+            }
+
             if ($sender && $supplier_id && !$client_service_id) {
                 $type = 'return_supplier';
             }
@@ -325,9 +329,6 @@ class TransactionsProcessLM extends DocumentExtractLM
                 $type = 'return_client_services';
             }
 
-            if ($supplier_id || $client_service_id || $client_id) {
-                $percent = $account->percent ?? $percent;
-            }
 
             if ($account->manager_id && $account->supplier_id) {
                 $key = $account->manager_id . '|' . $date;
@@ -637,6 +638,8 @@ class TransactionsProcessLM extends DocumentExtractLM
                     'date' => date('Y-m-d'),
                     'status' => 'active'
                 ];
+
+                $this->goods_supplier++;
             }
         }
     }

@@ -188,7 +188,6 @@ class UserController extends BaseController
         $debts = [];
         $insert_new_balance = [];
 
-
         if (!$user) {
             return ApiViewer::getErrorBody(['value' => 'user_id']);
         }
@@ -207,18 +206,19 @@ class UserController extends BaseController
         }
 
         foreach ($transactions as $transaction) {
+            if ($transaction->type != 'expense') {
+                return ApiViewer::getErrorBody(['value' => 'bad_transaction']);
+            }
+        }
+
+        foreach ($transactions as $transaction) {
             $from_account_id = $transaction->from_account_id;
             $to_account_id = $transaction->to_account_id;
-
             $percent_income = abs($transaction->amount) * ($percent / 100);
-            $type_of_debt = 'client_services';
 
             if ($transaction->type == 'expense') {
-                $type_of_debt = 'supplier_goods';
-
                 $recipient = LegalEntitiesLM::getEntitiesId($transaction->to_account_id);
                 $sender = LegalEntitiesLM::getEntitiesId($transaction->from_account_id);
-
                 $supplier_balance = SupplierBalanceLM::getSupplierBalance(
                     $recipient->inn,
                     $sender->inn
@@ -226,7 +226,6 @@ class UserController extends BaseController
 
                 if (!$supplier_balance) {
                     $key = $recipient->inn . '_' . $sender->inn;
-
                     if (!isset($insert_new_balance[$key])) {
                         $insert_new_balance[$key] = [
                             'recipient_inn' => $recipient->inn,
@@ -253,20 +252,17 @@ class UserController extends BaseController
                 'from_account_id' => $from_account_id,
                 'to_account_id' => $to_account_id,
                 'transaction_id' => $transaction->id,
-                'type_of_debt' => $type_of_debt,
+                'type_of_debt' => 'supplier_goods',
                 'amount' => $transaction->amount - $percent_income,
                 'date' => date('Y-m-d'),
                 'status' => 'active'
             ];
-
 
             TransactionsLM::updateTransactionsId([
                 'interest_income =' . $percent_income,
                 'percent =' . $percent,
             ], $transaction->id);
         }
-
-        //TODO Отключил обновление процента у баланса добавили новый
 
         LegalEntitiesLM::updateLegalEntities([
             'supplier_id =' . $user->suppliers_id,
@@ -319,23 +315,23 @@ class UserController extends BaseController
             return ApiViewer::getErrorBody(['value' => 'not_transaction']);
         }
 
+        foreach ($transactions as $transaction) {
+            if ($transaction->type == 'expense') {
+                return ApiViewer::getErrorBody(['value' => 'bad_transaction']);
+            }
+        }
 
         foreach ($transactions as $transaction) {
             $from_account_id = $transaction->from_account_id;
             $to_account_id = $transaction->to_account_id;
-
             $percent_income = abs($transaction->amount) * ($percent / 100);
-            $type_of_debt = 'client_services';
 
-            if ($transaction->type == 'expense') {
-                $type_of_debt = 'supplier_goods';
-            }
 
             $debts[] = [
                 'from_account_id' => $from_account_id,
                 'to_account_id' => $to_account_id,
                 'transaction_id' => $transaction->id,
-                'type_of_debt' => $type_of_debt,
+                'type_of_debt' => 'client_services',
                 'amount' => $transaction->amount - $percent_income,
                 'date' => date('Y-m-d'),
                 'status' => 'active'
@@ -394,6 +390,11 @@ class UserController extends BaseController
             return ApiViewer::getErrorBody(['value' => 'not_transaction']);
         }
 
+        foreach ($transactions as $transaction) {
+            if ($transaction->type == 'expense') {
+                return ApiViewer::getErrorBody(['value' => 'bad_transaction']);
+            }
+        }
 
         foreach ($transactions as $transaction) {
             $percent_income = abs($transaction->amount) * ($percent / 100);
@@ -424,7 +425,6 @@ class UserController extends BaseController
         if ($debts) {
             DebtsLM::setNewDebts($debts);
         }
-
 
         LegalEntitiesLM::updateLegalEntities([
             'client_id = ' . $user->client_id,
@@ -745,6 +745,7 @@ class UserController extends BaseController
 
     public function testDellDb(): array
     {
+        die();
         $builder = CompanyFinances::newQueryBuilder()->delete();
         PdoConnector::execute($builder);
 

@@ -41,7 +41,7 @@
                     <thead class="bg-gray-100 text-xs text-gray-500 uppercase">
                     <tr class="divide-x divide-gray-200">
                         <th class="px-3 py-2 w-28">Дата</th>
-                        <th class="px-3 py-2 w-[140px]">Плательщик банк</th>
+                        <th class="px-3 py-2 w-[140px]">Плательщик название</th>
                         <th class="px-3 py-2 w-[140px]">Получатель название</th>
                         <th class="px-3 py-2 w-[60px]">Комиссия</th>
                         <th class="px-3 py-2 w-[120px]">Сумма</th>
@@ -56,7 +56,7 @@
                     {% for transaction in transactions %}
                         <tr class="hover:bg-gray-50 divide-x divide-gray-200">
                             <td class="px-3 py-2">{{ transaction.date }}</td>
-                            <td class="px-3 py-2 text-xs text-gray-700">{{ transaction.sender_bank_name }}</td>
+                            <td class="px-3 py-2 text-xs text-gray-700">{{ transaction.sender_company_name }}</td>
                             <td class="px-3 py-2 text-xs text-gray-700">{{ transaction.recipient_company_name }}</td>
                             <td class="px-3 py-2">{{ transaction.percent }} %</td>
                             <td class="px-3 py-2 bg-yellow-100">{{ transaction.transaction_amount|number_format(0, ',', ' ') }}</td>
@@ -268,7 +268,7 @@
         }
 
         const pickerFrom = new Pikaday({
-            field: document.getElementById('from'),
+            field: document.getElementById('datepicker_from'),
             format: 'DD.MM.YYYY', // Русский формат даты
             firstDay: 1,
             i18n: {
@@ -295,7 +295,7 @@
         });
 
         const pickerTo = new Pikaday({
-            field: document.getElementById('to'),
+            field: document.getElementById('datepicker_to'),
             format: 'DD.MM.YYYY', // Русский формат даты
             firstDay: 1,
             i18n: {
@@ -322,30 +322,38 @@
         });
 
 
-        document.querySelectorAll('.search-sending-to-supplier').forEach(btn => {
-            btn.addEventListener('click', () => {
-                const dateFrom = document.getElementById('from');
-                const dateTo = document.getElementById('to');
+        document.getElementById('searchFilters').addEventListener('click', () => {
+            const dateFrom = document.getElementById('datepicker_from');
+            const datepickerTo = document.getElementById('datepicker_to');
 
+            if (!dateFrom.value && !datepickerTo.value) {
+                showCornerModal('Выберите фильтр');
+                return;
+            }
 
-                if (!dateFrom.value && !dateTo.value) {
-                    showCornerModal('Выберите фильтр');
-                    return;
-                }
+            if (!dateFrom.value && datepickerTo.value) {
+                showCornerModal('Выберите начало даты!');
+                return;
+            }
 
+            // Получаем текущий URL и параметры
+            const currentUrl = new URL(window.location.href);
+            const params = currentUrl.searchParams;
 
-                if (!dateFrom.value && dateTo.value) {
-                    showCornerModal('Выберите начало даты!');
-                    return;
-                }
+            // Удаляем параметр page, если есть
+            params.delete('page');
 
-                const params = new URLSearchParams();
-                if (dateFrom.value) params.append('date_from', dateFrom.value);
-                if (dateTo.value)   params.append('date_to', dateTo.value);
+            // Устанавливаем новые фильтры
+            if (dateFrom.value) params.set('date_from', dateFrom.value);
+            if (datepickerTo.value) params.set('date_to', datepickerTo.value);
 
-                window.location.href = `/supplier/getTransactionDate?${params.toString()}`;
-            });
+            // Добавляем page=0
+            params.set('page', '0');
+
+            const newUrl = `${currentUrl.pathname}?${params.toString()}`;
+            window.location.href = newUrl;
         });
+
     </script>
 
 
