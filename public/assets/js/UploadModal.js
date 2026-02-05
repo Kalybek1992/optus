@@ -70,8 +70,6 @@ uploadButton.addEventListener('click', async function () {
     const formData = new FormData();
     formData.append('file', file);
     const result = await postDataFile(formData);
-    console.log(result);
-
     if (result.status === 'error') {
         switch (result.value) {
             case 'error':
@@ -122,8 +120,6 @@ uploadButton.addEventListener('click', async function () {
             result.goods_client,
             result.goods_client_service
         );
-    }else {
-        openErrorModal('Не удалось загрузить!!!');
     }
 });
 

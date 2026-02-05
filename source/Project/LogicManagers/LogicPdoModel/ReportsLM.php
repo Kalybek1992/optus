@@ -5,21 +5,21 @@ namespace Source\Project\LogicManagers\LogicPdoModel;
 
 use Source\Base\Core\Logger;
 use DateTime;
+use Source\Project\Models\TransactionProviders;
 
 class ReportsLM
 {
-    public static function getTodayReportSupplier($date_from, $date_to, $manager_id, $supplier_id): array
+    public static function getTodayReportSupplier($date_from, $date_to, $manager_id): array
     {
         $finances_sum = CompanyFinancesLM::getManagerFinancesSumAndType($manager_id, $date_from, $date_to);
-        $transactions_sum = LegalEntitiesLM::getEntitiesClientServicesTransactionsSum(
-            $supplier_id,
+
+        $transactions_sum = TransactionProvidersLM::getTransactionsSum(
             $date_from,
             $date_to,
             $manager_id
         );
 
-        $transactions_sum_return = LegalEntitiesLM::getEntitiesClientServicesTransactionsReturnSum(
-            $supplier_id,
+        $transactions_sum_return = TransactionProvidersLM::getTransactionsReturnSum(
             $date_from,
             $date_to,
             $manager_id
@@ -106,7 +106,6 @@ class ReportsLM
 
         } elseif ($debt_goods_shipped > 0 && $total_cash_issued > 0) { //TODO Это обработка сценарий 2
             $conversion_cash_to_bn = (max(($debt_goods_shipped * $cash_bet) - $total_cash_issued, $total_cash_issued - ($debt_goods_shipped * $cash_bet))) / $cash_bet;
-
             $scenario = [
                 'scenario' => 2,
                 'topic' => 'долг по отгрузке 0 займ в товаре есть. Кэш выдача есть',
@@ -166,16 +165,19 @@ class ReportsLM
         return $result;
     }
 
-    public static function checkinglastDaysScript($date_from, $date_to, $manager_id, $supplier_id, $transit_rate, $cash_bet): array
+    /**
+     * @throws \Exception
+     */
+    public static function checkinglastDaysScript($date_from, $date_to, $manager_id, $transit_rate, $cash_bet): array
     {
         $finances_sum = CompanyFinancesLM::getManagerFinancesSumAndType($manager_id, $date_from, $date_to);
-        $transactions_sum = LegalEntitiesLM::getEntitiesClientServicesManagerSum(
+
+        $transactions_sum = TransactionProvidersLM::getTransactionManagerSum(
             $date_from,
             $manager_id
         );
 
-        $transactions_sum_return = LegalEntitiesLM::getEntitiesClientServicesTransactionsReturnSum(
-            $supplier_id,
+        $transactions_sum_return = TransactionProvidersLM::getTransactionsReturnSum(
             $date_from,
             $date_to,
             $manager_id
@@ -224,7 +226,6 @@ class ReportsLM
 
         //TODO 8) возврат коментарий. Выбор склада на который вернули
         $return_to_warehouse = $finances_sum->wheel_return_amount;
-
 
         //TODO 10)  наш долг перед менеджером в б/н (отрицательная, то она отображается как 0 ( ноль))
         $noncash_manager_debt = ($net_shipment_amount - $shipping_manager_sum) + ($return_to_warehouse + $scenario_3);

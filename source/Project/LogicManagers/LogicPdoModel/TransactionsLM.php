@@ -24,9 +24,6 @@ class TransactionsLM
                 'id =' . $id
             ]);
 
-        //return $builder->build();
-
-
         return PdoConnector::execute($builder);
     }
 
@@ -248,23 +245,31 @@ class TransactionsLM
 
     public static function getTransactionFromOrToAccountId($from_account_id, $to_account_id)
     {
-
         $builder = Transactions::newQueryBuilder()
             ->select([
-                '*',
-                'le.our_account as our_account',
-            ])
-            ->leftJoin('legal_entities le')
-            ->on([
-                'le.id = to_account_id',
+                '*'
             ])
             ->where([
-                'from_account_id =' . $from_account_id,
-                'to_account_id =' . $to_account_id
-            ], 'OR');
+                '(from_account_id =' . $from_account_id . ' OR to_account_id =' . $to_account_id . ')',
+                'ignore =' . 0
+            ]);
 
+        return PdoConnector::execute($builder);
+    }
 
-        //Logger::log(print_r($builder->build(), true), 'transaction_insert');
+    public static function getTransactionsIfNotProviders($from_account_id)
+    {
+        $builder = Transactions::newQueryBuilder()
+            ->select([
+                't.*'
+            ])
+            ->from('transactions t')
+            ->where([
+                't.from_account_id =' . $from_account_id,
+                't.ignore =' . 0,
+                'NOT EXISTS (SELECT 1 FROM transaction_providers tp WHERE tp.transaction_id = t.id)'
+            ]);
+
         return PdoConnector::execute($builder);
     }
 
@@ -328,6 +333,7 @@ class TransactionsLM
         $builder
             ->where([
                 "type != 'internal_transfer'",
+                "ignore !=" . 1,
             ]);
 
         $builder

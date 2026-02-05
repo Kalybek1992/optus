@@ -70,12 +70,6 @@ class EntitiesController extends BaseController
             return ApiViewer::getErrorBody(['error' => 'not_legal']);
         }
 
-        $client_debt_suppliers = DebtsLM::getDebtsFromClientDebtSuppliers($legal_id);
-
-        if ($client_debt_suppliers) {
-            return ApiViewer::getErrorBody(['error' => 'client_debt_suppliers']);
-        }
-
         DebtsLM::deleteAllActiveDebtUser($legal_id);
 
         $result = LegalEntitiesLM::updateLegalEntities([
@@ -572,6 +566,14 @@ class EntitiesController extends BaseController
 
         if ($delivery_type == 'admin') {
             $description = 'Перевод на администратора товарного баланса.';
+            TransactionsLM::insertNewTransactions([
+                'id' => $translation_max_id + 1,
+                'type' => 'internal_transfer',
+                'amount' => $amount,
+                'date' => date('Y-m-d H:i:s'),
+                'description' => $description,
+                'status' => 'processed'
+            ]);
 
             $insert_company_finances = [
                 'transaction_id' => $translation_max_id + 1,
@@ -581,13 +583,20 @@ class EntitiesController extends BaseController
                 'status' => 'confirm_admin',
                 'issue_date' => $issue_date
             ];
-
             CouriersLM::adjustCurrentBalance($courier_id, $courier_balance);
         }
 
         if ($delivery_type == 'expense') {
             $type = $expense == 'leasing_balance' ? 'expense_leasing_balance' : 'expense_stock_balances';
             $description = $expense == 'leasing_balance' ? 'Расход лизинг денег.' : 'Расход товарных денег.';
+            TransactionsLM::insertNewTransactions([
+                'id' => $translation_max_id + 1,
+                'type' => 'internal_transfer',
+                'amount' => $amount,
+                'date' => date('Y-m-d H:i:s'),
+                'description' => $description,
+                'status' => 'processed'
+            ]);
 
             $insert_company_finances = [
                 'transaction_id' => $translation_max_id + 1,
@@ -614,6 +623,14 @@ class EntitiesController extends BaseController
             ];
 
             $description = 'Перевод на курьера товарных денег.';
+            TransactionsLM::insertNewTransactions([
+                'id' => $translation_max_id + 1,
+                'type' => 'internal_transfer',
+                'amount' => $amount,
+                'date' => date('Y-m-d H:i:s'),
+                'description' => $description,
+                'status' => 'processed'
+            ]);
 
             if ($courier_id) {
                 $insert_company_finances['sender_courier_id'] = $courier_id;
@@ -634,6 +651,14 @@ class EntitiesController extends BaseController
                 'issue_date' => $issue_date
             ];
             $description = 'Перевод поставщику на лизинг.';
+            TransactionsLM::insertNewTransactions([
+                'id' => $translation_max_id + 1,
+                'type' => 'internal_transfer',
+                'amount' => $amount,
+                'date' => date('Y-m-d H:i:s'),
+                'description' => $description,
+                'status' => 'processed'
+            ]);
         }
 
         if ($delivery_type == 'client') {
@@ -641,8 +666,15 @@ class EntitiesController extends BaseController
 
             if (!$client) return ApiViewer::getErrorBody(['value' => 'bad_client']);
             if (!$client['legal_id']) return ApiViewer::getErrorBody(['value' => 'bad_client_legal_entities']);
-
             $description = 'Перевод клиенту товарных денег.';
+            TransactionsLM::insertNewTransactions([
+                'id' => $translation_max_id + 1,
+                'type' => 'internal_transfer',
+                'amount' => $amount,
+                'date' => date('Y-m-d H:i:s'),
+                'description' => $description,
+                'status' => 'processed'
+            ]);
 
             $insert_company_finances = [
                 'transaction_id' => $translation_max_id + 1,
@@ -672,7 +704,6 @@ class EntitiesController extends BaseController
 
         if (!$courier_id) {
             $balances = StockBalancesLM::getStockBalances();
-
             if ($expense == 'leasing_balance') {
                 $new_balance = $balances->leasing_balance - $amount;
                 StockBalancesLM::updateStockBalances([
@@ -688,14 +719,6 @@ class EntitiesController extends BaseController
             }
         }
 
-        TransactionsLM::insertNewTransactions([
-            'id' => $translation_max_id + 1,
-            'type' => 'internal_transfer',
-            'amount' => $amount,
-            'date' => date('Y-m-d H:i:s'),
-            'description' => $description,
-            'status' => 'processed'
-        ]);
 
         CompanyFinancesLM::insertTransactionsExpenses($insert_company_finances);
         return ApiViewer::getOkBody(['success' => 'ok']);

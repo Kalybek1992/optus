@@ -117,7 +117,8 @@ class TransactionsProcessLM extends DocumentExtractLM
             $this->our_account_number = $row['bank_account_recipient'];
         }
 
-        if (isset($this->bank_order[0]) && !$this->our_account) {
+        if ($this->bank_order && !$this->our_account) {
+            $this->bank_order = array_values($this->bank_order);
             $row = $this->bank_order[0];
             $this->our_account = [
                 'company_name' => $row['company_name'],
@@ -126,12 +127,11 @@ class TransactionsProcessLM extends DocumentExtractLM
                 'account' => $row['bank_account'],
                 'our_account' => 1,
             ];
-            $this->our_account_number = $row['bank_account_recipient'];
+            $this->our_account_number = $row['bank_account'];
         }
 
-        if (!isset($this->our_account)) {
+        if (!$this->our_account) {
             $this->result_document_processing = 'our_bank_is_not_listed';
-            throw new LogicException('OR-аккаунт не определён ни через expenses, ни через income');
         }
 
         $this->stepStart();
@@ -292,8 +292,6 @@ class TransactionsProcessLM extends DocumentExtractLM
         $to_account_id = false;
         $percent = 0;
         $type = false;
-        $date = $this->parseDateToMysqlFormat($transaction['date']);
-        $unique_manager_dates = [];
 
         foreach ($this->db_bank_accounts as $account) {
             $between = [
@@ -329,19 +327,6 @@ class TransactionsProcessLM extends DocumentExtractLM
                 $type = 'return_client_services';
             }
 
-
-            if ($account->manager_id && $account->supplier_id) {
-                $key = $account->manager_id . '|' . $date;
-
-                if (!isset($unique_manager_dates[$key])) {
-                    $unique_manager_dates[$key] = true;
-                    $this->date_update_report_supplier[] = [
-                        'manager_id' => $account->manager_id,
-                        'supplier_id' => $account->supplier_id,
-                        'date' => $date,
-                    ];
-                }
-            }
         }
 
         if ($type != 'return' && $type != 'return_supplier' && $type != 'return_client_services') {
@@ -608,12 +593,6 @@ class TransactionsProcessLM extends DocumentExtractLM
             $this->stepUpdate();
         }
 
-        if ($this->date_update_report_supplier) {
-            EndOfDaySettlementLM::updateEndOfDayTransactions($this->date_update_report_supplier);
-            $this->statement_log_step['end_of_day_settlement'] = $this->date_update_report_supplier;
-            $this->stepUpdate();
-        }
-
         TransactionsLM::updateTransactionsStatusPending();
         return $this;
     }
@@ -668,22 +647,9 @@ class TransactionsProcessLM extends DocumentExtractLM
                     'status' => 'active'
                 ];
 
-                if ($transaction->sender_supplier_client_id) {
-
-                    $client = ClientsLM::getClientId($transaction->sender_supplier_client_id);
-                    $percent = $client['percentage'];
-                    $amount = $transaction->amount - ($transaction->amount * $percent / 100);
-
-                    $this->expenditure_on_goods[] = [
-                        'from_account_id' => $from_account_id,
-                        'to_account_id' => $to_account_id,
-                        'transaction_id' => $transaction->id,
-                        'type_of_debt' => 'сlient_debt_supplier',
-                        'amount' => $amount,
-                        'date' => date('Y-m-d'),
-                        'status' => 'active'
-                    ];
-                }
+                TransactionsLM::updateTransactionsId([
+                    'supplier_defined =' . 1,
+                ], $transaction->id);
 
                 $this->goods_client_service++;
             }
@@ -1021,7 +987,6 @@ class TransactionsProcessLM extends DocumentExtractLM
     /**
      * Сохраняем последний загрузку выписки
      */
-
     public function lastStatementDownload($file_name): static
     {
         $our_account_id = $this->our_account['id'];
@@ -1101,5 +1066,4 @@ class TransactionsProcessLM extends DocumentExtractLM
 
         return $this;
     }
-
 }

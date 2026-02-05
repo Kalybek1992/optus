@@ -78,25 +78,22 @@ class EndOfDaySettlementLM
     public static function updateEndOfDayTransactions($dataset): void
     {
         $inserts = [];
-
         foreach ($dataset as $key => $value) {
             $current = new DateTime($value['date']);
             $end = new DateTime('today');
             $manager_id = $value['manager_id'];
-            $supplier_id = $value['supplier_id'];
             $transit_rate = $value['transit_rate'] ?? null;
             $cash_bet = $value['cash_bet'] ?? null;
 
             while ($current <= $end) {
                 $date_format = $current->format('d.m.Y');
                 $date = $current->format('Y-m-d');
-
                 $today = self::getTheLastClosedToday($manager_id, $date);
+
                 $report = ReportsLM::checkinglastDaysScript(
                     $date_format,
                     $date_format,
                     $manager_id,
-                    $supplier_id,
                     $transit_rate,
                     $cash_bet
                 );
@@ -117,8 +114,8 @@ class EndOfDaySettlementLM
                             'manager_id' => $manager_id,
                             'amount' => $report['amount'],
                             'scenario' => $report['scenario'],
-                            'transit_rate =' . $report['transit_rate'],
-                            'cash_bet =' . $report['cash_bet'],
+                            'transit_rate' => $report['transit_rate'],
+                            'cash_bet' => $report['cash_bet'],
                             'date' => $date,
                         ];
                     }

@@ -80,7 +80,6 @@ class FileController extends BaseController
             unlink($destination);
             return ApiViewer::getErrorBody(['value' => 'processed_payments']);
         }
-
         $document
             ->determineExpensesIncome();
 
@@ -88,6 +87,7 @@ class FileController extends BaseController
             unlink($destination);
             return ApiViewer::getErrorBody(['value' => 'our_bank_is_not_listed']);
         }
+
         $document
             ->getOurAccounts()
             ->getFamousCompanies()
@@ -103,7 +103,6 @@ class FileController extends BaseController
             ->updateKnownLegalEntitiesTotals()
             ->lastStatementDownload($new_file_name)
             ->stepUpdateStatus();
-
 
         return ApiViewer::getOkBody([
             'success' => 'ok',

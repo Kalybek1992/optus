@@ -32,6 +32,7 @@ class CourierController extends BaseController
         $total = CompanyFinancesLM::getCourierPendingCount($courier['id'] ?? 0);
         $page_count = (int)ceil($total / $limit);
 
+
         return $this->twig->render('Courier/CourierPending.twig', [
             'courier' => $courier,
             'pending' => $pending,
@@ -289,7 +290,6 @@ class CourierController extends BaseController
         }
 
         if ($status == 'cancel'){
-
             $new_balance = $finances->amount + $finances->current_balance;
             CompanyFinancesLM::deleteCompanyFinancesId($finances->id);
             TransactionsLM::deleteTransactionsId($finances->transaction_id);

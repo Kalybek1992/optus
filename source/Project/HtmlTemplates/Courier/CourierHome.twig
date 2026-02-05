@@ -11,7 +11,7 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mb-8">
             <div class="border rounded-xl p-4 bg-white shadow-sm hover:shadow-md transition">
                 <div class="text-sm text-gray-500">Неподтвержденные</div>
-                <div class="text-2xl font-semibold mt-1">{{ courier.balance_unaccepted|default(0) }}</div>
+                <div class="text-2xl font-semibold mt-1">{{ courier.balance_unaccepted|number_format(0, ',', ' ') }} ₽</div>
                 <a class="btn btn-sm mt-4 bg-blue-600 border-blue-600 hover:bg-blue-700 text-white w-full"
                    href="/courier/pending">
                     Подтвердить поступления
@@ -20,10 +20,9 @@
 
             <div class="border rounded-xl p-4 bg-white shadow-sm hover:shadow-md transition">
                 <div class="text-sm text-gray-500">Доступные товарные деньги</div>
-                <div class="text-2xl font-semibold mt-1">{{ courier.balance_sum|default(0) }}</div>
+                <div class="text-2xl font-semibold mt-1">{{ courier.balance_sum|number_format(0, ',', ' ') }} ₽</div>
             </div>
         </div>
-
         <!-- Действия -->
         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
 

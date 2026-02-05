@@ -337,60 +337,62 @@ class XlsxLM extends LogicManager
         return $file_name;
     }
 
-
     public static function getCourierFinances(array $finances): string
     {
         $spreadsheet = new Spreadsheet();
         $sheet = $spreadsheet->getActiveSheet();
 
-        // Заголовки точно как в таблице
+        // Заголовки 1-в-1 как в таблице (БЕЗ возврата)
         $headers = [
+            'Дата выдачи',
             'Дата',
             'День',
             'Сумма',
             'Категории',
-            'От поставщика',
+            'От кого',
             'Комментарии',
             'Статус',
         ];
 
-        // Записываем заголовки
+        // Заголовки
         $col = 'A';
         foreach ($headers as $header) {
             $sheet->setCellValue($col . '1', $header);
             $col++;
         }
 
-        // Записываем данные
+        // Данные
         $row = 2;
         foreach ($finances as $f) {
-            $sheet->setCellValue('A' . $row, $f['date'] ?? '');
-            $sheet->setCellValue('B' . $row, $f['dey'] ?? '');
-            $sheet->setCellValue('C' . $row, $f['amount'] ?? 0);
-            $sheet->setCellValue('D' . $row, $f['category'] ?? '');
-            $sheet->setCellValue('E' . $row, $f['supplier_name'] ?? '');
-            $sheet->setCellValue('F' . $row, $f['comments'] ?? '');
 
             // Статус в читаемом виде
-            $status = match($f['status'] ?? '') {
+            $status = match ($f['status'] ?? '') {
                 'confirm_courier' => 'Не принят',
-                'pending' => 'Не обработан',
-                'processed' => 'Принят',
-                default => 'Неизвестно',
+                'pending'         => 'Не обработан',
+                'processed'       => 'Принят',
+                default           => 'Неизвестно',
             };
-            $sheet->setCellValue('G' . $row, $status);
+
+            $sheet->setCellValue('A' . $row, $f['issue_date'] ?? '');
+            $sheet->setCellValue('B' . $row, $f['date'] ?? '');
+            $sheet->setCellValue('C' . $row, $f['dey'] ?? '');
+            $sheet->setCellValue('D' . $row, $f['amount'] ?? 0);
+            $sheet->setCellValue('E' . $row, $f['category'] ?? '');
+            $sheet->setCellValue('F' . $row, $f['from_whom'] ?? '');
+            $sheet->setCellValue('G' . $row, $f['comments'] ?? '');
+            $sheet->setCellValue('H' . $row, $status);
 
             $row++;
         }
 
         // Автоширина колонок
-        foreach (range('A', 'G') as $columnID) {
+        foreach (range('A', 'H') as $columnID) {
             $sheet->getColumnDimension($columnID)->setAutoSize(true);
         }
 
-        // Сохраняем файл
-        $upload_dir = Path::RESOURCES_DIR . 'unloading/';
-        $file_name = 'CourierFinances.xlsx';
+        // Сохранение
+        $upload_dir  = Path::RESOURCES_DIR . 'unloading/';
+        $file_name   = 'CourierFinances.xlsx';
         $destination = $upload_dir . $file_name;
 
         if (file_exists($destination)) {

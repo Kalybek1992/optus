@@ -146,6 +146,67 @@
         </div>
     </div>
 
+    <!-- unlink_transaction -->
+    <input type="checkbox" id="unlink_transaction" class="modal-toggle" />
+    <div class="modal" role="dialog">
+        <div class="modal-box w-11/12 max-w-md p-6">
+
+            <!-- Заголовок -->
+            <h1 class="text-lg font-bold text-gray-800 mb-4">
+                Отвязать транзакцию
+            </h1>
+
+            <!-- Контент -->
+            <div class="space-y-4">
+
+                <!-- Плательщик -->
+                <div class="p-3 border border-gray-200 rounded-xl bg-gray-50 flex flex-col">
+                    <span class="font-semibold text-gray-700">Плательщик:</span>
+                    <span id="unlinkPayer" class="text-gray-800 mt-1 break-all"></span>
+                </div>
+
+                <!-- Получатель -->
+                <div class="p-3 border border-gray-200 rounded-xl bg-gray-50 flex flex-col">
+                    <span class="font-semibold text-gray-700">Получатель:</span>
+                    <span id="unlinkReceiver" class="text-gray-800 mt-1 break-all"></span>
+                </div>
+
+                <!-- Сумма -->
+                <div class="p-3 border border-gray-200 rounded-xl bg-gray-50 flex flex-col">
+                    <span class="font-semibold text-gray-700">Сумма:</span>
+                    <span id="unlinkAmount" class="text-gray-800 mt-1"></span>
+                </div>
+
+                <!-- Предупреждение -->
+                <div class="alert alert-warning rounded-xl mt-3 flex items-start gap-2 p-3">
+                    <svg xmlns="http://www.w3.org/2000/svg"
+                         class="h-6 w-6 shrink-0 stroke-current mt-1"
+                         fill="none" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M12 9v2m0 4h.01M5.07 19h13.86c1.54 0 2.5-1.67 1.73-3L13.73 4c-.77-1.33-2.69-1.33-3.46 0L3.34 16c-.77 1.33.19 3 1.73 3z"/>
+                    </svg>
+                    <span class="text-sm md:text-base">
+                    После отвязки долг у транзакции будет удалён.<br>
+                    Вы сможете заново назначить эту транзакцию.
+                </span>
+                </div>
+            </div>
+
+            <!-- Кнопки -->
+            <div class="modal-action mt-6 flex flex-col sm:flex-row gap-3 justify-end">
+                <button id="confirmUnlinkTransaction"
+                        class="btn bg-red-600 hover:bg-red-700 text-white border-none rounded-lg px-6 py-2 w-full sm:w-auto">
+                    Отвязать
+                </button>
+
+                <label for="unlink_transaction"
+                       class="btn btn-outline rounded-lg px-6 py-2 w-full sm:w-auto">
+                    Отменить
+                </label>
+            </div>
+        </div>
+    </div>
+
 
     <!-- type="delete_account" -->
     <input type="checkbox" id="delete_account" class="modal-toggle" />
@@ -328,18 +389,20 @@
         const percentageInput = document.getElementById('new_percentage');
         const deleteAccount = document.getElementById('delete_account');
         const changePercentage = document.getElementById('change_percentage');
+        const unlinkTransaction = document.getElementById('unlink_transaction');
         let currentUserId = null;
         let clientId = null;
         let leId = null;
         let user = null;
-
+        let supplierClient = null;
+        let unlinkTransactionId = null;
 
         const openErrorModal = (message) => {
             document.getElementById('errorText').textContent = message;
             document.getElementById('errorEmail').showModal();
         };
 
-        const closeModal = (checkbox) => {
+        const closeModalChange = (checkbox) => {
             checkbox.checked = false;
         };
 
@@ -347,6 +410,13 @@
 
         const isValidPassword = (password) => typeof password === 'string' && password.length >= 6;
 
+        function openUnlinkTransactionModal({payer, receiver, commissionPercent, amount}) {
+            document.getElementById('unlinkPayer').textContent = payer ?? '-';
+            document.getElementById('unlinkReceiver').textContent = receiver ?? '-';
+            document.getElementById('unlinkAmount').textContent = amount ?? '-';
+
+            document.getElementById('unlink_transaction').checked = true;
+        }
 
         document.querySelectorAll('label[for="change_email"]').forEach(button => {
             button.addEventListener('click', () => {
@@ -359,7 +429,7 @@
             const email = newEmailInput.value.trim();
 
             if (!isValidEmail(email)) {
-                closeModal(modalCheckbox, newEmailInput);
+                closeModalChange(modalCheckbox, newEmailInput);
                 openErrorModal('Неправильный формат почты!');
                 return;
             }
@@ -372,21 +442,21 @@
 
             switch (result.value) {
                 case 'repeat_email':
-                    closeModal(modalCheckbox, newEmailInput);
+                    closeModalChange(modalCheckbox, newEmailInput);
                     openErrorModal('Такая почта уже существует!');
                     return;
                 case 'Invalid parameters':
-                    closeModal(modalCheckbox, newEmailInput);
+                    closeModalChange(modalCheckbox, newEmailInput);
                     openErrorModal('Неверные параметры!');
                     return;
             }
 
 
             if (result === 'error') {
-                closeModal(modalCheckbox, newEmailInput);
+                closeModalChange(modalCheckbox, newEmailInput);
                 openErrorModal('Ошибка запроса!');
             }else {
-                closeModal(modalCheckbox, newEmailInput);
+                closeModalChange(modalCheckbox, newEmailInput);
                 location.reload();
             }
 
@@ -422,7 +492,7 @@
             const password = passwordInput.value.trim();
 
             if (!isValidPassword(password)) {
-                closeModal(passwordModalCheckbox, passwordInput);
+                closeModalChange(passwordModalCheckbox, passwordInput);
                 openErrorModal('Пароль должен содержать минимум 6 символов!');
                 return;
             }
@@ -433,15 +503,15 @@
             });
 
             if (result === 'error') {
-                closeModal(passwordModalCheckbox, passwordInput);
+                closeModalChange(passwordModalCheckbox, passwordInput);
                 openErrorModal('Ошибка при отправке запроса!');
             }
 
             if (result.success) {
-                closeModal(passwordModalCheckbox, passwordInput);
+                closeModalChange(passwordModalCheckbox, passwordInput);
                 location.reload();
             } else {
-                closeModal(passwordModalCheckbox, passwordInput);
+                closeModalChange(passwordModalCheckbox, passwordInput);
                 openErrorModal('Не удалось изменить пароль!');
             }
         });
@@ -451,6 +521,7 @@
                 clientId = button.dataset.clientId;
                 leId = button.dataset.leId;
                 supplierClient = button.dataset.supplierClient ? parseInt(button.dataset.supplierClient) : null;
+
                 const userName = button.dataset.userName;
                 const companyName = button.dataset.companyName;
                 const companyInn = button.dataset.companyInn;
@@ -461,6 +532,18 @@
                 document.getElementById('companyInn').innerText = companyInn;
             });
         });
+
+        document.querySelectorAll('button[data-transaction-id]').forEach(button => {
+            button.addEventListener('click', () => {
+                unlinkTransactionId = button.dataset.transactionId;
+                openUnlinkTransactionModal({
+                    payer: button.dataset.senderCompanyName,
+                    receiver: button.dataset.recipientCompanyName,
+                    amount: button.dataset.transactionAmount
+                });
+            });
+        });
+
 
         document.querySelectorAll('label[for="change_percentage"]').forEach(button => {
             button.addEventListener('click', () => {
@@ -477,16 +560,9 @@
         });
 
         document.getElementById('confirmUnlink').addEventListener('click', async () => {
-            // Если supplierClient === 1 → другой маршрут
-            const url = supplierClient === 1
-                ? '/supplier/unlinkAccount'
-                : '/entities/unlinkAccount';
-
-
-            const result = await postData(url, {
+            const result = await postData('/entities/unlinkAccount', {
                 legal_id: leId
             });
-
 
             if (result.error === 'client_debt_suppliers') {
                 openErrorModal(
@@ -496,20 +572,34 @@
             }
 
             if (result.success) {
-                closeModal(unlinkAccount);
+                closeModalChange(unlinkAccount);
                 location.reload();
             } else {
-                closeModal(unlinkAccount);
+                closeModalChange(unlinkAccount);
                 openErrorModal('Не удалось отвязать счёт!');
             }
         });
 
+        document.getElementById('confirmUnlinkTransaction').addEventListener('click', async () => {
+            const result = await postData('/supplier/unlinkTransaction', {
+                transaction_id: unlinkTransactionId
+            });
+
+            if (result.success) {
+                closeModalChange(unlinkTransaction);
+                location.reload();
+            } else {
+                closeModalChange(unlinkTransaction);
+                openErrorModal('Не удалось отвязать транзакцию!');
+            }
+        });
+
         document.getElementById('changePasswordСlose')?.addEventListener('click', () => {
-            closeModal(passwordModalCheckbox, passwordInput);
+            closeModalChange(passwordModalCheckbox, passwordInput);
         });
 
         document.getElementById('changeEmailClose')?.addEventListener('click', () => {
-            closeModal(changeEmail, newEmailInput);
+            closeModalChange(changeEmail, newEmailInput);
         });
 
         document.getElementById('confirmDeleteAccount').addEventListener('click', async () => {
@@ -521,7 +611,7 @@
             if (result.success) {
                 location.reload();
             } else {
-                closeModal(deleteAccount, false);
+                closeModalChange(deleteAccount, false);
                 openErrorModal('Не удалось удалить пользователя!');
             }
         });
@@ -536,14 +626,14 @@
             });
 
             if (isNaN(percentage) || percentage < 0 || percentage > 100) {
-                closeModal(changePercentage, percentageInput);
+                closeModalChange(changePercentage, percentageInput);
                 openErrorModal('Введите корректный процент от 0 до 100.');
             }
 
             if (result.success) {
                 location.reload();
             } else {
-                closeModal(changePercentage, percentageInput);
+                closeModalChange(changePercentage, percentageInput);
                 openErrorModal('Не удалось изменить процент у пользователя!');
             }
 

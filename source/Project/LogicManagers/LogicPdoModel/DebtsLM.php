@@ -69,7 +69,7 @@ class DebtsLM
             ->delete()
             ->where([
                 'transaction_id IN(' . $transaction_id . ')',
-                'type_of_debt = ' . $goods_type,
+                "type_of_debt = '" . $goods_type . "'",
             ]);
 
         return PdoConnector::execute($builder);
@@ -788,33 +788,16 @@ class DebtsLM
         return true;
     }
 
-    public static function payOffSupplierClientServicesDebt($legal_id, $amount, $transaction_id): bool
+    public static function payOffSupplierClientServicesDebt(int $client_id, $amount, $transaction_id): bool
     {
-        $debts = self::getDebtsFromClientDebtSuppliers($legal_id);
+        $debts = TransactionProvidersLM::getClientDebits($client_id);
         $debt_closings_insert = [];
-
-        //Если нету никаких долгов
-        if (!$debts) {
-            $our_account_id = LegalEntitiesLM::getOurAccountOneId();
-
-            $from_account_id = $our_account_id;
-            $to_account_id = explode(',', $legal_id)[0];
-
-            self::setNewDebts([
-                'from_account_id' => $from_account_id,
-                'to_account_id' => $to_account_id,
-                'transaction_id' => $transaction_id,
-                'amount' => $amount,
-                'type_of_debt' => 'supplier_debt_сlient',
-                'date' => date('Y-m-d'),
-                'status' => 'active'
-            ]);
-
-            return true;
-        }
-
         $from_account_id = null;
         $to_account_id = null;
+
+        if (!$debts) {
+            return false;
+        }
 
         foreach ($debts as $debt) {
             if ($amount <= 0) break;
@@ -822,7 +805,6 @@ class DebtsLM
             $debt_amount = $debt->amount;
 
             if ($amount >= $debt_amount) {
-                // Полностью закрываем долг
                 self::updateDebtsId([
                     'status = paid',
                     'writing_transaction_id = ' . $transaction_id,

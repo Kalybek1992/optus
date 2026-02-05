@@ -91,6 +91,7 @@
                         <th class="px-3 py-2 w-[100px]">Сумма выдачи</th>
                         <th class="px-3 py-2 w-[100px]">Комментарии</th>
                         <th class="px-3 py-2 w-[100px]">Дата выдачи</th>
+                        <th class="px-3 py-2 w-[100px]">Отвязка</th>
                     </tr>
                     </thead>
 
@@ -120,7 +121,7 @@
                                 {% else %}
                                     <span
                                             data-transaction-id="{{ transaction.transaction_id }}"
-                                            data-legal-id="{{ transaction.legal_id }}"
+                                            data-legal-id="1"
                                             data-transaction-date="{{ transaction.date }}"
                                             data-transaction-percent="{{ transaction.percent }}"
                                             data-transaction-amount="{{ transaction.transaction_amount }}"
@@ -149,7 +150,6 @@
                                     0
                                 {% endif %}
                             </td>
-
                             <!-- Комментарии -->
                             <td class="px-3 py-2 whitespace-pre-line">
                                 {{ transaction.issuance | map(i => '- ' ~ i.comments) | join("\n\n") }}
@@ -164,6 +164,22 @@
                                 {% endif %}
                             </td>
 
+                            <td class="px-3 py-2">
+                                {% if transaction.issuance is not empty %}
+                                    Нельзя отвязать!
+                                {% else %}
+                                    <button
+                                            type="button"
+                                            data-transaction-id="{{ transaction.transaction_id }}"
+                                            data-sender-company-name="{{ transaction.sender_company_name }}"
+                                            data-recipient-company-name="{{ transaction.recipient_company_name }}"
+                                            data-transaction-amount="{{ transaction.transaction_amount|number_format(0, ',', ' ') }}"
+                                            class="bg-red-100 text-red-600 text-sm px-3 py-1 rounded hover:bg-red-200 cursor-pointer"
+                                    >
+                                        <i class="fa-solid fa-link-slash mr-1"></i> Отвязать
+                                    </button>
+                                {% endif %}
+                            </td>
                         </tr>
                     {% endfor %}
                     </tbody>
@@ -182,6 +198,7 @@
                         <th class="px-3 py-2">Сумма выдачи</th>
                         <th class="px-3 py-2">Комментарии</th>
                         <th class="px-3 py-2">Дата выдачи</th>
+                        <th class="px-3 py-2">Отвязка</th>
                     </tr>
                     </tfoot>
                 </table>
@@ -267,6 +284,23 @@
                         <div>
                             <div class="text-gray-500 text-xs">Комментарии:</div>
                             <div class="text-[11px] break-all">{{ transaction.comments }}</div>
+                        </div>
+                        <div>
+                            {% if transaction.issuance is not empty %}
+                                Нельзя отвязать!
+                            {% else %}
+                                <button
+                                        type="button"
+                                        data-transaction-id="{{ transaction.transaction_id }}"
+                                        data-sender-company-name="{{ transaction.sender_company_name }}"
+                                        data-recipient-company-name="{{ transaction.recipient_company_name }}"
+                                        data-transaction-amount="{{ transaction.transaction_amount|number_format(0, ',', ' ') }}"
+                                        data-supplier-client="1"
+                                        class="bg-red-100 text-red-600 text-sm px-3 py-1 rounded hover:bg-red-200 cursor-pointer"
+                                >
+                                    <i class="fa-solid fa-link-slash mr-1"></i> Отвязать
+                                </button>
+                            {% endif %}
                         </div>
                     </div>
                 {% endfor %}
@@ -357,6 +391,7 @@
     <div class="flex items-center justify-center py-6">
         {% include './Pagination/Pagination.twig' %}
     </div>
+    {% include './ChangeUserModal.twig' %}
 
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pikaday/css/pikaday.css">
     <script src="https://cdn.jsdelivr.net/npm/pikaday/pikaday.js"></script>

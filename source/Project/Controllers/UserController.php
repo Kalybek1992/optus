@@ -385,7 +385,6 @@ class UserController extends BaseController
         $percent = $user->client_percentage;
         $transactions = TransactionsLM::getTransactionFromOrToAccountId($entity_id, $entity_id);
 
-
         if (!$transactions) {
             return ApiViewer::getErrorBody(['value' => 'not_transaction']);
         }
@@ -399,27 +398,23 @@ class UserController extends BaseController
         foreach ($transactions as $transaction) {
             $percent_income = abs($transaction->amount) * ($percent / 100);
 
-            if ($transaction->our_account > 0) {
-                $from_account_id = $transaction->from_account_id;
-                $to_account_id = $transaction->to_account_id;
+            $from_account_id = $transaction->from_account_id;
+            $to_account_id = $transaction->to_account_id;
 
+            $debts[] = [
+                'from_account_id' => $from_account_id,
+                'to_account_id' => $to_account_id,
+                'transaction_id' => $transaction->id,
+                'type_of_debt' => 'client_goods',
+                'amount' => $transaction->amount - $percent_income,
+                'date' => date('Y-m-d'),
+                'status' => 'active'
+            ];
 
-                $debts[] = [
-                    'from_account_id' => $from_account_id,
-                    'to_account_id' => $to_account_id,
-                    'transaction_id' => $transaction->id,
-                    'type_of_debt' => 'client_goods',
-                    'amount' => $transaction->amount - $percent_income,
-                    'date' => date('Y-m-d'),
-                    'status' => 'active'
-                ];
-
-
-                TransactionsLM::updateTransactionsId([
-                    'interest_income =' . $percent_income,
-                    'percent =' . $percent,
-                ], $transaction->id);
-            }
+            TransactionsLM::updateTransactionsId([
+                'interest_income =' . $percent_income,
+                'percent =' . $percent,
+            ], $transaction->id);
         }
 
         if ($debts) {
@@ -649,13 +644,6 @@ class UserController extends BaseController
                 return ApiViewer::getErrorBody(['value' => 'bad_client_id']);
             }
 
-            if ($role['legal_id']) {
-                $client_debt_suppliers = DebtsLM::getDebtsFromClientDebtSuppliers($role['legal_id']);
-            }
-
-            if ($client_debt_suppliers > 0) {
-                return ApiViewer::getErrorBody(['value' => 'the_supplier_has_debts']);
-            }
 
             $legals_id = $role['legal_id'] ? explode(',', $role['legal_id']) : [];
 

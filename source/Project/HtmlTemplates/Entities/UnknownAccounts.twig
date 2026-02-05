@@ -27,9 +27,13 @@
                             <div class="flex flex-col sm:flex-row sm:items-center sm:gap-2 text-sm text-base-content opacity-80 mb-3">
                                 <span class="font-bold text-gray-600 mb-1 sm:mb-0">Название банка:</span>
                                 <span class="font-bold text-black">{{ entitie.bank_name }}</span>
-                                <button type="button" class="mt-1 sm:mt-0 ml-0 sm:ml-2 text-gray-600 hover:text-gray-900" onclick="copyText('{{ entitie.bank_name }}')">
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8l6 6v4"/>
+                                <button type="button"
+                                        class="mt-1 sm:mt-0 ml-0 sm:ml-2 text-gray-600 hover:text-gray-900"
+                                        onclick="copyText('{{ entitie.bank_name }}')">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2"
+                                         viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                              d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8l6 6v4"/>
                                         <path stroke-linecap="round" stroke-linejoin="round" d="M14 2v6h6"/>
                                     </svg>
                                 </button>
@@ -39,27 +43,31 @@
                             <div class="flex flex-col sm:flex-row sm:items-center sm:gap-2 text-sm text-base-content opacity-80">
                                 <span class="font-bold text-gray-600 mb-1 sm:mb-0">Компания:</span>
                                 <span class="font-bold text-black">{{ entitie.company_name }}</span>
-                                <button type="button" class="mt-1 sm:mt-0 ml-0 sm:ml-2 text-gray-600 hover:text-gray-900" onclick="copyText('{{ entitie.company_name }}')">
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8l6 6v4"/>
+                                <button type="button"
+                                        class="mt-1 sm:mt-0 ml-0 sm:ml-2 text-gray-600 hover:text-gray-900"
+                                        onclick="copyText('{{ entitie.company_name }}')">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2"
+                                         viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                              d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8l6 6v4"/>
                                         <path stroke-linecap="round" stroke-linejoin="round" d="M14 2v6h6"/>
                                     </svg>
                                 </button>
                             </div>
 
-                                    {% set income_count = 0 %}
-                                    {% set expense_count = 0 %}
+                            {% set income_count = 0 %}
+                            {% set expense_count = 0 %}
 
-                                    {% for transaction in entitie.transaction_data %}
-                                        {% if transaction.type == 'income' %}
-                                            {% set income_count = income_count + 1 %}
-                                        {% elseif transaction.type == 'expense' %}
-                                            {% set expense_count = expense_count + 1 %}
-                                        {% endif %}
-                                    {% endfor %}
+                            {% for transaction in entitie.transaction_data %}
+                                {% if transaction.type == 'income' %}
+                                    {% set income_count = income_count + 1 %}
+                                {% elseif transaction.type == 'expense' %}
+                                    {% set expense_count = expense_count + 1 %}
+                                {% endif %}
+                            {% endfor %}
                             <details id="transactions" class="group">
                                 <!-- summary делаем flex, чтобы стрелка, иконка и текст шли в ряд -->
-                                <summary  class="flex items-center gap-2 cursor-pointer">
+                                <summary class="flex items-center gap-2 cursor-pointer">
                                     <svg class="size-5 transition-transform group-open:rotate-90"
                                          xmlns="http://www.w3.org/2000/svg" fill="none"
                                          viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
@@ -82,7 +90,7 @@
                                              viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
                                              class="w-5 h-5">
                                             <path stroke-linecap="round" stroke-linejoin="round"
-                                                  d="m9 12.75 3 3m0 0 3-3m-3 3v-7.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                                                  d="m9 12.75 3 3m0 0 3-3m-3 3v-7.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/>
                                         </svg>
                                         <span>{{ income_count }}</span>
                                     </span>
@@ -93,7 +101,7 @@
                                              viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
                                              class="w-5 h-5">
                                             <path stroke-linecap="round" stroke-linejoin="round"
-                                                  d="m15 11.25-3-3m0 0-3 3m3-3v7.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                                                  d="m15 11.25-3-3m0 0-3 3m3-3v7.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/>
                                         </svg>
                                         <span>{{ expense_count }}</span>
                                     </span>
@@ -103,23 +111,40 @@
                                 <div class="p-4 border rounded-lg">
                                     {% for transaction in entitie.transaction_data %}
                                         <div class="flex flex-col gap-2 p-3 bg-white text-sm">
-                                                <!-- Тип транзакции -->
+                                            <!-- Тип транзакции -->
                                             <div class="flex items-center text-sm text-base-content opacity-80">
                                                 <span class="mr-2 font-semibold text-gray-600">Тип:</span>
                                                 <span class="flex items-center gap-2 font-bold uppercase text-gray-800">
                                                     {% if transaction.type == 'income' %}
-                                                        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m.75 12 3 3m0 0 3-3m-3 3v-6m-1.5-9H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z"/>
+                                                        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5"
+                                                             fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                                  stroke-width="1.5"
+                                                                  d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m.75 12 3 3m0 0 3-3m-3 3v-6m-1.5-9H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z"/>
                                                         </svg>
                                                         Доход
                                                     {% elseif transaction.type == 'expense' %}
-                                                        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m6.75 12-3-3m0 0-3 3m3-3v6m-1.5-15H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z"/>
+                                                        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5"
+                                                             fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                                  stroke-width="1.5"
+                                                                  d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m6.75 12-3-3m0 0-3 3m3-3v6m-1.5-15H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z"/>
                                                         </svg>
                                                         Расход
                                                     {% endif %}
                                                 </span>
                                             </div>
+
+                                            <!-- Снять с участие -->
+                                            <label class="flex items-center gap-2 text-sm text-base-content opacity-80 cursor-pointer">
+                                                <span class="font-semibold text-gray-600">Снять с участие:</span>
+                                                <input
+                                                        type="checkbox"
+                                                        class="w-4 h-4 accent-gray-700"
+                                                        data-transaction-id="{{ transaction.id }}"
+                                                        {% if transaction.ignore == 1 %}checked{% endif %}
+                                                />
+                                            </label>
 
                                             <!-- Дата -->
                                             <div class="flex flex-col sm:flex-row sm:items-center sm:gap-2 text-sm text-base-content opacity-80">
@@ -160,7 +185,8 @@
                                         </div>
                                     {% endfor %}
                                     <!-- Кнопка "Скрыть" -->
-                                    <a href="#transactions" class="mt-4 block text-center text-sm font-semibold text-blue-600 hover:underline">
+                                    <a href="#transactions"
+                                       class="mt-4 block text-center text-sm font-semibold text-blue-600 hover:underline">
                                         Начало
                                     </a>
                                 </div>
@@ -424,6 +450,27 @@
         const saveBtn = document.getElementById('confirmChanges');
         const percentageLabel = document.getElementById('percentage-label');
 
+
+        document.addEventListener('change', async function (event) {
+            if (!event.target.matches('input[type="checkbox"][data-transaction-id]')) {
+                return;
+            }
+            const checkbox = event.target;
+            const transactionId = checkbox.dataset.transactionId;
+            const isChecked = checkbox.checked;
+            let ignore = 2;
+
+            if (isChecked) {
+                ignore = 1;
+            }
+
+            let result = await postData('/transaction/setIgnore', {
+                transaction_id: transactionId,
+                ignore: ignore,
+            });
+            setChangeIgnore(result)
+        });
+
         const isValid = value => {
             value = String(value).trim();
             if (value.endsWith('.')) {
@@ -498,45 +545,45 @@
             document.getElementById('modal-inn').textContent = inn || '—';
             document.getElementById('modal-company').textContent = companyName || '—';
 
-            if (role === 'supplier'){
+            if (role === 'supplier') {
                 modalTitle.textContent = 'Укажите процент для поставщика';
                 percentageLabel.classList.remove('hidden');
                 updateUI();
             }
 
-            if (role === 'client_services'){
+            if (role === 'client_services') {
                 modalTitle.textContent = 'Укажите процент клиент услуги';
                 percentageLabel.classList.remove('hidden');
                 updateUI();
             }
 
-            if (role === 'client'){
+            if (role === 'client') {
                 modalTitle.textContent = 'Подтвердить клиента';
                 percentageLabel.classList.add('hidden');
                 resetUI();
             }
 
-            if (role === 'shop'){
+            if (role === 'shop') {
                 modalTitle.textContent = 'Определить в магазин';
                 percentageLabel.classList.add('hidden');
                 resetUI();
             }
 
 
-            if (role === 'stock_balances'){
+            if (role === 'stock_balances') {
                 modalTitle.textContent = 'Определить как товарный баланс';
                 document.querySelectorAll('.user-info').forEach(el => el.classList.add('hidden'));
                 resetUI();
             }
 
-            if (role === 'leasing'){
+            if (role === 'leasing') {
                 modalTitle.textContent = 'Определить как лизинг баланс ”бензин”';
                 document.querySelectorAll('.user-info').forEach(el => el.classList.add('hidden'));
                 resetUI();
             }
 
 
-            if (role === 'transaction_to_yourself'){
+            if (role === 'transaction_to_yourself') {
                 modalTitle.textContent = 'Между счетами';
                 document.querySelectorAll('.user-info').forEach(el => el.classList.add('hidden'));
                 resetUI();
@@ -574,7 +621,7 @@
                 setChangeValue(result)
             }
 
-            if (role === 'client_services'){
+            if (role === 'client_services') {
                 let result = await postData('/user/bindAccountClientServices', {
                     user_id: userId,
                     entity_id: entityId,
@@ -583,7 +630,7 @@
                 setChangeValue(result)
             }
 
-            if (role === 'client'){
+            if (role === 'client') {
                 let result = await postData('/user/bindAccountClient', {
                     user_id: userId,
                     entity_id: entityId,
@@ -591,14 +638,14 @@
                 setChangeValue(result)
             }
 
-            if (role === 'stock_balances'){
+            if (role === 'stock_balances') {
                 let result = await postData('/transaction/setStockBalances', {
                     entity_id: entityId
                 });
                 setChangeValue(result)
             }
 
-            if (role === 'leasing'){
+            if (role === 'leasing') {
                 let result = await postData('/transaction/setStockBalances', {
                     entity_id: entityId,
                     leasing: true
@@ -606,14 +653,14 @@
                 setChangeValue(result)
             }
 
-            if (role === 'transaction_to_yourself'){
+            if (role === 'transaction_to_yourself') {
                 let result = await postData('/transaction/setYourself', {
                     entity_id: entityId,
                 });
                 setChangeValue(result)
             }
 
-            if (role === 'shop'){
+            if (role === 'shop') {
 
                 let result = await postData('/transaction/setShop', {
                     entity_id: entityId,
@@ -684,6 +731,22 @@
 
             if (answer.status === 'error') {
                 showCornerModal('Ошибка выбора пользователя: ' + answer.value);
+            }
+        }
+
+        function setChangeIgnore(answer) {
+            if (answer === 'error' || answer === '') {
+                showCornerModal('Ошибка установки игнора!');
+                return;
+            }
+
+            if (answer.success) {
+                showCornerModal('Удачно установили игнор!');
+                return;
+            }
+
+            if (answer.status === 'error') {
+                showCornerModal('Ошибка установки игнора: ' + answer.value);
             }
         }
 

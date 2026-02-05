@@ -272,7 +272,6 @@ class ClientsLM
             return null;
         }
 
-
         $client_arr = [
             'id' => $client->id,
             'email' => $client->email,
@@ -281,7 +280,6 @@ class ClientsLM
             'debit_amount' => $client->debit_amount,
             'legal_id' => $client->legal_id,
         ];
-
 
         return $client_arr;
     }
@@ -349,30 +347,17 @@ class ClientsLM
     }
 
 
-    public static function getClientSupplierId(int $id, int $supplier_id): ?array
+    public static function getClientSupplierId(int $id): ?array
     {
 
         $builder = Clients::newQueryBuilder()
             ->select([
                 '*',
                 'u.name as username',
-                'SUM(d.amount) as debit_amount',
-                'GROUP_CONCAT(le.id SEPARATOR ' . '", "' . ') as legal_id',
             ])
             ->leftJoin('users u')
             ->on([
                 'u.id = user_id',
-            ])
-            ->leftJoin('legal_entities le')
-            ->on([
-                'le.supplier_client_id = id',
-                'le.supplier_id =' . $supplier_id,
-            ])
-            ->leftJoin('debts d')
-            ->on([
-                'd.from_account_id = le.id',
-                "d.type_of_debt =" . "'сlient_debt_supplier'",
-                "d.status =" . "'active'",
             ])
             ->where([
                 'id =' . $id,
@@ -391,8 +376,8 @@ class ClientsLM
             'id' => $client->id,
             'username' => $client->username,
             'percentage' => $client->percentage,
-            'debit_amount' => $client->debit_amount,
-            'legal_id' => $client->legal_id,
+            'debit_amount' => TransactionProvidersLM::getClientDebitSum($client->id),
+            'legal_id' => 0,
         ];
     }
 

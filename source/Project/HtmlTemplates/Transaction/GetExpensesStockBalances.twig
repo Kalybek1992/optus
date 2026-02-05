@@ -30,6 +30,7 @@
                         <th class="px-3 py-2 w-28">Дата</th>
                         <th class="px-3 py-2 min-w-[250px] max-w-[500px]">Описание</th>
                         <th class="px-3 py-2 w-20">Сумма</th>
+                        <th class="px-3 py-2 w-20">Кому</th>
                         <th class="px-3 py-2 min-w-[100px] max-w-[300px]">Отправитель:Название компании</th>
                         <th class="px-3 py-2 min-w-[100px] max-w-[300px]">Отправитель:Название банка</th>
                         <th class="px-3 py-2 min-w-[100px] max-w-[300px]">Получатель:Название компании</th>
@@ -38,43 +39,45 @@
                     </tr>
                     </thead>
                     <tbody class="text-sm divide-y divide-gray-100">
-                    {% for expense in expenses %}
-                        <tr class="hover:bg-gray-50 divide-x divide-gray-200">
-                            <td class="px-3 py-2">{{ expense.date }}</td>
-                            <td class="px-3 py-2 text-xs text-gray-700">{{ expense.description }}</td>
-                            <td class="px-3 py-2">{{ expense.amount }}</td>
-                            <td class="px-3 py-2 text-xs text-gray-700">{{ expense.sender_company_name }}</td>
-                            <td class="px-3 py-2 text-xs text-gray-700">{{ expense.sender_bank_name }}</td>
-                            <td class="px-3 py-2 text-xs text-gray-700">{{ expense.company_name }}</td>
-                            <td class="px-3 py-2 text-xs text-gray-700">{{ expense.bank_name }}</td>
-                            <td class="px-3 py-2 text-center">
-                                {% if expense.return_account == 1 %}
-                                    <label for="unlink_account"
-                                           class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium px-3 py-1 rounded-lg transition cursor-pointer"
-                                           data-order-id="{{ expense.bank_order_id }}"
-                                           data-company-name="{{ expense.company_name }}"
-                                           data-description="{{ expense.description }}"
-                                           data-bank-name="{{ expense.bank_name }}">
-                                        Возврат
-                                    </label>
-                                {% else %}
-                                    —
-                                {% endif %}
-                            </td>
-                        </tr>
-                    {% endfor %}
+                        {% for expense in expenses %}
+                            <tr class="hover:bg-gray-50 divide-x divide-gray-200">
+                                <td class="px-3 py-2">{{ expense.date }}</td>
+                                <td class="px-3 py-2 text-xs text-gray-700">{{ expense.description }}</td>
+                                <td class="px-3 py-2">{{ expense.amount }}</td>
+                                <td class="px-3 py-2">{{ expense.client_name }}</td>
+                                <td class="px-3 py-2 text-xs text-gray-700">{{ expense.sender_company_name }}</td>
+                                <td class="px-3 py-2 text-xs text-gray-700">{{ expense.sender_bank_name }}</td>
+                                <td class="px-3 py-2 text-xs text-gray-700">{{ expense.company_name }}</td>
+                                <td class="px-3 py-2 text-xs text-gray-700">{{ expense.bank_name }}</td>
+                                <td class="px-3 py-2 text-center">
+                                    {% if expense.return_account == 1 %}
+                                        <label for="unlink_account"
+                                               class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium px-3 py-1 rounded-lg transition cursor-pointer"
+                                               data-order-id="{{ expense.bank_order_id }}"
+                                               data-company-name="{{ expense.company_name }}"
+                                               data-description="{{ expense.description }}"
+                                               data-bank-name="{{ expense.bank_name }}">
+                                            Возврат
+                                        </label>
+                                    {% else %}
+                                        —
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% endfor %}
                     </tbody>
                     <tfoot class="bg-gray-100 text-xs text-gray-500 uppercase">
-                    <tr class="divide-x divide-gray-200">
-                        <th class="px-3 py-2">Дата</th>
-                        <th class="px-3 py-2">Описание</th>
-                        <th class="px-3 py-2 w-20">Сумма</th>
-                        <th class="px-3 py-2">Отправитель:Название компании</th>
-                        <th class="px-3 py-2">Отправитель:Название банка</th>
-                        <th class="px-3 py-2">Получатель:Название компании</th>
-                        <th class="px-3 py-2">Получатель:Название банка</th>
-                        <th class="px-3 py-2">Возврат</th>
-                    </tr>
+                        <tr class="divide-x divide-gray-200">
+                            <th class="px-3 py-2">Дата</th>
+                            <th class="px-3 py-2">Описание</th>
+                            <th class="px-3 py-2 w-20">Сумма</th>
+                            <th class="px-3 py-2 w-20">Кому</th>
+                            <th class="px-3 py-2">Отправитель:Название компании</th>
+                            <th class="px-3 py-2">Отправитель:Название банка</th>
+                            <th class="px-3 py-2">Получатель:Название компании</th>
+                            <th class="px-3 py-2">Получатель:Название банка</th>
+                            <th class="px-3 py-2">Возврат</th>
+                        </tr>
                     </tfoot>
                 </table>
             </div>

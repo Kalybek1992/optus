@@ -446,37 +446,10 @@ class SuppliersLM
                 'u.role as role',
                 'u.id as user_id',
                 'u.created_at as created_at',
-                'le.inn as inn',
-                'le.company_name as company_name',
-                'le.id as le_id',
-                'd.amount as debit_amount',
             ]);
 
-        if ($role == 'manager') {
-            $builder
-                ->leftJoin('legal_entities le')
-                ->on([
-                    'le.client_services =' . 1,
-                    'le.manager_id = id',
-                ]);
-        }
-
-        if ($role == 'client') {
-            $builder
-                ->leftJoin('legal_entities le')
-                ->on([
-                    'le.client_services =' . 1,
-                    'le.supplier_client_id = id',
-                ]);
-        }
 
         $builder
-            ->leftJoin('debts d')
-            ->on([
-                'd.to_account_id = le.id',
-                "d.type_of_debt =" . "'supplier_debt_сlient'",
-                "d.status =" . "'active'",
-            ])
             ->leftJoin('users u')
             ->on([
                 'u.id = user_id',
@@ -484,6 +457,7 @@ class SuppliersLM
             ->where([
                 "supplier_id =" . $supplier_id,
             ]);
+
 
         $builder
             ->orderBy('u.created_at', 'DESC')
@@ -499,42 +473,23 @@ class SuppliersLM
         }
 
         foreach ($suppliers as $supplier) {
-            $existing_index = array_search($supplier->id, array_column($suppliers_array, 'id'));
-            $balance_sum = $supplier->balance ?? 0;
-            $bank_accounts = null;
             $debit_amount_sum = $supplier->debit_amount ?? 0;
-
-            if ($supplier->inn ?? false) {
-                $bank_accounts = [
-                    'inn' => $supplier->inn,
-                    'company_name' => $supplier->company_name,
-                    'debit_amount' => $debit_amount_sum,
-                    'balance' => $balance_sum,
-                    'le_id' => $supplier->le_id,
-                ];
+            if ($role == 'client'){
+                $debit_amount_sum = TransactionProvidersLM::getClientDebitSum($supplier->id);
             }
 
-            if ($existing_index === false) {
-                $suppliers_array[] = [
-                    'id' => $supplier->id,
-                    'role' => $supplier->role,
-                    'name' => $supplier->username,
-                    'percentage' => $supplier->percentage,
-                    'balance_sum' => $balance_sum,
-                    'debit_amount_sum' => $debit_amount_sum,
-                    'user_id' => $supplier->user_id,
-                    'transit_rate' => $supplier->transit_rate,
-                    'cash_bet' => $supplier->cash_bet,
-                    'created_at' => $supplier->created_at,
-                    'bank_accounts' => $bank_accounts ? [$bank_accounts] : [],
-                ];
-            } else {
-                $suppliers_array[$existing_index]['balance_sum'] += $balance_sum;
-                $suppliers_array[$existing_index]['debit_amount_sum'] += $debit_amount_sum;
-                if ($bank_accounts) {
-                    $suppliers_array[$existing_index]['bank_accounts'][] = $bank_accounts;
-                }
-            }
+            $suppliers_array[] = [
+                'id' => $supplier->id,
+                'role' => $supplier->role,
+                'name' => $supplier->username,
+                'percentage' => $supplier->percentage,
+                'debit_amount_sum' => $debit_amount_sum,
+                'user_id' => $supplier->user_id,
+                'transit_rate' => $supplier->transit_rate,
+                'cash_bet' => $supplier->cash_bet,
+                'created_at' => $supplier->created_at,
+                'bank_accounts' => [],
+            ];
         }
 
 

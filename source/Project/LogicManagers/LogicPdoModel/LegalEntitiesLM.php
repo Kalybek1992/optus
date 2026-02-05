@@ -280,6 +280,7 @@ class LegalEntitiesLM
                     'bank_name' => $bank_name,
                     'company_name' => $company_name,
                     'inn' => $inn,
+                    'ignore' => $transaction->ignore,
                 ];
             }
 
@@ -625,6 +626,7 @@ class LegalEntitiesLM
 
             $our_account_arr[] = [
                 'id' => $account->id,
+                'account' => $account->account,
                 'company_name' => $account->company_name,
                 'bank_name' => $account->bank_name,
                 'inn' => $account->inn,
@@ -857,7 +859,6 @@ class LegalEntitiesLM
                 't.description as description',
                 't.amount as transaction_amount',
                 't.percent as transaction_percent',
-                't.supplier_client_percent as supplier_client_percent',
                 't.date as transaction_date',
                 't.id as transaction_id',
                 't.interest_income as transaction_interest_income',
@@ -1249,7 +1250,7 @@ class LegalEntitiesLM
     }
 
 
-    public static function getEntitiesClientServicesTransactions($supplier_id, $offset, $limit, $date_from, $date_to, $manager_id = null, $client_id = null): array
+    public static function getEntitiesClientServicesTransactions($supplier_id, $offset, $limit, $date_from, $date_to, $client_id = null): array
     {
         $builder = LegalEntities::newQueryBuilder()
             ->select([
@@ -1314,13 +1315,6 @@ class LegalEntitiesLM
                 'client_services =' . 1,
             ]);
 
-        if ($manager_id) {
-            $builder
-                ->where([
-                    'manager_id =' . $manager_id,
-                ]);
-        }
-
         if ($client_id) {
             $builder
                 ->where([
@@ -1369,7 +1363,7 @@ class LegalEntitiesLM
         return $transactions_arr;
     }
 
-    public static function getEntitiesClientServicesTransactionsSum($supplier_id, $date_from, $date_to, $manager_id = null, $client_id = null): array
+    public static function getEntitiesClientServicesTransactionsSum($supplier_id, $date_from, $date_to, $client_id = null): array
     {
         $builder = LegalEntities::newQueryBuilder()
             ->select([
@@ -1422,21 +1416,11 @@ class LegalEntitiesLM
                 "d_client_services.transaction_id = t.id",
                 "d_client_services.type_of_debt = 'client_services'",
                 "d_client_services.status = 'active'",
-            ]);
-
-
-        $builder
+            ])
             ->where([
                 'supplier_id =' . $supplier_id,
                 'client_services =' . 1,
             ]);
-
-        if ($manager_id) {
-            $builder
-                ->where([
-                    'manager_id =' . $manager_id,
-                ]);
-        }
 
         if ($client_id) {
             $builder
@@ -1444,7 +1428,6 @@ class LegalEntitiesLM
                     'client_service_id =' . $client_id,
                 ]);
         }
-
 
         $transactions = PdoConnector::execute($builder)[0] ?? [];
 
@@ -1474,127 +1457,7 @@ class LegalEntitiesLM
         ];
     }
 
-
-    public static function getEntitiesClientServicesManagerSum($date, int $manager_id)
-    {
-        $builder = LegalEntities::newQueryBuilder()
-            ->select([
-                'SUM(t.amount) as sum_amount',
-            ]);
-
-        if ($date) {
-            $date = DateTime::createFromFormat('d.m.Y', $date);
-            $date = $date->format('Y-m-d');
-        }
-
-
-        if ($date) {
-            $builder
-                ->innerJoin('transactions t')
-                ->on([
-                    "t.from_account_id = id",
-                    "t.date ='" . $date . "'",
-                ]);
-        }
-
-
-        $builder
-            ->where([
-                'client_services =' . 1,
-                'manager_id =' . $manager_id,
-            ])
-            ->groupBy('legal_entities.supplier_id');
-
-        $transactions = PdoConnector::execute($builder)[0] ?? [];
-
-        $sum_amount = $transactions->sum_amount ?? 0;
-
-
-        return ['sum_amount' => $sum_amount];
-    }
-
-
-    public static function getEntitiesClientServicesTransactionsReturnSum($supplier_id, $date_from, $date_to, $manager_id = null, $client_id = null): array
-    {
-        $builder = LegalEntities::newQueryBuilder()
-            ->select([
-                'SUM(t.amount) as sum_amount',
-            ]);
-
-        if ($date_from) {
-            $date_from = DateTime::createFromFormat('d.m.Y', $date_from);
-            $date_from = $date_from->format('Y-m-d');
-        }
-
-        if ($date_to) {
-            $date_to = DateTime::createFromFormat('d.m.Y', $date_to);
-            $date_to = $date_to->format('Y-m-d');
-        }
-
-        if ($date_from && !$date_to) {
-            $builder
-                ->innerJoin('transactions t')
-                ->on([
-                    "t.from_account_id = id",
-                    "t.date >='" . $date_from . "'",
-                    "t.type = 'return_client_services'",
-                ]);
-        }
-
-        if (!$date_from && !$date_to) {
-            $builder
-                ->innerJoin('transactions t')
-                ->on([
-                    "t.from_account_id = id",
-                    "t.type = 'return_client_services'",
-                ]);
-        }
-
-        if ($date_from && $date_to) {
-            $builder
-                ->innerJoin('transactions t')
-                ->on([
-                    "t.from_account_id = id",
-                    "t.date BETWEEN '" . $date_from . "'" . "AND '" . $date_to . "'",
-                    "t.type = 'return_client_services'",
-                ]);
-        }
-
-        $builder
-            ->where([
-                'supplier_id =' . $supplier_id,
-                'client_services =' . 1,
-            ]);
-
-        if ($manager_id) {
-            $builder
-                ->where([
-                    'manager_id =' . $manager_id,
-                ]);
-        }
-
-        if ($client_id) {
-            $builder
-                ->where([
-                    'client_service_id =' . $client_id,
-                ]);
-        }
-
-        $builder
-            ->groupBy('legal_entities.supplier_id');
-
-        $transactions = PdoConnector::execute($builder)[0] ?? [];
-
-        $sum_amount = $transactions->sum_amount ?? 0;
-
-
-        return [
-            'sum_amount' => $sum_amount,
-        ];
-    }
-
-
-    public static function getEntitiesClientServicesTransactionsCount($supplier_id, $date_from, $date_to, $manager_id = null, $client_id = null): int
+    public static function getEntitiesClientServicesTransactionsCount($supplier_id, $date_from, $date_to, $client_id = null): int
     {
         $builder = LegalEntities::newQueryBuilder()
             ->select([
@@ -1647,13 +1510,6 @@ class LegalEntitiesLM
                 'client_services =' . 1,
             ]);
 
-
-        if ($manager_id) {
-            $builder
-                ->where([
-                    'manager_id =' . $manager_id,
-                ]);
-        }
 
         if ($client_id) {
             $builder
@@ -2270,9 +2126,6 @@ class LegalEntitiesLM
         $builder = LegalEntities::newQueryBuilder()
             ->select([
                 'le.*',
-                'recipient_le.id as recipient_le_id',
-                'recipient_le.bank_name as recipient_bank_name',
-                'recipient_le.company_name as recipient_company_name',
                 't.id as transaction_id',
                 't.description as description',
                 't.date as date',
@@ -2291,10 +2144,9 @@ class LegalEntitiesLM
                 'recipient_le.id = t.to_account_id',
             ])
             ->where([
-                "le.manager_id IS NULL",
-                "le.supplier_client_id IS NULL",
                 "le.supplier_id =" . $supplier_id,
-                "le.client_services =" . 1
+                "le.client_services =" . 1,
+                "t.supplier_defined =" . 1
             ])
             ->groupBy('t.id');
 
@@ -2304,25 +2156,21 @@ class LegalEntitiesLM
 
         foreach ($no_managers as $no_manager) {
             $date = '';
-
             if (!empty($no_manager->date)) {
-                try {
-                    $dt = new DateTime($no_manager->date);
-                    $date = $dt->format('d.m.Y');
-                } catch (Exception $e) {
-                    // если дата некорректная, оставляем пустую строку
-                    $date = '';
-                }
+                $dt = new DateTime($no_manager->date);
+                $date = $dt->format('d.m.Y');
             }
 
             $no_managers_arr[] = [
                 'id' => $no_manager->id,
+                'transaction_id' => $no_manager->transaction_id,
                 'date' => $date,
                 'company_name' => $no_manager->company_name,
                 'description' => $no_manager->description,
                 'amount' => $no_manager->amount,
             ];
         }
+
 
         return $no_managers_arr;
     }

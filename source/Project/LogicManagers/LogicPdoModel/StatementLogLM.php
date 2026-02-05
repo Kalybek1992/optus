@@ -130,7 +130,6 @@ class StatementLogLM
         self::closeDebt($errors, 'close_clients_debt');
         self::transactionsDel($errors);
         self::accountsDel($errors);
-        self::endOfDaySettlement($errors);
     }
 
     public static function lastStatementDownloadDel(array $errors): void
@@ -314,17 +313,6 @@ class StatementLogLM
             LegalEntitiesLM::deleteLegalsEntitiesIds($accounts_ids);
 
             unset($errors['add_new_accounts']);
-        }
-    }
-
-    public static function endOfDaySettlement(array $errors): void
-    {
-        if (isset($errors['end_of_day_settlement']) && $errors['end_of_day_settlement']) {
-            $end_of_day_settlement = $errors['end_of_day_settlement'];
-
-            EndOfDaySettlementLM::updateEndOfDayTransactions($end_of_day_settlement);
-
-            unset($errors['end_of_day_settlement']);
         }
     }
 

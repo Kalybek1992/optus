@@ -184,6 +184,7 @@
                 <table class="table w-full text-sm text-left divide-x divide-gray-200">
                     <thead class="bg-gray-100 text-xs text-gray-500 uppercase">
                     <tr class="divide-x divide-gray-200">
+                        <th class="px-3 py-2 w-28">Дата выдачи</th>
                         <th class="px-3 py-2 w-28">Дата</th>
                         <th class="px-3 py-2">День</th>
                         <th class="px-3 py-2 min-w-200">Сумма</th>
@@ -196,6 +197,7 @@
                     <tbody class="text-sm divide-y divide-gray-100">
                     {% for finances in get_courier_finances %}
                         <tr class="hover:bg-gray-50 divide-x divide-gray-200">
+                            <td class="px-3 py-2">{{ finances.issue_date }}</td>
                             <td class="px-3 py-2">{{ finances.date }}</td>
                             <td class="px-3 py-2">{{ finances.dey }}</td>
                             <td class="px-3 py-2 min-w-200">{{ finances.amount|number_format(0, ',', ' ') }}</td>
@@ -218,6 +220,7 @@
                     </tbody>
                     <tfoot class="bg-gray-100 text-xs text-gray-500 uppercase">
                     <tr class="divide-x divide-gray-200">
+                        <th class="px-3 py-2 w-28">Дата выдачи</th>
                         <th class="px-3 py-2 w-28">Дата</th>
                         <th class="px-3 py-2">День</th>
                         <th class="px-3 py-2 min-w-200">Сумма</th>
@@ -234,6 +237,10 @@
         <div class="lg:hidden space-y-4 mt-4">
             {% for finances in get_courier_finances %}
                 <div class="border border-gray-200 rounded-lg p-3 shadow-sm bg-white text-[13px] space-y-2">
+                    <div>
+                        <div class="text-gray-500 text-xs">Дата выдачи:</div>
+                        <div class="font-medium">{{ finances.issue_date }}</div>
+                    </div>
                     <div>
                         <div class="text-gray-500 text-xs">Дата:</div>
                         <div class="font-medium">{{ finances.date }}</div>

@@ -2,10 +2,10 @@
 
 namespace Source\Project\Controllers;
 
+use Source\Base\Core\Logger;
 use Source\Project\Controllers\Base\BaseController;
 use Source\Project\DataContainers\InformationDC;
 use Source\Project\LogicManagers\HtmlLM\HtmlLM;
-use Source\Project\LogicManagers\LogicPdoModel\BankAccountsLM;
 use Source\Project\LogicManagers\LogicPdoModel\ClientsLM;
 use Source\Project\LogicManagers\LogicPdoModel\CompanyFinancesLM;
 use Source\Project\LogicManagers\LogicPdoModel\CouriersLM;
@@ -18,12 +18,12 @@ use Source\Project\LogicManagers\LogicPdoModel\ReportsLM;
 use Source\Project\LogicManagers\LogicPdoModel\StockBalancesLM;
 use Source\Project\LogicManagers\LogicPdoModel\SupplierBalanceLM;
 use Source\Project\LogicManagers\LogicPdoModel\SuppliersLM;
+use Source\Project\LogicManagers\LogicPdoModel\TransactionProvidersLM;
 use Source\Project\LogicManagers\LogicPdoModel\TransactionsLM;
 use Source\Project\LogicManagers\LogicPdoModel\UsersLM;
+use Source\Project\Models\TransactionProviders;
 use Source\Project\Viewer\ApiViewer;
 use DateTime;
-use Source\Base\Core\Logger;
-
 class SupplierController extends BaseController
 {
     public function addUserPage(): string
@@ -84,86 +84,66 @@ class SupplierController extends BaseController
 
     public function linkUserLegal(): array
     {
-        $legal_id = InformationDC::get('legal_id');
+        $transaction_id = InformationDC::get('transaction_id');
         $role = InformationDC::get('role');
         $role_id = InformationDC::get('role_id');
-        $suplier = InformationDC::get('suplier');
-        $supplier_id = $suplier['supplier_id'];
+        $transaction = TransactionsLM::getTransactionEntitiesId($transaction_id);
 
-        $get_entities = LegalEntitiesLM::getEntitiesId($legal_id);
-
-        if (!$get_entities || $get_entities->manager_id || $supplier_id != $get_entities->supplier_id) {
-            return ApiViewer::getErrorBody(['value' => 'no_legal_id']);
+        if (!$transaction) {
+            return ApiViewer::getErrorBody(['value' => 'no_transaction']);
         }
 
         if ($role == 'manager') {
             $manager = ManagersLM::getManagerId($role_id);
-
             if (!$manager) {
                 return ApiViewer::getErrorBody(['value' => 'no_manager']);
             }
 
+            TransactionProvidersLM::insertNewTransactionProviders([
+                'transaction_id' => $transaction->id,
+                'manager_id' => $manager->id,
+                'created_at' => date('Y-m-d'),
+                'legal_id' => $transaction->from_account_id
+            ]);
 
-            LegalEntitiesLM::updateLegalEntities([
-                'manager_id =' . $role_id,
-            ], $get_entities->id);
+            $update_end_of_day[] = [
+                'manager_id' => $manager->id,
+                'date' => $transaction->date,
+            ];
+            EndOfDaySettlementLM::updateEndOfDayTransactions($update_end_of_day);
 
-            $transactions_min_date = TransactionsLM::getTransactionsMinDate($legal_id);
-
-            if ($transactions_min_date) {
-                $update_end_of_day[] = [
-                    'manager_id' => $role_id,
-                    'supplier_id' => $supplier_id,
-                    'date' => $transactions_min_date,
-                ];
-                EndOfDaySettlementLM::updateEndOfDayTransactions($update_end_of_day);
-            }
-
-            return ApiViewer::getOkBody(['success' => 'ok']);
         } else {
             $client = ClientsLM::getClientId($role_id);
-            $debts = [];
 
             if (!$client) {
                 return ApiViewer::getErrorBody(['value' => 'no_client']);
             }
 
-            $transactions = TransactionsLM::getTransactionFromOrToAccountId(
-                $get_entities->id,
-                $get_entities->id
-            );
+            $percent = $client['percentage'];
+            $percent_income = abs($transaction->amount) * ($percent / 100);
 
-            foreach ($transactions as $transaction) {
-                $from_account_id = $transaction->from_account_id;
-                $to_account_id = $transaction->to_account_id;
-                $percent = $client['percentage'];
+            DebtsLM::setNewDebts([
+                'from_account_id' => $transaction->from_account_id,
+                'to_account_id' => $transaction->to_account_id,
+                'transaction_id' => $transaction->id,
+                'type_of_debt' => 'сlient_debt_supplier',
+                'amount' => $transaction->amount - $percent_income,
+                'date' => date('Y-m-d'),
+                'status' => 'active'
+            ]);
 
-                $percent_income = abs($transaction->amount) * ($percent / 100);
-
-                if ($transaction->type == 'income') {
-                    $debts[] = [
-                        'from_account_id' => $from_account_id,
-                        'to_account_id' => $to_account_id,
-                        'transaction_id' => $transaction->id,
-                        'type_of_debt' => 'сlient_debt_supplier',
-                        'amount' => $transaction->amount - $percent_income,
-                        'date' => date('Y-m-d'),
-                        'status' => 'active'
-                    ];
-                }
-            }
-
-            if ($debts) {
-                DebtsLM::setNewDebts($debts);
-            }
-
-            LegalEntitiesLM::updateLegalEntities([
-                'supplier_client_id =' . $role_id,
-            ], $get_entities->id);
+            TransactionProvidersLM::insertNewTransactionProviders([
+                'transaction_id' => $transaction->id,
+                'client_id' => $client['id'],
+                'percent' => $percent,
+                'created_at' => date('Y-m-d'),
+                'legal_id' => $transaction->from_account_id
+            ]);
         }
 
-
-        //Logger::log(print_r($get_entities, true), 'get_entities');
+        TransactionsLM::updateTransactionsId([
+            'supplier_defined =' . 2,
+        ], $transaction->id);
 
         return ApiViewer::getOkBody(['success' => 'ok']);
     }
@@ -172,14 +152,10 @@ class SupplierController extends BaseController
     {
         $balance_id = InformationDC::get('balance_id');
         $manager_id = InformationDC::get('manager_id');
-        $suplier = InformationDC::get('suplier');
         $comment = InformationDC::get('comment');
         $amount = InformationDC::get('amount');
         $date = InformationDC::get('date');
         $date_obj = DateTime::createFromFormat('d.m.Y', $date);
-        $supplier_id = $suplier['supplier_id'];
-
-
         $get_balance = SupplierBalanceLM::getSupplierBalanceId($balance_id);
         $manager = ManagersLM::getManagerId($manager_id);
 
@@ -192,7 +168,6 @@ class SupplierController extends BaseController
         }
 
         $legal = LegalEntitiesLM::getEntitiesInn($get_balance->sender_inn);
-
         $translation_max_id = TransactionsLM::getTranslationMaxId();
         TransactionsLM::insertNewTransactions([
             'id' => $translation_max_id + 1,
@@ -214,10 +189,8 @@ class SupplierController extends BaseController
 
         $update_end_of_day[] = [
             'manager_id' => $manager_id,
-            'supplier_id' => $supplier_id,
             'date' => $date_obj->format('Y-m-d'),
         ];
-
         EndOfDaySettlementLM::updateEndOfDayTransactions($update_end_of_day);
 
         $new_balance = $get_balance->amount - $amount;
@@ -239,7 +212,6 @@ class SupplierController extends BaseController
         $stock_balance = $suplier['stock_balance'] ?? 0;
         $date = InformationDC::get('date');
         $date_obj = DateTime::createFromFormat('d.m.Y', $date);
-        $supplier_id = $suplier['supplier_id'];
 
         if (!$manager) {
             return ApiViewer::getErrorBody(['value' => 'no_manager']);
@@ -267,17 +239,14 @@ class SupplierController extends BaseController
 
         $update_end_of_day[] = [
             'manager_id' => $manager_id,
-            'supplier_id' => $supplier_id,
             'date' => $date_obj->format('Y-m-d'),
         ];
-
         EndOfDaySettlementLM::updateEndOfDayTransactions($update_end_of_day);
 
         SuppliersLM::updateSuppliers([
             'stock_balance =' . $stock_balance + $amount,
         ], $suplier['supplier_id']);
 
-        //Logger::log(print_r($new_balance, true), 'movedCash');
 
         return ApiViewer::getOkBody(['success' => 'ok']);
     }
@@ -286,13 +255,11 @@ class SupplierController extends BaseController
     {
         $balance_id = InformationDC::get('balance_id');
         $manager_id = InformationDC::get('manager_id');
-        $suplier = InformationDC::get('suplier');
         $comment = InformationDC::get('comment');
         $amount = InformationDC::get('amount');
         $return_type = InformationDC::get('return_type');
         $date = InformationDC::get('date');
         $date_obj = DateTime::createFromFormat('d.m.Y', $date);
-        $supplier_id = $suplier['supplier_id'];
 
         $get_balance = SupplierBalanceLM::getSupplierBalanceId($balance_id);
         $manager = ManagersLM::getManagerId($manager_id);
@@ -331,7 +298,6 @@ class SupplierController extends BaseController
 
         $update_end_of_day[] = [
             'manager_id' => $manager_id,
-            'supplier_id' => $supplier_id,
             'date' => $date_obj->format('Y-m-d'),
         ];
         EndOfDaySettlementLM::updateEndOfDayTransactions($update_end_of_day);
@@ -363,6 +329,7 @@ class SupplierController extends BaseController
         $date_from = InformationDC::get('date_from');
         $date_to = InformationDC::get('date_to');
         $suplier = InformationDC::get('suplier');
+        $legal_id = InformationDC::get('legal_id');
         $manager_id = InformationDC::get('manager_id');
         $limit = 30;
         $offset = $page * $limit;
@@ -374,32 +341,29 @@ class SupplierController extends BaseController
             return $this->twig->render('Supplier/ErrorPage.twig');
         }
 
-        $transactions = LegalEntitiesLM::getEntitiesClientServicesTransactions(
-            $supplier_id,
+        $transactions = TransactionProvidersLM::geTransactionsManager(
+            $manager_id,
             $offset,
             $limit,
             $date_from,
             $date_to,
-            $manager_id
+            $legal_id
         );
 
-        $transactions_sum = LegalEntitiesLM::getEntitiesClientServicesTransactionsSum(
-            $supplier_id,
+        $transactions_sum =  TransactionProvidersLM::getTransactionsSum(
             $date_from,
             $date_to,
-            $manager_id
+            $legal_id
         );
 
-        $transactions_count = LegalEntitiesLM::getEntitiesClientServicesTransactionsCount(
-            $supplier_id,
+        $transactions_count = TransactionProvidersLM::geTransactionsManagerCount(
+            $manager_id,
             $date_from,
             $date_to,
-            $manager_id
+            $legal_id
         );
-
 
         $page_count = ceil($transactions_count / $limit);
-        //Logger::log(print_r($date_from, true), 'clientServicesManager');
 
         return $this->twig->render('Supplier/CientServicesManager.twig', [
             'page' => $page + 1,
@@ -622,7 +586,6 @@ class SupplierController extends BaseController
         $date = InformationDC::get('date');
         $translation_max_id = TransactionsLM::getTranslationMaxId();
         $leasing = InformationDC::get('leasing');
-
         $suplier = InformationDC::get('suplier');
         $supplier_id = $suplier['supplier_id'] ?? 0;
         $stock_balance = $suplier['stock_balance'] ?? 0;
@@ -652,9 +615,9 @@ class SupplierController extends BaseController
         }
 
         if ($delivery_type == 'client') {
-            $client = ClientsLM::getClientSupplierId($selected_id, $supplier_id);
+            $client = ClientsLM::getClientSupplierId($selected_id);
 
-            if (!$client || !$client['legal_id']) {
+            if (!$client) {
                 return ApiViewer::getErrorBody(['value' => 'bad_client']);
             }
 
@@ -678,7 +641,7 @@ class SupplierController extends BaseController
             ]);
 
             DebtsLM::payOffSupplierClientServicesDebt(
-                $client['legal_id'],
+                $selected_id,
                 $amount,
                 $translation_max_id + 1
             );
@@ -825,45 +788,32 @@ class SupplierController extends BaseController
         $date_to = InformationDC::get('date_to');
         $limit = 30;
         $offset = $page * $limit;
-        $suplier = InformationDC::get('suplier');
-        $supplier_id = $suplier['supplier_id'] ?? 0;
-        $client = ClientsLM::getClientSupplierId($client_id, $supplier_id);
+        $client = ClientsLM::getClientSupplierId($client_id);
 
         if (!$client) {
             return $this->twig->render('Supplier/ErrorPage.twig');
         }
 
-        $transactions = LegalEntitiesLM::getEntitiesClientTransactions(
-            null,
+        $transactions = TransactionProvidersLM::geTransactionsClient(
+            $client_id,
             $offset,
             $limit,
             $date_from,
-            $date_to,
-            $client_id
+            $date_to
         );
 
-        foreach ($transactions as &$item) {
-            $percent = $item['supplier_client_percent'] ?? $client['percentage'] ?? 0;
-
-            $item['interest_income'] = round($item['total_amount'] * ($percent / 100), 2);
-            $item['percent'] = $percent;
-        }
-
         $transactions_sum = LegalEntitiesLM::getEntitiesClientTransactionsSum(
-            null,
+            5,
             $date_from,
             $date_to,
-            $client_id,
         );
 
         $transactions_count = LegalEntitiesLM::getEntitiesClientTransactionsCount(
-            null,
+            5,
             $date_from,
             $date_to,
-            $client_id,
         );
         $page_count = ceil($transactions_count / $limit);
-
 
         return $this->twig->render('Supplier/ClientReceiptsDate.twig', [
             'page' => $page + 1,
@@ -932,7 +882,8 @@ class SupplierController extends BaseController
             $offset,
             $limit,
             $date_from,
-            $date_to, 1
+            $date_to,
+            1
         );
 
         $transactions_sum = LegalEntitiesLM::getEntitiesSuppliersTransactionsSum(
@@ -1063,26 +1014,22 @@ class SupplierController extends BaseController
 
     public function managerDailyReports(): string
     {
-        $suplier = InformationDC::get('suplier');
         $manager_id = InformationDC::get('manager_id');
-        $supplier_id = $suplier['supplier_id'] ?? 0;
-        $manager = ManagersLM::getManagerId($manager_id);
         $date_from_raw = InformationDC::get('date') ?? date('d.m.Y');
-
+        $manager = ManagersLM::getManagerId($manager_id);
         $date_from = $date_from_raw;
         $date_to  = $date_from;
 
-        if (!$manager || $date_from_raw > date('d.m.Y')) {
+        if (!$manager) {
             return $this->twig->render('Supplier/ErrorPage.twig');
         }
 
-        $transactions = LegalEntitiesLM::getEntitiesClientServicesTransactions(
-            $supplier_id,
+        $transactions = TransactionProvidersLM::geTransactionsManager(
+            $manager_id,
             null,
             null,
             $date_from,
-            $date_to,
-            $manager_id
+            $date_to
         );
 
         $get_manager_finances = CompanyFinancesLM::getManagerFinances(
@@ -1106,9 +1053,7 @@ class SupplierController extends BaseController
             $date_from,
             $date_to,
             $manager_id,
-            $supplier_id
         );
-
 
         return $this->twig->render('Supplier/ManagerDailyReports.twig', [
             'transactions' => $transactions,
@@ -1147,42 +1092,34 @@ class SupplierController extends BaseController
         ]);
     }
 
-    public function unlinkAccount(): array
+    public function unlinkTransaction(): array
     {
-        $legal_id = InformationDC::get('legal_id');
-        $legal = LegalEntitiesLM::getEntitiesId($legal_id);
-        $suplier = InformationDC::get('suplier');
-        $supplier_id = $suplier['supplier_id'];
+        $transaction_id = InformationDC::get('transaction_id');
+        $transaction = TransactionProvidersLM::getTransactionId($transaction_id);
 
-        if (!$legal) {
+        if (!$transaction) {
             return ApiViewer::getErrorBody(['error' => 'not_legal']);
         }
 
+        TransactionProvidersLM::transactionProviderDeleteId($transaction->provider_id);
+        TransactionsLM::updateTransactionsId([
+            'supplier_defined = ' . 1,
+        ], $transaction->id);
 
-        DebtsLM::deleteAllActiveDebtUser($legal_id);
+        if ($transaction->client_id) {
+            DebtsLM::deleteTransactionIdGoodsType(
+                $transaction->id,
+                'сlient_debt_supplier'
+            );
+        }
 
-        $transactions_min_date = TransactionsLM::getTransactionsMinDate($legal_id);
-
-        if ($transactions_min_date && $legal->manager_id) {
+        if ($transaction->manager_id) {
             $update_end_of_day[] = [
-                'manager_id' => $legal->manager_id,
-                'supplier_id' => $supplier_id,
-                'date' => $transactions_min_date,
+                'manager_id' => $transaction->manager_id,
+                'date' => $transaction->date,
             ];
             EndOfDaySettlementLM::updateEndOfDayTransactions($update_end_of_day);
         }
-
-
-        $result = LegalEntitiesLM::updateLegalEntities([
-            'manager_id =' . '<NULL>',
-            'supplier_client_id =' . '<NULL>',
-        ], $legal_id);
-
-        if (!$result) {
-            return ApiViewer::getErrorBody(['value' => 'bad_unlink_account']);
-        }
-
-        //Logger::log(print_r($legal_id, true), 'unlinkAccount');
 
         return ApiViewer::getOkBody(['success' => 'ok']);
     }
@@ -1190,15 +1127,10 @@ class SupplierController extends BaseController
     public function changePercentage(): array
     {
         $transaction_id = InformationDC::get('transaction_id');
-        $legal_id = InformationDC::get('legal_id');
         $percent = InformationDC::get('percent');
-
-
         $transaction = TransactionsLM::getTransactionEntitiesId($transaction_id);
-        $legal_entities = LegalEntitiesLM::getEntitiesId($legal_id);
 
-
-        if (!$transaction && !$legal_entities) {
+        if (!$transaction) {
             return ApiViewer::getErrorBody(['value' => 'bad_transaction']);
         }
 
@@ -1206,9 +1138,8 @@ class SupplierController extends BaseController
         $new_percent = $percent;
         $new_debit = $transfer_amount - ($transfer_amount * $new_percent / 100);
 
-
-        TransactionsLM::updateTransactionsId([
-            'supplier_client_percent =' . $new_percent,
+        TransactionProvidersLM::transactionIdUpdate([
+            'percent ='. $percent,
         ], $transaction_id);
 
         DebtsLM::updateDebtsClientSupplier([
@@ -1220,15 +1151,12 @@ class SupplierController extends BaseController
         //Logger::log(print_r("Новая прибыль: $new_profit", true), 'changePercentage');
         //Logger::log(print_r("--------------------------------------------", true), 'changePercentage');
 
-
         return ApiViewer::getOkBody(['success' => 'ok']);
     }
 
     public function changeSettlementRates(): array
     {
         $manager_id = InformationDC::get('manager_id');
-        $suplier = InformationDC::get('suplier');
-        $supplier_id = $suplier['supplier_id'];
         $date_from_raw = InformationDC::get('date') ?? date('d.m.Y');
         $transit_rate = InformationDC::get('transit_rate');
         $cash_bet = InformationDC::get('cash_bet');
@@ -1240,7 +1168,6 @@ class SupplierController extends BaseController
 
         $update_end_of_day[] = [
             'manager_id' => $manager_id,
-            'supplier_id' => $supplier_id,
             'date' => $date_from_raw,
             'transit_rate' => $transit_rate,
             'cash_bet' => $cash_bet,

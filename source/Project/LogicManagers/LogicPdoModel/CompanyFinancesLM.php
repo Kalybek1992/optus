@@ -368,7 +368,7 @@ class CompanyFinancesLM
         return PdoConnector::execute($builder)[0]->count ?? 0;
     }
 
-    public static function getCourierFinances($courier_id, $offset, $limit, $category, $date_from, $date_to)
+    public static function getCourierFinances($courier_id, $offset, $limit, $category, $date_from, $date_to):  array
     {
         $builder = CompanyFinances::newQueryBuilder()
             ->select([
@@ -484,6 +484,7 @@ class CompanyFinancesLM
                 'category' => $expense->category,
                 'comments' => $expense->comments,
                 'amount' => $expense->amount,
+                'issue_date' => $expense->issue_date ? date('d.m.Y', strtotime($expense->issue_date)) : '',
                 'date' => date('d.m.Y', strtotime($expense->date)),
                 'dey' => $translated_date,
                 'description' => $expense->description,
@@ -504,17 +505,12 @@ class CompanyFinancesLM
     {
         $builder = CompanyFinances::newQueryBuilder()
             ->select(['COUNT(company_finances.id) as cnt'])
-            ->leftJoin('bank_order bo')
-            ->on([
-                'bo.id = order_id',
-            ])
             ->where([
                 'courier_id =' . $courier_id,
                 "status = 'confirm_courier'",
             ]);
 
-        $row = PdoConnector::execute($builder)[0] ?? null;
-        return (int)($row?->variables['cnt'] ?? 0);
+        return PdoConnector::execute($builder)[0]->cnt ?? 0;
     }
 
     public static function getCourierPending(int $courier_id, int $offset, int $limit): array
@@ -525,6 +521,7 @@ class CompanyFinancesLM
                 'company_finances.category as category',
                 'company_finances.comments as comments',
                 'company_finances.status as status',
+                'company_finances.issue_date as issue_date',
                 't.amount as amount',
                 't.date as bo_date',
                 'cc.card_number as card_number',
@@ -581,6 +578,7 @@ class CompanyFinancesLM
                 'company_name' => $r->company_name,
                 'supplier_name' => $r->supplier_name ?? $r->courier_name ?? 'Администратор',
                 'date' => $r->bo_date ? date('d.m.Y', strtotime($r->bo_date)) : '',
+                'issue_date' => $r->issue_date ? date('d.m.Y', strtotime($r->issue_date)) : '',
             ];
         }
         return $out;
@@ -1236,10 +1234,8 @@ class CompanyFinancesLM
                 ]);
         }
 
-
         $builder
             ->orderBy("t.date", "DESC");
-
 
         return PdoConnector::execute($builder)[0] ?? [];
     }

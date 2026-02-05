@@ -111,7 +111,6 @@ class DocumentExtractLM
             }
         }
 
-
         $this->mapBankExchange();
         $this->mapSectionOrder();
 
@@ -147,6 +146,8 @@ class DocumentExtractLM
 
         $this->bank_order = $this->removeDuplicates($loaded_transactions, $this->bank_order);
         $this->payment_order = $this->removeDuplicates($loaded_transactions, $this->payment_order);
+
+
 
         if (!$this->bank_order && !$this->payment_order) {
             $this->result_document_processing = 'processed_invoices';

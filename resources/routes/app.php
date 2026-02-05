@@ -1600,7 +1600,7 @@ return [
         ],
         '/supplier/linkuserlegal' => [
             'validation' => [
-                'legal_id' => [
+                'transaction_id' => [
                     'required' => true,
                     'custom_logic' => fn($a) => is_numeric($a) && $a > 0
                 ],
@@ -1912,9 +1912,9 @@ return [
                 new ApiKeyAdminMiddleware
             ]
         ],
-        '/supplier/unlinkaccount' => [
+        '/supplier/unlinktransaction' => [
             'validation' => [
-                'legal_id' => [
+                'transaction_id' => [
                     'required' => true,
                     'custom_logic' => fn($a) => is_numeric($a) && $a > 0
                 ],
@@ -2179,6 +2179,21 @@ return [
             ],
             'middlewares' => [
                 new ApiKeyAdminMiddleware
+            ]
+        ],
+        '/transaction/setignore' => [
+            'validation' => [
+                'transaction_id' => [
+                    'required' => true,
+                    'custom_logic' => fn($a) => is_numeric($a) && $a > 0
+                ],
+                'ignore' => [
+                    'required' => true,
+                    'custom_logic' => fn($a) => $a == 2 || $a == 1
+                ],
+            ],
+            'middlewares' => [
+                new ApiKeyAdminMiddleware,
             ]
         ],
     ]

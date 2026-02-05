@@ -99,23 +99,19 @@
                                 <td class="px-3 py-2 text-xs text-gray-700">{{ transaction.company_name }}</td>
                                 <td class="px-3 py-2 text-xs text-gray-700">{{ transaction.bank_name_recipient }}</td>
                                 <td class="px-3 py-2">
-                                    {% if transaction.percent == 0 %}
-                                        {{ transaction.percent }}%
-                                    {% else %}
-                                        <span
-                                                data-transaction-id="{{ transaction.id }}"
-                                                data-legal-id="{{ transaction.legal_id }}"
-                                                data-transaction-date="{{ transaction.date }}"
-                                                data-transaction-company_name="{{ transaction.company_name }}"
-                                                data-transaction-bank_name_recipient="{{ transaction.bank_name_recipient }}"
-                                                data-transaction-percent="{{ transaction.percent }}"
-                                                data-transaction-amount="{{ transaction.amount }}"
-                                                data-transaction-interest_income="{{ transaction.interest_income }}"
-                                                data-transaction-total_amount="{{ transaction.total_amount }}"
-                                                class="change-percentage cursor-pointer text-blue-600 hover:underline font-medium">
+                               <span
+                                       data-transaction-id="{{ transaction.id }}"
+                                       data-legal-id="{{ transaction.legal_id }}"
+                                       data-transaction-date="{{ transaction.date }}"
+                                       data-transaction-company_name="{{ transaction.company_name }}"
+                                       data-transaction-bank_name_recipient="{{ transaction.bank_name_recipient }}"
+                                       data-transaction-percent="{{ transaction.percent }}"
+                                       data-transaction-amount="{{ transaction.amount }}"
+                                       data-transaction-interest_income="{{ transaction.interest_income }}"
+                                       data-transaction-total_amount="{{ transaction.total_amount }}"
+                                       class="change-percentage cursor-pointer text-blue-600 hover:underline font-medium">
                                     {{ transaction.percent }}%
                                 </span>
-                                    {% endif %}
                                 </td>
                                 <td class="px-3 py-2">{{ transaction.amount|number_format(0, ',', ' ') }}</td>
                                 <td class="px-3 py-2">{{ transaction.interest_income|number_format(0, ',', ' ') }}</td>
@@ -152,23 +148,19 @@
                                         class="text-xs text-gray-700 break-all">{{ transaction.bank_name_recipient }}</span>
                             </div>
                             <div><span class="text-gray-500 text-xs">Процент:</span>
-                                {% if transaction.percent == 0 %}
-                                    <span>{{ transaction.percent }}%</span>
-                                {% else %}
-                                    <span
-                                            data-transaction-id="{{ transaction.id }}"
-                                            data-legal-id="{{ transaction.legal_id }}"
-                                            data-transaction-date="{{ transaction.date }}"
-                                            data-transaction-company_name="{{ transaction.company_name }}"
-                                            data-transaction-bank_name_recipient="{{ transaction.bank_name_recipient }}"
-                                            data-transaction-percent="{{ transaction.percent }}"
-                                            data-transaction-amount="{{ transaction.amount }}"
-                                            data-transaction-interest_income="{{ transaction.interest_income }}"
-                                            data-transaction-total_amount="{{ transaction.total_amount }}"
-                                            class="change-percentage cursor-pointer font-semibold text-blue-600 underline">
+                                <span
+                                        data-transaction-id="{{ transaction.id }}"
+                                        data-legal-id="{{ transaction.legal_id }}"
+                                        data-transaction-date="{{ transaction.date }}"
+                                        data-transaction-company_name="{{ transaction.company_name }}"
+                                        data-transaction-bank_name_recipient="{{ transaction.bank_name_recipient }}"
+                                        data-transaction-percent="{{ transaction.percent }}"
+                                        data-transaction-amount="{{ transaction.amount }}"
+                                        data-transaction-interest_income="{{ transaction.interest_income }}"
+                                        data-transaction-total_amount="{{ transaction.total_amount }}"
+                                        class="change-percentage cursor-pointer font-semibold text-blue-600 underline">
                                             {{ transaction.percent }}%
                                     </span>
-                                {% endif %}
                             </div>
                             <div><span class="text-gray-500 text-xs">Общая сумма:</span> <span
                                         class="font-semibold">{{ transaction.amount|number_format(0, ',', ' ') }}</span></div>

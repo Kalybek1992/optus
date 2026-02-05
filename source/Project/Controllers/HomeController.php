@@ -43,7 +43,6 @@ class HomeController extends BaseController
 
     public function authPage(): string
     {
-        //Logger::log(print_r('tet', true), 'bindAccountSupplier');
         return $this->twig->render('AuthPage.twig');
     }
 
@@ -73,10 +72,6 @@ class HomeController extends BaseController
         if ($finance['company_supplier_debt'] > 0) {
             $mutual_settlements = array_merge($mutual_settlements, SuppliersLM::getSuppliersDebitCompany());
         }
-
-
-        //Logger::log(print_r($error_uploads, true), 'adminHomePage');
-        //var_dump($balance);
 
         return $this->twig->render('AdminHomePage.twig', [
             'unknown_accounts' => $unknown_accounts,

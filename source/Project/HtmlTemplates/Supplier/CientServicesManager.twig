@@ -74,6 +74,7 @@
                             <th class="py-2 px-4 font-medium">Компания</th>
                             <th class="py-2 px-4 font-medium w-80 break-words">Назначение</th>
                             <th class="py-2 px-4 font-medium w-36 text-right">Сумма (₽)</th>
+                            <th class="py-2 px-4 font-medium w-36">Отвязать</th>
                         </tr>
                         </thead>
 
@@ -103,6 +104,18 @@
                                     {{ item.transaction_amount|number_format(0, ',', ' ') }} ₽
                                 </td>
 
+                                <td class="py-2 px-3 sm:px-4 font-semibold text-green-600 sm:text-right">
+                                    <button
+                                            type="button"
+                                            data-transaction-id="{{ item.transaction_id }}"
+                                            data-sender-company-name="{{ item.sender_company_name }}"
+                                            data-recipient-company-name="{{ item.recipient_company_name }}"
+                                            data-transaction-amount="{{ item.transaction_amount|number_format(0, ',', ' ') }}"
+                                            class="bg-red-100 text-red-600 text-sm px-3 py-1 rounded hover:bg-red-200 cursor-pointer"
+                                    >
+                                        <i class="fa-solid fa-link-slash mr-1"></i> Отвязать
+                                    </button>
+                                </td>
                             </tr>
                         {% endfor %}
                         </tbody>
@@ -117,14 +130,12 @@
                 </p>
             </div>
         {% endif %}
-
-
     </div>
 
     <div class="flex items-center justify-center py-6">
         {% include './Pagination/Pagination.twig' %}
     </div>
-
+    {% include './ChangeUserModal.twig' %}
 
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pikaday/css/pikaday.css">
     <script src="https://cdn.jsdelivr.net/npm/pikaday/pikaday.js"></script>

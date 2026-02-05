@@ -319,21 +319,18 @@ class TransactionController extends BaseController
         $client = ClientServicesLM::clientServicesId($client_id);
         $supplier_id = $client['supplier_id'] ?? 0;
 
-
         $transactions = LegalEntitiesLM::getEntitiesClientServicesTransactions(
             $supplier_id,
             $offset,
             $limit,
             $date_from,
             $date_to,
-            null,
             $client_id,
         );
         $transactions_sum = LegalEntitiesLM::getEntitiesClientServicesTransactionsSum(
             $supplier_id,
             $date_from,
             $date_to,
-            null,
             $client_id,
         );
 
@@ -341,7 +338,6 @@ class TransactionController extends BaseController
             $supplier_id,
             $date_from,
             $date_to,
-            null,
             $client_id,
         );
         $page_count = ceil($transactions_count / $limit);
@@ -575,7 +571,6 @@ class TransactionController extends BaseController
                 'percent' => $percent,
                 'interest_income' => $interest_income,
                 'date' => date('Y-m-d H:i:s'),
-                'date_received' => $receipt_date,
                 'description' => $description,
                 'from_account_id' => $from_account_id,
                 'to_account_id' => $to_account_id,
@@ -634,11 +629,9 @@ class TransactionController extends BaseController
                     'type' => 'return', // <--- ВАЖНО: используйте корректный тип!
                     'amount' => $amount,
                     'date' => date('Y-m-d H:i:s'),
-                    'date_received' => $receipt_date,
                     'description' => $description,
                     'from_account_id' => $from_account_id,
                     'to_account_id' => $to_account_id,
-                    'user_id' => $user_id,
                     'status' => 'processed'
                 ]]);
 
@@ -1103,6 +1096,32 @@ class TransactionController extends BaseController
 
         CompanyFinancesLM::insertTransactionsExpenses($insert_company_finances);
         Logger::log(print_r($user_debit, true), 'mutualSettlement');
+
+        return ApiViewer::getOkBody(['success' => 'ok']);
+    }
+
+    public function setignore(): array
+    {
+        $transaction_id = InformationDC::get('transaction_id');
+        $ignore = InformationDC::get('ignore');
+
+        $transaction = TransactionsLM::getTransactionEntitiesId($transaction_id);
+
+        if (!$transaction) {
+            return ApiViewer::getErrorBody(['value' => 'bad_transaction']);
+        }
+
+        Logger::log(print_r($ignore, true), 'setignore');
+
+        if ($ignore == 1){
+            TransactionsLM::updateTransactionsId([
+                '`ignore` = 1',
+            ], $transaction_id);
+        }else{
+            TransactionsLM::updateTransactionsId([
+                '`ignore` = 0',
+            ], $transaction_id);
+        }
 
         return ApiViewer::getOkBody(['success' => 'ok']);
     }

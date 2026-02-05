@@ -647,6 +647,4 @@ class UnloadingController extends BaseController
 
         return ApiViewer::getOkBody(['file' => $file_path]);
     }
-
-
 }
